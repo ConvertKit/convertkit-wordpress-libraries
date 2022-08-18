@@ -21,8 +21,6 @@ An *approved* Pull Request is when a PR passes all tests **and** has been approv
 * Fix: API Class: Return array instead of WP_Error when no resources exist.
 ```
 
-![New Release Screen](/.github/docs/new-release.png?raw=true)
-
 ## Publish the Release
 
 When you're happy with the above, click `Publish Release`.
