@@ -118,66 +118,17 @@ parameters:
 In the Plugin's directory, at the command line, run `composer install`.
 
 This will install packages used in the process of development (i.e. testing, coding standards):
--- wp-browser
--- Codeception
--- PHPStan
--- PHPUnit
--- PHP_CodeSniffer
+- wp-browser
+- Codeception
+- PHPStan
+- PHPUnit
+- PHP_CodeSniffer
 
 How to use these is covered later on, and in the [Testing Guide](TESTING.md)
 
-### Configure wp-config.php
-
-In the root of your WordPress installation, find the `wp-config.php` file.
-
-Change the following line from (your database name itself may vary):
-
-```php
-define( 'DB_NAME', 'local' );
-```
-
-to:
-
-```php
-if( isset( $_SERVER['HTTP_X_TEST_REQUEST'] ) && $_SERVER['HTTP_X_TEST_REQUEST'] ) {
-    // WPBrowser request, performed when Codeception tests are run. Connect to test DB.
-    define( 'DB_NAME', 'test' );
-} elseif( isset( $_SERVER['HTTP_USER_AGENT'] ) && strpos( $_SERVER['HTTP_USER_AGENT'], 'HeadlessChrome' ) !== false ) {
-    // WPWebDriver request, performed when Codeception tests are run. Connect to test DB.
-    define( 'DB_NAME', 'test' );
-} else {
-    // Connect to local DB.
-    define( 'DB_NAME', 'local' );
-}
-```
-
-When Codeception tests are run, they will include either:
-- The `HTTP_X_TEST_REQUEST` header for tests run using WPBrowser.
-- The `HeadlessChrome` HTTP User Agent for tests run using WPWebDriver.
-
-Our change above tells WordPress to use the test database for our test requests, whilst using the local/default database for any other requests.
-
-### Install ChromeDriver
-
-ChromeDriver is a headless (i.e. non-GUI) browser that our test suite uses to run Acceptance tests, interacting with the ConvertKit
-Plugin just as a user would - including full JavaScript execution, user inputs etc.
-
-Download ChromeDriver for your Google Chrome version and OS from https://sites.google.com/chromium.org/driver/downloads?authuser=0
-
-For Mac users, copy the unzipped executable to `/usr/local/bin`.
-
 ### Running the Test Suite
 
-First, run the ChromeDriver in a separate Terminal window:
-
-```bash
-chromedriver --url-base=/wd/hub
-```
-
-![ChromeDriver Screenshot](/.github/docs/chromedriver.png?raw=true)
-
-In a second Terminal window, in the Plugin's directory, build and run the tests to make sure there are no errors and that you have 
-correctly setup your environment:
+In a Terminal window, build and run the tests to make sure there are no errors and that you have correctly setup your environment:
 
 ```bash
 vendor/bin/codecept build

@@ -18,7 +18,7 @@ If you haven't yet created a branch and made any code changes to the Library, re
 
 ## Write (or modify) a test
 
-If you're new to testing, or testing within WordPress, there's a detailed Codeception guide in the main ConvertKit Plugin.
+If you're new to testing, or testing within WordPress, there's a detailed Codeception guide in the [main ConvertKit Plugin]https://github.com/ConvertKit/convertkit-wordpress/blob/main/TESTING.md#types-of-test
 
 For the WordPress Libraries, you'll most likely only need a WordPress Unit Test.
 
@@ -80,20 +80,14 @@ To register your own helper function, add it to the `tests/_support/Helper/Wpuni
 
 Once you have written your code and test(s), run the tests to make sure there are no errors.
 
-If ChromeDriver isn't running, open a new Terminal window and enter the following command:
-
-```bash
-chromedriver --url-base=/wd/hub
-```
-
-To run the tests, enter the following commands in a separate Terminal window:
+To run the tests, enter the following commands in a Terminal window:
 
 ```bash
 vendor/bin/codecept build
 vendor/bin/codecept run wpunit
 ```
 
-If a test fails, you can inspect the output and screenshot at `tests/_output`.
+If a test fails, you can inspect the output in the Terminal.
 
 Any errors should be corrected by making applicable code or test changes.
 

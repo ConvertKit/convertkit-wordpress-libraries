@@ -16,22 +16,24 @@ In your Git client / command line, create a new branch:
 
 Once done, make sure you've switched to your new branch, and begin making the necessary code additions/changes/deletions.
 
-## Using this Library in a ConvertKit Plugin
+## Using this Branch in a ConvertKit Plugin
 
 To reflect the changes you're making to this library in a ConvertKit Plugin, edit the `composer.json` file in that Plugin (not this repository),
 changing `{branch_name}` to the branch name you created in the `Create a Branch` step above.
 ```
 "require": {
-    "convertkit/wordpress-libs": "dev-{branch_name}"
+    "convertkit/convertkit-wordpress-libraries": "dev-{branch_name}"
 },
 ```
 
 For example, if our branch name is `products-api`, the `composer.json` file in the ConvertKit Plugin (not this repository) would read:
 ```
 "require": {
-    "convertkit/wordpress-libs": "dev-products-api"
+    "convertkit/convertkit-wordpress-libraries": "dev-products-api"
 },
 ```
+
+The `dev-` prefix tells Composer that we want to use a specific branch of this repository in our ConvertKit Plugin. [Read more](https://getcomposer.org/doc/articles/versions.md#vcs-tags-and-branches).
 
 ## Coding Standards
 

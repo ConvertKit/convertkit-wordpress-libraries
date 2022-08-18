@@ -1,5 +1,5 @@
 {
-    "name": "convertkit/wordpress-libs",
+    "name": "convertkit/convertkit-wordpress-libraries",
     "description": "WordPress API, Resource and Review Request classes for use in ConvertKit WordPress Plugins",
     "authors": [
         {
@@ -9,8 +9,6 @@
     ],
     "type": "library",
     "license": "GPLv3",
-    "require": {
-    },
     "require-dev": {
         "lucatume/wp-browser": "^3.0",
         "codeception/module-asserts": "^1.3",                                      

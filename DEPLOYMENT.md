@@ -10,7 +10,7 @@ An *approved* Pull Request is when a PR passes all tests **and** has been approv
 
 ## Create a New Release
 
-[Create a New Release](https://github.com/ConvertKit/convertkit-wordpress/releases/new), completing the following:
+[Create a New Release](https://github.com/ConvertKit/convertkit-wordpress-libraries/releases/new), completing the following:
 
 - Choose a tag: Click this button and enter the new version number (e.g. `1.0.1`)
 - Release title: The version number (e.g. `1.0.1`)
@@ -29,10 +29,12 @@ When you're happy with the above, click `Publish Release`.
 
 ## Use the Published Release in ConvertKit Plugins
 
-To use the published release in ConvertKit Plugins, **in the ConvertKit Plugin** edit the `composer.json` file to reflect the published version:
+To use the published release in ConvertKit Plugins, **in the ConvertKit Plugin** edit the `composer.json` file to use the tagged version:
 
 ```
 "require": {
-    "convertkit/wordpress-libs": "~1.0.1"
+    "convertkit/convertkit-wordpress-libraries": "1.0.1"
 },
 ```
+
+The specific version number tells Composer that we want to use a specific tag of this repository in our ConvertKit Plugin. [Read more](https://getcomposer.org/doc/articles/versions.md#vcs-tags-and-branches).

@@ -13,3 +13,4 @@ For ConvertKit Developers, there are guides covering:
 - [Setup](SETUP.md) - setting up your local environment for development and testing
 - [Development](DEVELOPMENT.md) - best practices for development
 - [Testing](TESTING.md) - how to write and run tests
+- [Deployment](DEPLOYMENT.md) - how to publish versioned updates to this library
