@@ -138,7 +138,7 @@ False positives [can be excluded by configuring](https://phpstan.org/user-guide/
 
 ## Next Steps
 
-Once your test(s) are written and successfully run locally, submit your branch via a new [Pull Request](https://github.com/ConvertKit/convertkit-wordpress/compare).
+Once your test(s) are written and successfully run locally, submit your branch via a new [Pull Request](https://github.com/ConvertKit/convertkit-wordpress-libraries/compare).
 
 It's best to create a Pull Request in draft mode, as this will trigger all tests to run as a GitHub Action, allowing you to
 double check all tests pass.

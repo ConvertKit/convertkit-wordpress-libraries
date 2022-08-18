@@ -12,7 +12,7 @@ parameters:
 
     # Location of WordPress Plugins for PHPStan to scan, building symbols.
     scanDirectories:
-        - /home/runner/work/convertkit-wordpress/convertkit-wordpress/wordpress/wp-content/plugins
+        - /home/runner/work/convertkit-wordpress-libraries/convertkit-wordpress-libraries/wordpress/wp-content/plugins
 
     # Should not need to edit anything below here
     # Rule Level: https://phpstan.org/user-guide/rule-levels
