@@ -1,12 +1,12 @@
 # Development Guide
 
-This document describes the high level workflow used when working on the ConvertKit WordPress Plugin.
+This document describes the high level workflow used when working on the ConvertKit WordPress Libraries.
 
 You're free to use your preferred IDE and Git client.
 
 ## Prerequisites
 
-If you haven't yet set up your local development environment with the ConvertKit Plugin repository installed, refer to the [Setup Guide](SETUP.md).
+If you haven't yet set up your local development environment with the ConvertKit WordPress Libraries repository installed, refer to the [Setup Guide](SETUP.md).
 
 ## Create a Branch
 
@@ -15,6 +15,23 @@ In your Git client / command line, create a new branch:
 - If this is for a feature/bug that has a GitHub Issue number, enter issue-XXX, replacing XXX with the GitHub issue number
 
 Once done, make sure you've switched to your new branch, and begin making the necessary code additions/changes/deletions.
+
+## Using this Library in a ConvertKit Plugin
+
+To reflect the changes you're making to this library in a ConvertKit Plugin, edit the `composer.json` file in that Plugin (not this repository),
+changing `{branch_name}` to the branch name you created in the `Create a Branch` step above.
+```
+"require": {
+    "convertkit/wordpress-libs": "dev-{branch_name}"
+},
+```
+
+For example, if our branch name is `products-api`, the `composer.json` file in the ConvertKit Plugin (not this repository) would read:
+```
+"require": {
+    "convertkit/wordpress-libs": "dev-products-api"
+},
+```
 
 ## Coding Standards
 
@@ -34,31 +51,6 @@ Never trust user input. Sanitize it.
 Make use of [WordPress nonces](https://codex.wordpress.org/WordPress_Nonces) for saving form submitted data.
 
 Coding standards will catch any sanitization, escaping or database queries that aren't prepared.
-
-## Composer Packages
-
-We use Composer for package management.  A package can be added to one of two sections of the `composer.json` file: `require` or `require-dev`.
-
-### "require"
-
-Packages listed in the "require" directive are packages that the Plugin needs in order to function for end users.
-
-These packages are included when the Plugin is deployed to wordpress.org
-
-Typically, packages listed in this section would be libraries that the Plugin uses, such as:
-- ConvertKit WordPress Libraries; a shared connection of WordPress specific API, Resource and Review Request classes that are used
-across multiple ConvertKit WordPress Plugins.
-
-### "require-dev"
-
-Packages listed in the "require-dev" directive are packages that the Plugin **does not** need in order to function for end users.
-
-These packages are **not** included when the Plugin is deployed to wordpress.org
-
-Typically, packages listed in this section would be internal development tools for testing, such as:
-- Coding Standards
-- PHPStan
-- Codeception
 
 ## Committing Work
 

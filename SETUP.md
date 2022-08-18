@@ -1,6 +1,6 @@
 # Setup Guide
 
-This document describes how to setup your development environment, so that it is ready to run, develop and test the ConvertKit WordPress Libraries.
+This document describes how to setup your development environment, so that it is ready to develop and test the ConvertKit WordPress Libraries.
 
 Suggestions are provided for the LAMP/LEMP stack and Git client are for those who prefer the UI over a command line and/or are less familiar with 
 WordPress, PHP, MySQL and Git - but you're free to use your preferred software.
@@ -38,18 +38,6 @@ If you prefer to clone the repository elsewhere, and them symlink it to your loc
 
 If you're new to this, use [GitHub Desktop](https://desktop.github.com/) or [Tower](https://www.git-tower.com/mac)
 
-### Install Third Party Plugins
-
-The ConvertKit Plugin (and/or its Addons) provides integrations with the following, and therefore it's recommended to install and activate these
-Plugins on your local development environment:
-
-- [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) (Free)
-- [Gravity Forms](https://www.gravityforms.com/) (Paid)
-- [WishList Member](https://wishlistmember.com/) (Paid)
-- [WooCommerce](https://wordpress.org/plugins/woocommerce/) (Free)
-
-For ConvertKit employees or contractors, licensed versions of paid Third Party Plugins can be made available to you on request.
-
 ### Create Test Database
 
 Create a blank `test` database in MySQL, with a MySQL user who can read and write to it.
@@ -81,27 +69,12 @@ CONVERTKIT_API_KEY_NO_DATA=
 CONVERTKIT_API_SECRET_NO_DATA=
 CONVERTKIT_API_KEY=
 CONVERTKIT_API_SECRET=
-CONVERTKIT_API_FORM_NAME="Page Form"
 CONVERTKIT_API_FORM_ID="2765139"
-CONVERTKIT_API_FORM_FORMAT_MODAL_NAME="Modal Form"
-CONVERTKIT_API_FORM_FORMAT_SLIDE_IN_NAME="Slide In Form"
-CONVERTKIT_API_FORM_FORMAT_STICKY_BAR_NAME="Sticky Bar Form"
-CONVERTKIT_API_LANDING_PAGE_NAME="Landing Page"
-CONVERTKIT_API_LANDING_PAGE_ID="2765196"
-CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_NAME="Character Encoding"
-CONVERTKIT_API_LEGACY_FORM_NAME="Legacy Form"
-CONVERTKIT_API_LEGACY_FORM_ID="470099"
-CONVERTKIT_API_LEGACY_FORM_SHORTCODE="[convertkit form=5281783]"
-CONVERTKIT_API_LEGACY_LANDING_PAGE_NAME="Legacy Landing Page"
-CONVERTKIT_API_LEGACY_LANDING_PAGE_ID="470103"
-CONVERTKIT_API_LEGACY_LANDING_PAGE_URL="https://app.convertkit.com/landing_pages/470103"
 CONVERTKIT_API_SEQUENCE_ID="1030824"
-CONVERTKIT_API_TAG_NAME="wordpress"
 CONVERTKIT_API_TAG_ID="2744672"
 CONVERTKIT_API_SUBSCRIBER_EMAIL="optin@n7studios.com"
 CONVERTKIT_API_SUBSCRIBER_ID="1579118532"
-CONVERTKIT_API_THIRD_PARTY_INTEGRATIONS_FORM_NAME="Third Party Integrations Form"
-CONVERTKIT_API_THIRD_PARTY_INTEGRATIONS_FORM_ID="3003590"
+
 ```
 
 #### Codeception
@@ -128,15 +101,8 @@ includes:
 # Parameters
 parameters:
     # Paths to scan
-    # This should comprise of the base Plugin PHP file, plus directories that contain Plugin PHP files
     paths:
-        - wp-convertkit.php
-        - admin/
-        - includes/
-
-    # Files that include Plugin-specific PHP constants
-    bootstrapFiles:
-        - wp-convertkit.php
+        - src/
 
     # Location of WordPress Plugins for PHPStan to scan, building symbols.
     scanDirectories:
@@ -145,22 +111,13 @@ parameters:
     # Should not need to edit anything below here
     # Rule Level: https://phpstan.org/user-guide/rule-levels
     level: 5
-
-    # Ignore the following errors, as PHPStan and PHPStan for WordPress haven't registered symbols for them yet,
-    # so they're false positives.
-    ignoreErrors:
-        - '#Access to an undefined property WP_Theme::#'
-        - '#Constant WP_MEMORY_LIMIT not found.#'
-        - '#Function apply_filters invoked with#' # apply_filters() accepted a variable number of parameters, which PHPStan fails to detect
 ```
 
 ### Install Packages
 
 In the Plugin's directory, at the command line, run `composer install`.
 
-This will install two types of packages:
-- Packages used by the Plugin (i.e. shared libraries used across multiple ConvertKit Plugins)
-- Packages used in the process of development (i.e. testing, coding standards):
+This will install packages used in the process of development (i.e. testing, coding standards):
 -- wp-browser
 -- Codeception
 -- PHPStan
@@ -224,7 +181,6 @@ correctly setup your environment:
 
 ```bash
 vendor/bin/codecept build
-vendor/bin/codecept run acceptance
 vendor/bin/codecept run wpunit
 ```
 
@@ -259,11 +215,6 @@ vendor/bin/phpstan --memory-limit=1G
 
 Again, don't worry if you don't understand these commands; if your output looks similar to the above screenshot, with no errors, your environment
 is setup successfully.
-
-### Add your API Key to the Plugin
-
-Refer to the [ConvertKit Help Article](https://help.convertkit.com/en/articles/2502591-getting-started-the-wordpress-plugin) to get started with
-using the WordPress Plugin.
 
 ### Next Steps
 
