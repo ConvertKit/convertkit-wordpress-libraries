@@ -931,6 +931,54 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Fetches all products from the API.
+	 *
+	 * @since   1.1.0
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function get_products() {
+
+		$this->log( 'API: get_products()' );
+
+		$products = array();
+
+		// Send request.
+		$response = $this->get(
+			'products',
+			array(
+				'api_key'    => $this->api_key,
+				'api_secret' => $this->api_secret,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_products(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response isn't an array as we expect, log that no products exist and return a blank array.
+		if ( ! is_array( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		}
+
+		// If no products exist, log that no products exist and return a blank array.
+		if ( ! count( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return $products;
+		}
+
+		foreach ( $response['products'] as $product ) {
+			$products[] = $product;
+		}
+
+		return $products;
+
+	}
+
+	/**
 	 * Get HTML from ConvertKit for the given Legacy Form ID.
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
@@ -1537,6 +1585,11 @@ class ConvertKit_API {
 		// For the /posts endpoint, the API base is https://api.convertkit.com/api/v3/$endpoint.
 		if ( $endpoint === 'posts' ) {
 			return path_join( $this->api_url_base . 'api/' . $this->api_version, $endpoint );
+		}
+
+		// For the /products endpoint, the API base is https://api.convertkit.com/wordpress/$endpoint.
+		if ( $endpoint === 'products' ) {
+			return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
 		}
 
 		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
