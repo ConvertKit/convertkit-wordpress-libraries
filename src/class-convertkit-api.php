@@ -95,7 +95,7 @@ class ConvertKit_API {
 	/**
 	 * Sets up the API with the required credentials.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   bool|string $api_key        ConvertKit API Key.
 	 * @param   bool|string $api_secret     ConvertKit API Secret.
@@ -173,7 +173,7 @@ class ConvertKit_API {
 	/**
 	 * Gets account information from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -193,7 +193,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all subscription forms from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -214,7 +214,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all forms from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -238,7 +238,7 @@ class ConvertKit_API {
 	/**
 	 * Subscribes an email address to a form.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int    $form_id       Form ID.
 	 * @param   string $email      Email Address.
@@ -314,7 +314,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all landing pages from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -338,7 +338,7 @@ class ConvertKit_API {
 	/**
 	 * Fetches all sequences from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -385,7 +385,7 @@ class ConvertKit_API {
 	/**
 	 * Subscribes an email address to a sequence.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int    $sequence_id Sequence ID.
 	 * @param   string $email       Email Address.
@@ -432,7 +432,7 @@ class ConvertKit_API {
 		/**
 		 * Runs actions immediately after the email address was successfully subscribed to the sequence.
 		 *
-		 * @since   1.9.6
+		 * @since   1.0.0
 		 *
 		 * @param   array   $response       API Response
 		 * @param   int     $sequence_id    Sequence ID
@@ -448,7 +448,7 @@ class ConvertKit_API {
 	/**
 	 * Fetches all tags from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -495,7 +495,7 @@ class ConvertKit_API {
 	/**
 	 * Subscribes an email address to a tag.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int    $tag_id     Tag ID.
 	 * @param   string $email      Email Address.
@@ -542,7 +542,7 @@ class ConvertKit_API {
 		/**
 		 * Runs actions immediately after the email address was successfully subscribed to the tag.
 		 *
-		 * @since   1.9.6
+		 * @since   1.0.0
 		 *
 		 * @param   array   $response   API Response
 		 * @param   int     $tag_id     Tag ID
@@ -558,7 +558,7 @@ class ConvertKit_API {
 	/**
 	 * Gets a subscriber by their email address.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $email  Email Address.
 	 * @return  WP_Error|array
@@ -612,7 +612,7 @@ class ConvertKit_API {
 	/**
 	 * Gets a subscriber by their ConvertKit subscriber ID.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $subscriber_id  Subscriber ID.
 	 * @return  WP_Error|array
@@ -650,7 +650,7 @@ class ConvertKit_API {
 	/**
 	 * Gets a list of tags for the given ConvertKit subscriber ID.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $subscriber_id  Subscriber ID.
 	 * @return  WP_Error|array
@@ -688,7 +688,7 @@ class ConvertKit_API {
 	/**
 	 * Returns the subscriber's ID by their email address.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $email_address  Email Address.
 	 * @return  WP_Error|int
@@ -711,7 +711,7 @@ class ConvertKit_API {
 	/**
 	 * Unsubscribes an email address.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $email      Email Address.
 	 * @return  WP_Error|array
@@ -746,7 +746,7 @@ class ConvertKit_API {
 		/**
 		 * Runs actions immediately after the email address was successfully unsubscribed.
 		 *
-		 * @since   1.9.6
+		 * @since   1.0.0
 		 *
 		 * @param   array   $response   API Response
 		 * @param   string  $email      Email Address
@@ -760,7 +760,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all custom fields from the API.
 	 *
-	 * @since   1.9.6.9
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -987,7 +987,7 @@ class ConvertKit_API {
 	/**
 	 * Create a Purchase.
 	 *
-	 * @since   1.9.6.9
+	 * @since   1.0.0
 	 *
 	 * @param   array $purchase   Purchase Data.
 	 * @return  WP_Error|array
@@ -1011,7 +1011,7 @@ class ConvertKit_API {
 		/**
 		 * Runs actions immediately after the purchase data address was successfully created.
 		 *
-		 * @since   1.9.6.9
+		 * @since   1.0.0
 		 *
 		 * @param   array   $response   API Response
 		 * @param   array   $purchase   Purchase Data
@@ -1025,7 +1025,7 @@ class ConvertKit_API {
 	/**
 	 * Backward compat. function for getting a ConvertKit subscriber by their ID.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $id     Subscriber ID.
 	 * @return  WP_Error|array
@@ -1033,7 +1033,7 @@ class ConvertKit_API {
 	public function get_subscriber( $id ) {
 
 		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.9.6', 'get_subscriber_by_id()' );
+		_deprecated_function( __FUNCTION__, '1.0.0', 'get_subscriber_by_id()' );
 
 		// Pass request to new function.
 		return $this->get_subscriber_by_id( $id );
@@ -1043,7 +1043,7 @@ class ConvertKit_API {
 	/**
 	 * Backward compat. function for subscribing a ConvertKit subscriber to the given Tag.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int   $tag    Tag ID.
 	 * @param   array $args   Arguments.
@@ -1052,7 +1052,7 @@ class ConvertKit_API {
 	public function add_tag( $tag, $args ) {
 
 		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.9.6', 'tag_subscribe( $tag_id, $email_address )' );
+		_deprecated_function( __FUNCTION__, '1.0.0', 'tag_subscribe( $tag_id, $email_address )' );
 
 		// Pass request to new function.
 		return $this->tag_subscribe( $tag, $args['email'] );
@@ -1062,7 +1062,7 @@ class ConvertKit_API {
 	/**
 	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $url    URL.
 	 * @return  WP_Error|string
@@ -1070,7 +1070,7 @@ class ConvertKit_API {
 	public function get_resource( $url ) {
 
 		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.9.6', 'get_form_html( $form_id ) or get_landing_page_html( $url )' );
+		_deprecated_function( __FUNCTION__, '1.0.0', 'get_form_html( $form_id ) or get_landing_page_html( $url )' );
 
 		// Pass request to new function.
 		return $this->get_landing_page_html( $url );
@@ -1080,7 +1080,7 @@ class ConvertKit_API {
 	/**
 	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   array $args   Arguments (single email key).
 	 * @return  WP_Error|array
@@ -1088,7 +1088,7 @@ class ConvertKit_API {
 	public function form_unsubscribe( $args ) {
 
 		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.9.6', 'unsubscribe( $email_address )' );
+		_deprecated_function( __FUNCTION__, '1.0.0', 'unsubscribe( $email_address )' );
 
 		// Pass request to new function.
 		return $this->unsubscribe( $args['email'] );
@@ -1098,7 +1098,7 @@ class ConvertKit_API {
 	/**
 	 * Adds the given entry to the log file, if debugging is enabled.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $entry  Log Entry.
 	 */
@@ -1199,7 +1199,7 @@ class ConvertKit_API {
 	/**
 	 * Determines if the given string is JSON.
 	 *
-	 * @since   1.9.6.4
+	 * @since   1.0.0
 	 *
 	 * @param   string $string     Possible JSON String.
 	 * @return  bool                Is JSON String.
@@ -1215,7 +1215,7 @@ class ConvertKit_API {
 	 * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
 	 * DOM Elements.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   DOMNodeList<DOMElement> $elements   Elements.
 	 * @param   string                  $attribute  HTML Attribute.
@@ -1250,7 +1250,7 @@ class ConvertKit_API {
 	/**
 	 * Strips <html>, <head> and <body> opening and closing tags from the given markup.
 	 *
-	 * @since   1.9.6.5
+	 * @since   1.0.0
 	 *
 	 * @param   string $markup     HTML Markup.
 	 * @return  string              HTML Markup
@@ -1271,7 +1271,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all forms and landing pages from the API.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  WP_Error|array
 	 */
@@ -1320,7 +1320,7 @@ class ConvertKit_API {
 	/**
 	 * Performs a GET request.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
@@ -1335,7 +1335,7 @@ class ConvertKit_API {
 	/**
 	 * Performs a POST request.
 	 *
-	 * @since  1.9.6
+	 * @since  1.0.0
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
@@ -1365,7 +1365,7 @@ class ConvertKit_API {
 	/**
 	 * Main function which handles sending requests to the API using WordPress functions.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $endpoint                API Endpoint (required).
 	 * @param   string $method                  HTTP Method (optional).
@@ -1478,7 +1478,7 @@ class ConvertKit_API {
 	 * Returns the maximum amount of time to wait for
 	 * a response to the request before exiting.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  int     Timeout, in seconds.
 	 */
@@ -1502,7 +1502,7 @@ class ConvertKit_API {
 	/**
 	 * Gets a customized version of the WordPress default user agent; includes WP Version, PHP version, and ConvertKit plugin version.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return string User Agent
 	 */
@@ -1527,7 +1527,7 @@ class ConvertKit_API {
 	/**
 	 * Returns the full API URL for the given endpoint.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $endpoint   Endpoint.
 	 * @return  string              API URL
@@ -1547,7 +1547,7 @@ class ConvertKit_API {
 	/**
 	 * Adds the supplied array of parameters as query arguments to the URL.
 	 *
-	 * @since   1.9.6.9
+	 * @since   1.0.0
 	 *
 	 * @param   string $url        URL.
 	 * @param   array  $params     Parameters for request.

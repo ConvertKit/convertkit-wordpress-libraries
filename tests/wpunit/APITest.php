@@ -2,7 +2,7 @@
 /**
  * Tests for the ConvertKit_API class.
  * 
- * @since 	1.9.7.4
+ * @since 	1.0.0
  */
 class APITest extends \Codeception\TestCase\WPTestCase
 {
@@ -14,7 +14,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Holds the ConvertKit API class.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 * 
 	 * @var 	ConvertKit_API
 	 */
@@ -23,7 +23,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Holds the expected WP_Error code.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 * 
 	 * @var 	string
 	 */
@@ -32,7 +32,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Performs actions before each test.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function setUp(): void
 	{
@@ -49,7 +49,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Performs actions after each test.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function tearDown(): void
 	{
@@ -63,7 +63,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that a 429 internal server error gracefully returns a WP_Error.
 	 * 
-	 * @since 	1.9.8.2
+	 * @since 	1.0.0
 	 */
 	public function test429RateLimitHit()
 	{
@@ -78,7 +78,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that a 500 internal server error gracefully returns a WP_Error.
 	 * 
-	 * @since 	1.9.8.2
+	 * @since 	1.0.0
 	 */
 	public function test500InternalServerError()
 	{
@@ -93,7 +93,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that a 502 bad gateway gracefully returns a WP_Error.
 	 * 
-	 * @since 	1.9.8.2
+	 * @since 	1.0.0
 	 */
 	public function test502BadGateway()
 	{
@@ -108,7 +108,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testNoAPICredentials()
 	{
@@ -121,7 +121,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that supplying valid API credentials to the API class returns the expected account information.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testAccount()
 	{
@@ -137,7 +137,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_subscription_forms()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriptionForms()
 	{
@@ -152,7 +152,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscription_forms()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriptionFormsNoData()
 	{
@@ -165,7 +165,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_forms()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetForms()
 	{
@@ -182,7 +182,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_forms()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetFormsNoData()
 	{
@@ -196,7 +196,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribe()
 	{
@@ -213,7 +213,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when an empty $form_id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribeWithEmptyFormID()
 	{
@@ -227,7 +227,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when an invalid $form_id parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribeWithInvalidFormID()
 	{
@@ -241,7 +241,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribeWithEmptyEmail()
 	{
@@ -255,7 +255,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when the $email parameter only consists of spaces.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribeWithSpacesInEmail()
 	{
@@ -269,7 +269,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when an invalid email parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testFormSubscribeWithInvalidEmail()
 	{
@@ -282,7 +282,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_landing_pages()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetLandingPages()
 	{
@@ -300,7 +300,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_landing_pages()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetLandingPagesNoData()
 	{
@@ -313,7 +313,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_sequences()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSequences()
 	{
@@ -328,7 +328,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_sequences()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetSequencesNoData()
 	{
@@ -342,7 +342,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribe()
 	{
@@ -359,7 +359,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns a WP_Error
 	 * when an invalid $sequence_id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribeWithInvalidSequenceID()
 	{
@@ -373,7 +373,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns a WP_Error
 	 * when an empty $sequence_id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribeWithEmptySequenceID()
 	{
@@ -387,7 +387,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribeWithEmptyEmail()
 	{
@@ -401,7 +401,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns a WP_Error
 	 * when the $email parameter only consists of spaces.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribeWithSpacesInEmail()
 	{
@@ -415,7 +415,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `sequence_subscribe()` function returns a WP_Error
 	 * when an invalid $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testSequenceSubscribeWithInvalidEmail()
 	{
@@ -428,7 +428,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_tags()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetTags()
 	{
@@ -443,7 +443,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_tags()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetTagsNoData()
 	{
@@ -457,7 +457,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribe()
 	{
@@ -474,7 +474,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns a WP_Error
 	 * when an invalid $tag_id parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribeWithInvalidTagID()
 	{
@@ -488,7 +488,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns a WP_Error
 	 * when an empty $tag_id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribeWithEmptyTagID()
 	{
@@ -502,7 +502,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribeWithEmptyEmail()
 	{
@@ -516,7 +516,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns a WP_Error
 	 * when the $email parameter only consists of spaces.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribeWithSpacesInEmail()
 	{
@@ -530,7 +530,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `tag_subscribe()` function returns a WP_Error
 	 * when an invalid $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testTagSubscribeWithInvalidEmail()
 	{
@@ -544,7 +544,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_email()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByEmail()
 	{
@@ -559,7 +559,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_email()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByEmailWithEmptyEmail()
 	{
@@ -573,7 +573,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_email()` function returns a WP_Error
 	 * when an invalid $email parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByEmailWithInvalidEmail()
 	{
@@ -587,7 +587,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_id()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByID()
 	{
@@ -602,7 +602,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
 	 * when an empty ID parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByIDWithEmptyID()
 	{
@@ -616,7 +616,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
 	 * when an invalid ID parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberByIDWithInvalidID()
 	{
@@ -630,7 +630,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_tags()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberTags()
 	{
@@ -658,7 +658,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
 	 * when an empty $id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberTagsWithEmptyID()
 	{
@@ -672,7 +672,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
 	 * when an invalid $id parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberTagsWithInvalidID()
 	{
@@ -686,7 +686,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_id()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberID()
 	{
@@ -699,7 +699,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_id()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberIDWithEmptyEmail()
 	{
@@ -715,7 +715,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_subscriber_id()` function returns a WP_Error
 	 * when an invalid $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetSubscriberIDWithInvalidEmail()
 	{
@@ -729,7 +729,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `unsubscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testUnsubscribe()
 	{
@@ -753,7 +753,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `unsubscribe()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testUnsubscribeWithEmptyEmail()
 	{
@@ -767,7 +767,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `unsubscribe()` function returns a WP_Error
 	 * when an invalid $email parameter is provided.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testUnsubscribeWithInvalidEmail()
 	{
@@ -780,7 +780,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_custom_fields()` function returns expected data.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testGetCustomFields()
 	{
@@ -795,7 +795,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_custom_fields()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetCustomFieldsNoData()
 	{
@@ -808,7 +808,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_posts()` function returns expected data.
 	 * 
-	 * @since 	1.9.7.4
+	 * @since 	1.0.0
 	 */
 	public function testGetPosts()
 	{
@@ -836,7 +836,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_posts()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetPostsNoData()
 	{
@@ -850,7 +850,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_posts()` function returns expected data
 	 * when valid parameters are included.
 	 * 
-	 * @since 	1.9.7.4
+	 * @since 	1.0.0
 	 */
 	public function testGetPostsWithValidParameters()
 	{
@@ -881,7 +881,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_posts()` function returns an error
 	 * when the page parameter is less than 1.
 	 * 
-	 * @since 	1.9.7.4
+	 * @since 	1.0.0
 	 */
 	public function testGetPostsWithInvalidPageParameter()
 	{
@@ -895,7 +895,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_posts()` function returns an error
 	 * when the per_page parameter is less than 1.
 	 * 
-	 * @since 	1.9.7.4
+	 * @since 	1.0.0
 	 */
 	public function testGetPostsWithNegativePerPageParameter()
 	{
@@ -909,7 +909,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_posts()` function returns an error
 	 * when the per_page parameter is greater than 50.
 	 * 
-	 * @since 	1.9.7.4
+	 * @since 	1.0.0
 	 */
 	public function testGetPostsWithOutOfBoundsPerPageParameter()
 	{
@@ -922,7 +922,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_all_posts()` function returns expected data.
 	 * 
-	 * @since 	1.9.7.6
+	 * @since 	1.0.0
 	 */
 	public function testGetAllPosts()
 	{
@@ -940,7 +940,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_all_posts()` function returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 * 
-	 * @since 	1.9.7.8
+	 * @since 	1.0.0
 	 */
 	public function testGetAllPostsNoData()
 	{
@@ -954,7 +954,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_all_posts()` function returns expected data
 	 * when valid parameters are included.
 	 * 
-	 * @since 	1.9.7.6
+	 * @since 	1.0.0
 	 */
 	public function testGetAllPostsWithValidParameters()
 	{
@@ -973,7 +973,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `get_all_posts()` function returns an error
 	 * when the page parameter is less than 1.
 	 * 
-	 * @since 	1.9.7.6
+	 * @since 	1.0.0
 	 */
 	public function testGetAllPostsWithInvalidPostsPerRequestParameter()
 	{
@@ -994,7 +994,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `purchase_create()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testPurchaseCreate()
 	{
@@ -1032,7 +1032,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `get_subscriber()` function is backward compatible.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatGetSubscriber()
 	{
@@ -1043,7 +1043,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `add_tag()` function is backward compatible.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatAddTag()
 	{
@@ -1059,7 +1059,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `add_tag()` function is backward compatible and returns a WP_Error
 	 * when an empty $tag_id parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatAddTagWithEmptyTagID()
 	{
@@ -1075,7 +1075,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `add_tag()` function is backward compatible and returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatAddTagWithEmptyEmail()
 	{
@@ -1090,7 +1090,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `unsubscribe()` function is backward compatible.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatFormUnsubscribe()
 	{
@@ -1116,7 +1116,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `unsubscribe()` function is backward compatible and returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 * 
-	 * @since 	1.9.6.9
+	 * @since 	1.0.0
 	 */
 	public function testBackwardCompatFormUnsubscribeWithEmptyEmail()
 	{
@@ -1135,7 +1135,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * This emulates server responses that the API class has to handle from ConvertKit's API,
 	 * which we cannot easily recreate e.g. 500 or 502 errors.
 	 * 
-	 * @since 	1.9.8.2
+	 * @since 	1.0.0
 	 * 
 	 * @param 	int 	$httpCode 		HTTP Code.
 	 * @param 	string 	$httpMessage 	HTTP Message.
