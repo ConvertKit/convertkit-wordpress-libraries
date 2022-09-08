@@ -375,7 +375,7 @@ class ConvertKit_API {
 		}
 
 		foreach ( $response['courses'] as $sequence ) {
-			$sequences[] = $sequence;
+			$sequences[ $sequence['id'] ] = $sequence;
 		}
 
 		return $sequences;
@@ -485,7 +485,7 @@ class ConvertKit_API {
 		}
 
 		foreach ( $response['tags'] as $tag ) {
-			$tags[] = $tag;
+			$tags[ $tag['id'] ] = $tag;
 		}
 
 		return $tags;
@@ -797,7 +797,7 @@ class ConvertKit_API {
 		}
 
 		foreach ( $response['custom_fields'] as $custom_field ) {
-			$custom_fields[] = $custom_field;
+			$custom_fields[ $custom_field['id'] ] = $custom_field;
 		}
 
 		return $custom_fields;
@@ -853,7 +853,7 @@ class ConvertKit_API {
 
 			// Append posts to array.
 			foreach ( $response['posts'] as $post ) {
-				$posts[] = $post;
+				$posts[ $post['id'] ] = $post;
 			}
 		}
 
@@ -971,7 +971,7 @@ class ConvertKit_API {
 		}
 
 		foreach ( $response['products'] as $product ) {
-			$products[] = $product;
+			$products[ $product['id'] ] = $product;
 		}
 
 		return $products;
