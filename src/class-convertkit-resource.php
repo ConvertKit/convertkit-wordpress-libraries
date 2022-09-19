@@ -269,6 +269,10 @@ class ConvertKit_Resource {
 				$results = $this->api->get_all_posts();
 				break;
 
+			case 'products':
+				$results = $this->api->get_products();
+				break;
+
 			default:
 				$results = new WP_Error(
 					'convertkit_resource_refresh_error',

@@ -991,6 +991,36 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `get_products()` function returns expected data.
+	 * 
+	 * @since 	1.1.0
+	 */
+	public function testGetProducts()
+	{
+		$result = $this->api->get_products();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', reset($result));
+		$this->assertArrayHasKey('name', reset($result));
+		$this->assertArrayHasKey('url', reset($result));
+		$this->assertArrayHasKey('published', reset($result));
+	}
+
+	/**
+	 * Test that the `get_products()` function returns a blank array when no data
+	 * exists on the ConvertKit account.
+	 * 
+	 * @since 	1.1.0
+	 */
+	public function testGetProductsNoData()
+	{
+		$result = $this->api_no_data->get_forms();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertCount(0, $result);
+	}
+
+	/**
 	 * Test that the `purchase_create()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
