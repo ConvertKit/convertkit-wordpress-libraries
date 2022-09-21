@@ -30,8 +30,8 @@ class ConvertKit_API {
 
 	/**
 	 * Optional context of the request.
-	 * 
-	 * @var 	bool|string
+	 *
+	 * @var     bool|string
 	 */
 	protected $context = false;
 
@@ -107,7 +107,7 @@ class ConvertKit_API {
 	 * @param   bool|string $api_key        ConvertKit API Key.
 	 * @param   bool|string $api_secret     ConvertKit API Secret.
 	 * @param   bool|object $debug          Save data to log.
-	 * @param 	bool|string $context 		Context of originating request.
+	 * @param   bool|string $context        Context of originating request.
 	 */
 	public function __construct( $api_key = false, $api_secret = false, $debug = false, $context = false ) {
 
@@ -115,7 +115,7 @@ class ConvertKit_API {
 		$this->api_key        = $api_key;
 		$this->api_secret     = $api_secret;
 		$this->debug          = $debug;
-		$this->context 		  = $context;
+		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
 		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_PATH' ) ? CONVERTKIT_PLUGIN_PATH : false );
 		$this->plugin_url     = ( defined( 'CONVERTKIT_PLUGIN_URL' ) ? CONVERTKIT_PLUGIN_URL : false );
@@ -1580,7 +1580,7 @@ class ConvertKit_API {
 				$this->plugin_version,
 				home_url( '/' ),
 				$this->context
-			);	
+			);
 		}
 
 		return sprintf(
