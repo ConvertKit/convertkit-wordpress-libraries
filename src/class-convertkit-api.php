@@ -1573,7 +1573,7 @@ class ConvertKit_API {
 		// If a context is specified, include it now.
 		if ( $this->context !== false ) {
 			return sprintf(
-				'WordPress/%1$s;PHP/%2$s;%3$s/%4$s;%5$s/%6$s',
+				'WordPress/%1$s;PHP/%2$s;%3$s/%4$s;%5$s;context/%6$s',
 				$wp_version,
 				phpversion(),
 				$this->plugin_name,
