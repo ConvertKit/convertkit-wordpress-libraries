@@ -106,6 +106,43 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the User Agent string is in the expected format when
+	 * a context is provided.
+	 * 
+	 * @since 	1.2.0
+	 */
+	public function testUserAgentWithContext()
+	{
+		// When an API call is made, inspect the user-agent argument.
+		add_filter('http_request_args', function($args, $url) {
+			$this->assertStringContainsString(';context/TestContext', $args['user-agent']);
+			return $args;
+		}, 10, 2);
+
+		// Perform a request.
+		$api = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], false, 'TestContext' );
+		$result = $api->account();
+	}
+
+	/**
+	 * Test that the User Agent string is in the expected format when
+	 * no context is provided.
+	 * 
+	 * @since 	1.2.0
+	 */
+	public function testUserAgentWithoutContext()
+	{
+		// When an API call is made, inspect the user-agent argument.
+		add_filter('http_request_args', function($args, $url) {
+			$this->assertStringNotContainsString(';context/TestContext', $args['user-agent']);
+			return $args;
+		}, 10, 2);
+
+		// Perform a request.
+		$result = $this->api->account();
+	}
+
+	/**
 	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
 	 * 
 	 * @since 	1.0.0

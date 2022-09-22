@@ -29,6 +29,13 @@ class ConvertKit_API {
 	protected $api_secret = false;
 
 	/**
+	 * Optional context of the request.
+	 *
+	 * @var     bool|string
+	 */
+	protected $context = false;
+
+	/**
 	 * Save debug data to log
 	 *
 	 * @var  bool
@@ -100,13 +107,15 @@ class ConvertKit_API {
 	 * @param   bool|string $api_key        ConvertKit API Key.
 	 * @param   bool|string $api_secret     ConvertKit API Secret.
 	 * @param   bool|object $debug          Save data to log.
+	 * @param   bool|string $context        Context of originating request.
 	 */
-	public function __construct( $api_key = false, $api_secret = false, $debug = false ) {
+	public function __construct( $api_key = false, $api_secret = false, $debug = false, $context = false ) {
 
 		// Set API credentials, debugging and logging class.
 		$this->api_key        = $api_key;
 		$this->api_secret     = $api_secret;
 		$this->debug          = $debug;
+		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
 		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_PATH' ) ? CONVERTKIT_PLUGIN_PATH : false );
 		$this->plugin_url     = ( defined( 'CONVERTKIT_PLUGIN_URL' ) ? CONVERTKIT_PLUGIN_URL : false );
@@ -1560,6 +1569,19 @@ class ConvertKit_API {
 
 		// Include an unmodified $wp_version.
 		require ABSPATH . WPINC . '/version.php';
+
+		// If a context is specified, include it now.
+		if ( $this->context !== false ) {
+			return sprintf(
+				'WordPress/%1$s;PHP/%2$s;%3$s/%4$s;%5$s;context/%6$s',
+				$wp_version,
+				phpversion(),
+				$this->plugin_name,
+				$this->plugin_version,
+				home_url( '/' ),
+				$this->context
+			);
+		}
 
 		return sprintf(
 			'WordPress/%1$s;PHP/%2$s;%3$s/%4$s;%5$s',
