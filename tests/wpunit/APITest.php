@@ -1058,6 +1058,89 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when a valid email subscriber is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithSubscribedEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an email address is specified that is not a subscriber in ConvertKit.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'email-not-subscribed@convertkit.com',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Invalid: Email address is invalid');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when no email address is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithNoEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_send_code(): the email parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an invalid email address is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithInvalidEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'not-an-email-address',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Invalid: Email address is invalid');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an invalid redirect URL is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithInvalidRedirectURL()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			'not-a-valid-url'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_send_code(): the redirect_url parameter is not a valid URL.');
+	}
+
+	/**
 	 * Test that the `purchase_create()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
