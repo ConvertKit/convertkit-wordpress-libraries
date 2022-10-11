@@ -1141,6 +1141,57 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when no token is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithNoToken()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'',
+			'subscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the token parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when no subscriber code is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithNoSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'token',
+			''
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the subscriber_code parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when an invalid token and subscriber code is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithInvalidTokenAndSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'invalidToken',
+			'invalidSubscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Unauthorized: Unauthorized');
+	}
+
+	/**
 	 * Test that the `purchase_create()` function returns expected data
 	 * when valid parameters are provided.
 	 * 
