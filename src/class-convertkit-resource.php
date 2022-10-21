@@ -306,6 +306,15 @@ class ConvertKit_Resource {
 		$this->resources    = $results;
 		$this->last_queried = $last_queried;
 
+		/**
+		 * Perform any actions immediately after the resource has been refreshed.
+		 *
+		 * @since   1.2.1
+		 *
+		 * @param   array   $results    Resources
+		 */
+		do_action( 'convertkit_resource_refreshed_' . $this->type, $results );
+
 		// Return resources.
 		return $results;
 
