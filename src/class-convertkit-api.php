@@ -1018,13 +1018,18 @@ class ConvertKit_API {
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
-	 * @param   string $url    URL of Landing Page.
-	 * @return  string          HTML
+	 * @param   string $url     URL of Landing Page.
+	 * @return  WP_Error|string HTML
 	 */
 	public function get_landing_page_html( $url ) {
 
 		// Get HTML.
 		$body = $this->get_html( $url, false );
+
+		// Return WP_Error if an error occured.
+		if ( is_wp_error( $body ) ) {
+			return $body;
+		}
 
 		// Inject JS for subscriber forms to work.
 		// wp_enqueue_script() isn't called when we load a Landing Page, so we can't use it.
