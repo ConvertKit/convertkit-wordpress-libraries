@@ -1013,7 +1013,7 @@ class ConvertKit_API {
 
 		// Log if an error occured.
 		if ( is_wp_error( $body ) ) {
-			$this->log( 'API: get_form_html(): Error: ' . $response->get_error_message() );
+			$this->log( 'API: get_form_html(): Error: ' . $body->get_error_message() );
 		}
 
 		return $body;
@@ -1037,7 +1037,7 @@ class ConvertKit_API {
 
 		// Log and return WP_Error if an error occured.
 		if ( is_wp_error( $body ) ) {
-			$this->log( 'API: get_landing_page_html(): Error: ' . $response->get_error_message() );
+			$this->log( 'API: get_landing_page_html(): Error: ' . $body->get_error_message() );
 			return $body;
 		}
 
