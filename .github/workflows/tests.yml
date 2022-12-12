@@ -123,6 +123,11 @@ jobs:
         working-directory: ${{ env.PLUGIN_DIR }}
         run: composer dump-autoload
 
+      # Run Coding Standards on Tests.
+      - name: Run Coding Standards on Tests
+        working-directory: ${{ env.PLUGIN_DIR }}
+        run: php vendor/bin/phpcs ./tests --standard=phpcs.tests.xml -v -s
+
       # Run WordPress Coding Standards tests.
       - name: Run WordPress Coding Standards Tests
         working-directory: ${{ env.PLUGIN_DIR }}
