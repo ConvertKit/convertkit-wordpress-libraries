@@ -1097,6 +1097,69 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `get_form_html()` function returns expected data
+	 * when a valid legacy form ID is specified.
+	 * 
+	 * @since 	1.2.2
+	 */
+	public function testGetFormHTML()
+	{
+		$result = $this->api->get_form_html($_ENV['CONVERTKIT_API_LEGACY_FORM_ID']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://api.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '/subscribe" data-remote="true">', $result);
+	}
+
+	/**
+	 * Test that the `get_form_html()` function returns a WP_Error
+	 * when an invalid legacy form ID is specified.
+	 * 
+	 * @since 	1.2.2
+	 */
+	public function testGetFormHTMLWithInvalidFormID()
+	{
+		$result = $this->api->get_form_html('11111');
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that the `get_landing_page_html()` function returns expected data
+	 * when a valid landing page URL is specified.
+	 * 
+	 * @since 	1.2.2
+	 */
+	public function testGetLandingPageHTML()
+	{
+		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
+	}
+
+	/**
+	 * Test that the `get_landing_page_html()` function returns expected data
+	 * when a valid legacy landing page URL is specified.
+	 * 
+	 * @since 	1.2.2
+	 */
+	public function testGetLegacyLandingPageHTML()
+	{
+		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);		
+	}
+
+	/**
+	 * Test that the `get_landing_page_html()` function returns a WP_Error
+	 * when an invalid landing page URL is specified.
+	 * 
+	 * @since 	1.2.2
+	 */
+	public function testGetLandingPageHTMLWithInvalidLandingPageURL()
+	{
+		$result = $this->api->get_landing_page_html('http://fake-url');
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
 	 * Test that the `get_subscriber()` function is backward compatible.
 	 * 
 	 * @since 	1.0.0
