@@ -997,6 +997,8 @@ class ConvertKit_API {
 	 */
 	public function get_form_html( $id ) {
 
+		$this->log( 'API: get_form_html(): [ id: ' . $id . ']' );
+
 		// Define Legacy Form URL.
 		$url = add_query_arg(
 			array(
@@ -1009,6 +1011,11 @@ class ConvertKit_API {
 		// Get HTML.
 		$body = $this->get_html( $url );
 
+		// Log if an error occured.
+		if ( is_wp_error( $body ) ) {
+			$this->log( 'API: get_form_html(): Error: ' . $body->get_error_message() );
+		}
+
 		return $body;
 
 	}
@@ -1018,13 +1025,21 @@ class ConvertKit_API {
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
-	 * @param   string $url    URL of Landing Page.
-	 * @return  string          HTML
+	 * @param   string $url     URL of Landing Page.
+	 * @return  WP_Error|string HTML
 	 */
 	public function get_landing_page_html( $url ) {
 
+		$this->log( 'API: get_landing_page_html(): [ url: ' . $url . ']' );
+
 		// Get HTML.
 		$body = $this->get_html( $url, false );
+
+		// Log and return WP_Error if an error occured.
+		if ( is_wp_error( $body ) ) {
+			$this->log( 'API: get_landing_page_html(): Error: ' . $body->get_error_message() );
+			return $body;
+		}
 
 		// Inject JS for subscriber forms to work.
 		// wp_enqueue_script() isn't called when we load a Landing Page, so we can't use it.
