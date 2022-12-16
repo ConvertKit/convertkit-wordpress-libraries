@@ -188,8 +188,9 @@ class ConvertKit_API {
 			'subscriber_authentication_send_code_response_token_missing'=> __( 'subscriber_authentication_send_code(): the token parameter is missing from the API response.', 'convertkit' ),
 			
 			// subscriber_authentication_verify().
-			'subscriber_authentication_verify_token_empty'				=> __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
-			'subscriber_authentication_verify_subscriber_code_empty'	=> __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_verify_token_empty'					  => __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_verify_subscriber_code_empty'		  => __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_verify_response_subscriber_id_missing' => __( 'subscriber_authentication_verify(): the subscriber_id parameter is missing from the API response.', 'convertkit' ),
 
 			// request().
 			/* translators: HTTP method */
@@ -644,11 +645,11 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Gets a subscriber by their ConvertKit subscriber ID.
+	 * Gets a subscriber by their ConvertKit subscriber ID or signed ID.
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param   int $subscriber_id  Subscriber ID.
+	 * @param   int|string $subscriber_id  Subscriber ID (integer or Signed ID).
 	 * @return  WP_Error|array
 	 */
 	public function get_subscriber_by_id( $subscriber_id ) {
@@ -656,7 +657,7 @@ class ConvertKit_API {
 		$this->log( 'API: get_subscriber_by_id(): [ subscriber_id: ' . $subscriber_id . ']' );
 
 		// Sanitize some parameters.
-		$subscriber_id = absint( $subscriber_id );
+		$subscriber_id = sanitize_text_field( $subscriber_id );
 
 		// Return error if no Subscriber ID is specified.
 		if ( empty( $subscriber_id ) ) {
@@ -1023,7 +1024,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $email          Email Address.
 	 * @param   string $redirect_url   Redirect URL.
-	 * @return  WP_Error|bool
+	 * @return  WP_Error|string
 	 */
 	public function subscriber_authentication_send_code( $email, $redirect_url ) {
 
@@ -1082,7 +1083,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $token              Token.
 	 * @param   string $subscriber_code    Subscriber Code.
-	 * @return  WP_Error|bool
+	 * @return  WP_Error|string
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
@@ -1123,8 +1124,15 @@ class ConvertKit_API {
 			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_subscriber_unauthorized' ) );
 		}
 
-		// @TODO Inspect response to determine if the email address is a valid subscriber.
-		return true;
+		// Confirm that a subscriber ID was supplied in the response.
+		if ( ! isset( $response['subscriber_id'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
+		}
+
+		// Return susbcriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
+		// This can be used when calling get_subscriber_by_id().
+		return $response['subscriber_id'];
 
 	}
 
