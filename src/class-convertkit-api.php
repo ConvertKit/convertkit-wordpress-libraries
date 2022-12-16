@@ -185,7 +185,8 @@ class ConvertKit_API {
 			'subscriber_authentication_send_code_email_empty'			=> __( 'subscriber_authentication_send_code(): the email parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_send_code_redirect_url_empty'	=> __( 'subscriber_authentication_send_code(): the redirect_url parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_send_code_redirect_url_invalid' 	=> __( 'subscriber_authentication_send_code(): the redirect_url parameter is not a valid URL.', 'convertkit' ),
-
+			'subscriber_authentication_send_code_response_token_missing'=> __( 'subscriber_authentication_send_code(): the token parameter is missing from the API response.', 'convertkit' ),
+			
 			// subscriber_authentication_verify().
 			'subscriber_authentication_verify_token_empty'				=> __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_verify_subscriber_code_empty'	=> __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
@@ -1062,8 +1063,14 @@ class ConvertKit_API {
 			return $response;
 		}
 
-		// @TODO Inspect response to determine if the email address is a valid subscriber.
-		return true;
+		// Confirm that a token was supplied in the response.
+		if ( ! isset( $response['token'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+		}
+
+		// Return token, which is used with the subscriber code (sent by email) when subsequently calling subscriber_authentication_verify().
+		return $response['token'];
 
 	}
 
