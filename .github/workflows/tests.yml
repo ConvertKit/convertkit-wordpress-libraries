@@ -38,8 +38,8 @@ jobs:
     # Defines the WordPress and PHP Versions matrix to run tests on.
     strategy:
       matrix:
-        wp-versions: [ '6.0.1' ] #[ '5.6.7', '5.7.5', '5.8.3', '5.9' ]
-        php-versions: [ '7.2', '7.3', '7.4', '8.0' ] #[ '7.3', '7.4', '8.0', '8.1' ]
+        wp-versions: [ 'latest' ] #[ 'latest', '6.1.1' ]
+        php-versions: [ '7.4', '8.0', '8.1', '8.2' ] #[ '7.4', '8.0', '8.1', '8.2' ]
 
     # Steps to install, configure and run tests
     steps:
@@ -122,6 +122,11 @@ jobs:
       - name: Build PHP Autoloader
         working-directory: ${{ env.PLUGIN_DIR }}
         run: composer dump-autoload
+
+      # Run Coding Standards on Tests.
+      - name: Run Coding Standards on Tests
+        working-directory: ${{ env.PLUGIN_DIR }}
+        run: php vendor/bin/phpcs ./tests --standard=phpcs.tests.xml -v -s
 
       # Run WordPress Coding Standards tests.
       - name: Run WordPress Coding Standards Tests
