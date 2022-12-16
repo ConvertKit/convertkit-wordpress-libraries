@@ -93,7 +93,7 @@ class ConvertKit_API {
 	 * @var     array
 	 */
 	protected $api_endpoints_wordpress = array(
-		// 'posts', // @TODO Enable once https://github.com/ConvertKit/convertkit/pull/21772 is merged.
+		'posts',
 		'products',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
@@ -1759,12 +1759,6 @@ class ConvertKit_API {
 	 * @return  string              API URL
 	 */
 	private function get_api_url( $endpoint ) {
-
-		// For the /posts endpoint, the API base is https://api.convertkit.com/api/v3/$endpoint.
-		// @TODO Remove once https://github.com/ConvertKit/convertkit/pull/21772 is merged.
-		if ( $endpoint === 'posts' ) {
-			return path_join( $this->api_url_base . 'api/' . $this->api_version, $endpoint );
-		}
 
 		// For some specific API endpoints created primarily for the WordPress Plugin, the API base is
 		// https://api.convertkit.com/wordpress/$endpoint.
