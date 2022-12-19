@@ -1154,6 +1154,7 @@ class ConvertKit_API {
 		$response = $this->get(
 			'profile/' . $signed_subscriber_id,
 			array(
+				'api_key'    => $this->api_key,
 				'api_secret' => $this->api_secret,
 			)
 		);
@@ -1799,9 +1800,12 @@ class ConvertKit_API {
 	 */
 	private function get_api_url( $endpoint ) {
 
+		// Extract the endpoint, as it might include e.g. a subscriber ID (profile/{string}).
+		$endpoint_parts = explode( '/', $endpoint );
+
 		// For some specific API endpoints created primarily for the WordPress Plugin, the API base is
 		// https://api.convertkit.com/wordpress/$endpoint.
-		if ( in_array( $endpoint, $this->api_endpoints_wordpress, true ) ) {
+		if ( in_array( $endpoint_parts[0], $this->api_endpoints_wordpress, true ) ) {
 			return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
 		}
 
