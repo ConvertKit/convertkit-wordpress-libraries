@@ -95,6 +95,7 @@ class ConvertKit_API {
 	protected $api_endpoints_wordpress = array(
 		'posts',
 		'products',
+		'profile',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
 	);
@@ -645,11 +646,11 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Gets a subscriber by their ConvertKit subscriber ID or signed ID.
+	 * Gets a subscriber by their ConvertKit subscriber ID.
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param   int|string $subscriber_id  Subscriber ID (integer or Signed ID).
+	 * @param   int $subscriber_id  Subscriber ID.
 	 * @return  WP_Error|array
 	 */
 	public function get_subscriber_by_id( $subscriber_id ) {
@@ -657,7 +658,7 @@ class ConvertKit_API {
 		$this->log( 'API: get_subscriber_by_id(): [ subscriber_id: ' . $subscriber_id . ']' );
 
 		// Sanitize some parameters.
-		$subscriber_id = sanitize_text_field( $subscriber_id );
+		$subscriber_id = absint( $subscriber_id );
 
 		// Return error if no Subscriber ID is specified.
 		if ( empty( $subscriber_id ) ) {
@@ -1131,8 +1132,38 @@ class ConvertKit_API {
 		}
 
 		// Return susbcriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
-		// This can be used when calling get_subscriber_by_id().
+		// This can be used when calling profile().
 		return $response['subscriber_id'];
+
+	}
+
+	/**
+	 * Returns the subscriber's ID and products they are subscribed to for the given
+	 * signed subscriber ID.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $signed_subscriber_id   Signed Subscriber ID (i.e. from subscriber_authentication_verify()).
+	 * @return  WP_Error|array
+	 */
+	public function profile( $signed_subscriber_id ) {
+
+		$this->log( 'API: profile()' );
+
+		// Send request.
+		$response = $this->get(
+			'subscribers/' . $signed_subscriber_id,
+			array(
+				'api_secret' => $this->api_secret,
+			)
+		);
+
+		// If an error occured, log it.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: profile(): Error: ' . $response->get_error_message() );
+		}
+
+		return $response;
 
 	}
 
