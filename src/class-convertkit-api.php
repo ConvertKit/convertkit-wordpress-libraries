@@ -191,7 +191,7 @@ class ConvertKit_API {
 			// subscriber_authentication_verify().
 			'subscriber_authentication_verify_token_empty'					  => __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_verify_subscriber_code_empty'		  => __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
-			'subscriber_authentication_verify_response_subscriber_id_missing' => __( 'subscriber_authentication_verify(): the subscriber_id parameter is missing from the API response.', 'convertkit' ),
+			'subscriber_authentication_verify_response_error' 				  => __( 'subscriber_authentication_verify(): the code is invalid.', 'convertkit' ),
 
 			// profile().
 			'profiles_signed_subscriber_id_empty' 		  => __( 'profiles(): the signed_subscriber_id parameter is empty.', 'convertkit' ),
@@ -1119,13 +1119,13 @@ class ConvertKit_API {
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
 			$this->log( 'API: subscriber_authentication_verify(): Error: ' . $response->get_error_message() );
-			return $response;
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
 		}
 
 		// Confirm that a subscriber ID was supplied in the response.
 		if ( ! isset( $response['subscriber_id'] ) ) {
-			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
 		}
 
 		// Return subscriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.

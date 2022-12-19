@@ -1169,6 +1169,23 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 	/**
 	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when a valid token is specified, but the subscriber code is invalid.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithValidTokenAndInvalidSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_TOKEN'],
+			'subscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the code is invalid.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
 	 * response when no token is specified.
 	 * 
 	 * @since 	1.3.0
@@ -1215,7 +1232,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the subscriber_id parameter is missing from the API response.');
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the code is invalid.');
 	}
 
 	/**
