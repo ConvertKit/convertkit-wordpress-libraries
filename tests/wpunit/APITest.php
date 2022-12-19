@@ -1113,7 +1113,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Invalid: Email address is invalid');
+		$this->assertEquals($result->get_error_message(), 'invalid: Email address is invalid');
 	}
 
 	/**
@@ -1147,7 +1147,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Invalid: Email address is invalid');
+		$this->assertEquals($result->get_error_message(), 'invalid: Email address is invalid');
 	}
 
 	/**
@@ -1215,7 +1215,52 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Unauthorized: Unauthorized');
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the subscriber_id parameter is missing from the API response.');
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when a valid signed subscriber ID is specified,
+	 * and that the subscriber belongs to the expected product ID.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testProfilesWithValidSignedSubscriberID()
+	{
+		$result = $this->api->profile( $_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID'] );
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result);
+		$this->assertArrayHasKey('products', $result);
+		$this->assertEquals($_ENV['CONVERTKIT_API_PRODUCT_ID'], $result['products'][0]);
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when an invalid signed subscriber ID is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testProfilesWithInvalidSignedSubscriberID()
+	{
+		$result = $this->api->profile('fakeSignedID');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Subscriber not found');
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when no signed subscriber ID is specified.
+	 * 
+	 * @since 	1.3.0
+	 */
+	public function testProfilesWithNoSignedSubscriberID()
+	{
+		$result = $this->api->profile('');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'profiles(): the signed_subscriber_id parameter is empty.');
 	}
 
 	/**

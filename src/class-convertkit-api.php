@@ -193,6 +193,9 @@ class ConvertKit_API {
 			'subscriber_authentication_verify_subscriber_code_empty'		  => __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_verify_response_subscriber_id_missing' => __( 'subscriber_authentication_verify(): the subscriber_id parameter is missing from the API response.', 'convertkit' ),
 
+			// profile().
+			'profiles_signed_subscriber_id_empty' 		  => __( 'profiles(): the signed_subscriber_id parameter is empty.', 'convertkit' ),
+
 			// request().
 			/* translators: HTTP method */
 			'request_method_unsupported'                  => __( 'API request method %s is not supported in ConvertKit_API class.', 'convertkit' ),
@@ -1119,19 +1122,13 @@ class ConvertKit_API {
 			return $response;
 		}
 
-		// If the response contains an error key, the subscriber's authorization failed.
-		if ( isset( $response['error'] ) ) {
-			$this->log( 'API: subscriber_authentication_verify(): Error: The email address is not a valid subscriber.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_subscriber_unauthorized' ) );
-		}
-
 		// Confirm that a subscriber ID was supplied in the response.
 		if ( ! isset( $response['subscriber_id'] ) ) {
 			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
 			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_subscriber_id_missing' ) );
 		}
 
-		// Return susbcriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
+		// Return subscriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
 		// This can be used when calling profile().
 		return $response['subscriber_id'];
 
@@ -1148,7 +1145,15 @@ class ConvertKit_API {
 	 */
 	public function profile( $signed_subscriber_id ) {
 
-		$this->log( 'API: profile()' );
+		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $signed_subscriber_id . ' ]' );
+
+		// Sanitize some parameters.
+		$signed_subscriber_id = trim( $signed_subscriber_id );
+
+		// Return error if no signed subscribed id is specified.
+		if ( empty( $signed_subscriber_id ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'profiles_signed_subscriber_id_empty' ) );
+		}
 
 		// Send request.
 		$response = $this->get(
@@ -1159,11 +1164,25 @@ class ConvertKit_API {
 			)
 		);
 
-		// If an error occured, log it.
+		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
 			$this->log( 'API: profile(): Error: ' . $response->get_error_message() );
+			return $response;
 		}
 
+		// If the response contains a message, an error occured.
+		// Log and return it now.
+		if ( array_key_exists( 'message', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_error',
+				$response['message']
+			);
+
+			$this->log( 'API: profile(): Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		// Return profile data (subscriber ID, subscribed products).
 		return $response;
 
 	}
@@ -1800,13 +1819,14 @@ class ConvertKit_API {
 	 */
 	private function get_api_url( $endpoint ) {
 
-		// Extract the endpoint, as it might include e.g. a subscriber ID (profile/{string}).
-		$endpoint_parts = explode( '/', $endpoint );
-
 		// For some specific API endpoints created primarily for the WordPress Plugin, the API base is
 		// https://api.convertkit.com/wordpress/$endpoint.
-		if ( in_array( $endpoint_parts[0], $this->api_endpoints_wordpress, true ) ) {
-			return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+		// We perform a string search instead of in_array(), because the $endpoint might be e.g.
+		// profile/{subscriber_id} or subscriber_authentication/send_code.
+		foreach ( $this->api_endpoints_wordpress as $wordpress_endpoint ) {
+			if ( strpos( $endpoint, $wordpress_endpoint ) !== false ) {
+				return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+			}
 		}
 
 		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
