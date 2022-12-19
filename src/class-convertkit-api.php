@@ -1152,7 +1152,7 @@ class ConvertKit_API {
 
 		// Send request.
 		$response = $this->get(
-			'subscribers/' . $signed_subscriber_id,
+			'profile/' . $signed_subscriber_id,
 			array(
 				'api_secret' => $this->api_secret,
 			)
