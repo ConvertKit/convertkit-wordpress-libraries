@@ -1739,7 +1739,7 @@ class ConvertKit_API {
 		// If an error message or code exists in the response, return a WP_Error.
 		if ( isset( $response['error'] ) ) {
 			$this->log( 'API: Error: ' . $response['error'] . ': ' . $response['message'] );
-			return new WP_Error( 'convertkit_api_error', $response['error'] . ': ' . $response['message'] );
+			return new WP_Error( 'convertkit_api_error', $response['message'] );
 		}
 
 		return $response;
