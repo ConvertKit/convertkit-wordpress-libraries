@@ -108,6 +108,22 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that a response containing invalid JSON, resulting in json_decode() returning null,
+	 * gracefully returns a WP_Error.
+	 *
+	 * @since   1.2.3
+	 */
+	public function testNullResponse()
+	{
+		// Force WordPress HTTP classes and functions to return an invalid JSON response.
+		$this->mockResponses( 200, '', 'invalid JSON string' );
+		$result = $this->api->get_posts(); // The API function we use doesn't matter.
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: A null response was encountered when JSON decoding invalid JSON string');
+	}
+
+	/**
 	 * Test that the User Agent string is in the expected format when
 	 * a context is provided.
 	 *
@@ -1309,17 +1325,18 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param   int    $httpCode       HTTP Code.
-	 * @param   string $httpMessage    HTTP Message.
+	 * @param   int         $httpCode       HTTP Code.
+	 * @param   string      $httpMessage    HTTP Message.
+	 * @param   null|string $body           Response body.
 	 */
-	private function mockResponses( $httpCode, $httpMessage )
+	private function mockResponses( $httpCode, $httpMessage, $body = null )
 	{
 		add_filter(
 			'pre_http_request',
-			function( $response ) use ( $httpCode, $httpMessage ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+			function( $response ) use ( $httpCode, $httpMessage, $body ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 				return array(
 					'headers'       => array(),
-					'body'          => null,
+					'body'          => $body,
 					'response'      => array(
 						'code'    => $httpCode,
 						'message' => $httpMessage,
