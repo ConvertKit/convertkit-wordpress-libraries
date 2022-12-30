@@ -191,7 +191,7 @@ class ConvertKit_API {
 			// subscriber_authentication_verify().
 			'subscriber_authentication_verify_token_empty'					  => __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
 			'subscriber_authentication_verify_subscriber_code_empty'		  => __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
-			'subscriber_authentication_verify_response_error' 				  => __( 'subscriber_authentication_verify(): the code is invalid.', 'convertkit' ),
+			'subscriber_authentication_verify_response_error' 				  => __( 'The entered code is invalid. Please try again, or click the link sent in the email.', 'convertkit' ),
 
 			// profile().
 			'profiles_signed_subscriber_id_empty' 		  => __( 'profiles(): the signed_subscriber_id parameter is empty.', 'convertkit' ),
