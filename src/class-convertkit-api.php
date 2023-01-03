@@ -172,8 +172,7 @@ class ConvertKit_API {
 			'request_rate_limit_exceeded'                 => __( 'ConvertKit API Error: Rate limit hit.', 'convertkit' ),
 			'request_internal_server_error'               => __( 'ConvertKit API Error: Internal server error.', 'convertkit' ),
 			'request_bad_gateway'                 		  => __( 'ConvertKit API Error: Bad gateway.', 'convertkit' ),
-			
-			'response_type_unexpected' 					  => __( 'The response from the API is not of the expected type array.', 'convertkit' ),
+			'response_type_unexpected' 					  => __( 'ConvertKit API Error: The response is not of the expected type array.', 'convertkit' ),
 		);
 		// phpcs:enable
 
@@ -1534,6 +1533,12 @@ class ConvertKit_API {
 			// Bad gateway.
 			case 502:
 				return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'request_bad_gateway' ) );
+		}
+
+		// If the response is null, json_decode() failed as the body could not be decoded.
+		if ( is_null( $response ) ) {
+			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
+			return new WP_Error( 'convertkit_api_error', sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 		}
 
 		// If an error message or code exists in the response, return a WP_Error.
