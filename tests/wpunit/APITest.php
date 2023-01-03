@@ -120,7 +120,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_posts(); // The API function we use doesn't matter.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: A null response was encountered when JSON decoding invalid JSON string');
+		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: The response is not of the expected type array.');
 	}
 
 	/**
