@@ -1197,7 +1197,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the code is invalid.');
+		$this->assertEquals($result->get_error_message(), 'The entered code is invalid. Please try again, or click the link sent in the email.');
 	}
 
 	/**
@@ -1248,7 +1248,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the code is invalid.');
+		$this->assertEquals($result->get_error_message(), 'The entered code is invalid. Please try again, or click the link sent in the email.');
 	}
 
 	/**
