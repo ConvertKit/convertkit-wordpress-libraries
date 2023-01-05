@@ -1103,8 +1103,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_send_code()` function returns the expected
 	 * response when a valid email subscriber is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationSendCodeWithSubscribedEmail()
 	{
@@ -1118,8 +1118,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_send_code()` function returns the expected
 	 * response when an email address is specified that is not a subscriber in ConvertKit.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
 	{
@@ -1135,8 +1135,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_send_code()` function returns the expected
 	 * response when no email address is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationSendCodeWithNoEmail()
 	{
@@ -1152,8 +1152,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_send_code()` function returns the expected
 	 * response when an invalid email address is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationSendCodeWithInvalidEmail()
 	{
@@ -1169,8 +1169,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_send_code()` function returns the expected
 	 * response when an invalid redirect URL is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationSendCodeWithInvalidRedirectURL()
 	{
@@ -1186,8 +1186,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_verify()` function returns the expected
 	 * response when a valid token is specified, but the subscriber code is invalid.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationVerifyWithValidTokenAndInvalidSubscriberCode()
 	{
@@ -1203,8 +1203,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_verify()` function returns the expected
 	 * response when no token is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationVerifyWithNoToken()
 	{
@@ -1220,8 +1220,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_verify()` function returns the expected
 	 * response when no subscriber code is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationVerifyWithNoSubscriberCode()
 	{
@@ -1237,8 +1237,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `subscriber_authentication_verify()` function returns the expected
 	 * response when an invalid token and subscriber code is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testSubscriberAuthenticationVerifyWithInvalidTokenAndSubscriberCode()
 	{
@@ -1255,8 +1255,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * Test that the `profile()` function returns the expected
 	 * response when a valid signed subscriber ID is specified,
 	 * and that the subscriber belongs to the expected product ID.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testProfilesWithValidSignedSubscriberID()
 	{
@@ -1271,8 +1271,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `profile()` function returns the expected
 	 * response when an invalid signed subscriber ID is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testProfilesWithInvalidSignedSubscriberID()
 	{
@@ -1285,8 +1285,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Test that the `profile()` function returns the expected
 	 * response when no signed subscriber ID is specified.
-	 * 
-	 * @since 	1.3.0
+	 *
+	 * @since   1.3.0
 	 */
 	public function testProfilesWithNoSignedSubscriberID()
 	{
