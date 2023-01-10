@@ -1146,7 +1146,7 @@ class ConvertKit_API {
 
 		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $signed_subscriber_id . ' ]' );
 
-		// Sanitize some parameters.
+		// Trim some parameters.
 		$signed_subscriber_id = trim( $signed_subscriber_id );
 
 		// Return error if no signed subscribed id is specified.
