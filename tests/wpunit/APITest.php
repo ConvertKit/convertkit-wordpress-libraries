@@ -1101,6 +1101,202 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when a valid email subscriber is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithSubscribedEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an email address is specified that is not a subscriber in ConvertKit.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'email-not-subscribed@convertkit.com',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'invalid: Email address is invalid');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when no email address is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithNoEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_send_code(): the email parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an invalid email address is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithInvalidEmail()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			'not-an-email-address',
+			$_ENV['TEST_SITE_WP_URL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'invalid: Email address is invalid');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_send_code()` function returns the expected
+	 * response when an invalid redirect URL is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationSendCodeWithInvalidRedirectURL()
+	{
+		$result = $this->api->subscriber_authentication_send_code(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			'not-a-valid-url'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_send_code(): the redirect_url parameter is not a valid URL.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when a valid token is specified, but the subscriber code is invalid.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithValidTokenAndInvalidSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_TOKEN'],
+			'subscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'The entered code is invalid. Please try again, or click the link sent in the email.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when no token is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithNoToken()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'',
+			'subscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the token parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when no subscriber code is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithNoSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'token',
+			''
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'subscriber_authentication_verify(): the subscriber_code parameter is empty.');
+	}
+
+	/**
+	 * Test that the `subscriber_authentication_verify()` function returns the expected
+	 * response when an invalid token and subscriber code is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testSubscriberAuthenticationVerifyWithInvalidTokenAndSubscriberCode()
+	{
+		$result = $this->api->subscriber_authentication_verify(
+			'invalidToken',
+			'invalidSubscriberCode'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'The entered code is invalid. Please try again, or click the link sent in the email.');
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when a valid signed subscriber ID is specified,
+	 * and that the subscriber belongs to the expected product ID.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testProfilesWithValidSignedSubscriberID()
+	{
+		$result = $this->api->profile( $_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID'] );
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result);
+		$this->assertArrayHasKey('products', $result);
+		$this->assertEquals($_ENV['CONVERTKIT_API_PRODUCT_ID'], $result['products'][0]);
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when an invalid signed subscriber ID is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testProfilesWithInvalidSignedSubscriberID()
+	{
+		$result = $this->api->profile('fakeSignedID');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Subscriber not found');
+	}
+
+	/**
+	 * Test that the `profile()` function returns the expected
+	 * response when no signed subscriber ID is specified.
+	 *
+	 * @since   1.3.0
+	 */
+	public function testProfilesWithNoSignedSubscriberID()
+	{
+		$result = $this->api->profile('');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'profiles(): the signed_subscriber_id parameter is empty.');
+	}
+
+	/**
 	 * Test that the `purchase_create()` function returns expected data
 	 * when valid parameters are provided.
 	 *

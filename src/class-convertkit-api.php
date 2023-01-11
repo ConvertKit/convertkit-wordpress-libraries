@@ -85,6 +85,22 @@ class ConvertKit_API {
 	protected $api_url_base = 'https://api.convertkit.com/';
 
 	/**
+	 * ConvertKit API endpoints that use the /wordpress/ namespace
+	 * i.e. https://api.convertkit.com/wordpress/endpoint
+	 *
+	 * @since   1.3.0
+	 *
+	 * @var     array
+	 */
+	protected $api_endpoints_wordpress = array(
+		'posts',
+		'products',
+		'profile',
+		'subscriber_authentication/send_code',
+		'subscriber_authentication/verify',
+	);
+
+	/**
 	 * Holds the log class for writing to the log file
 	 *
 	 * @var bool|ConvertKit_Log
@@ -165,6 +181,20 @@ class ConvertKit_API {
 			'get_posts_page_parameter_bound_too_low'      => __( 'get_posts(): the page parameter must be equal to or greater than 1.', 'convertkit' ),
 			'get_posts_per_page_parameter_bound_too_low'  => __( 'get_posts(): the per_page parameter must be equal to or greater than 1.', 'convertkit' ),
 			'get_posts_per_page_parameter_bound_too_high' => __( 'get_posts(): the per_page parameter must be equal to or less than 50.', 'convertkit' ),
+
+			// subscriber_authentication_send_code().
+			'subscriber_authentication_send_code_email_empty'			=> __( 'subscriber_authentication_send_code(): the email parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_send_code_redirect_url_empty'	=> __( 'subscriber_authentication_send_code(): the redirect_url parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_send_code_redirect_url_invalid' 	=> __( 'subscriber_authentication_send_code(): the redirect_url parameter is not a valid URL.', 'convertkit' ),
+			'subscriber_authentication_send_code_response_token_missing'=> __( 'subscriber_authentication_send_code(): the token parameter is missing from the API response.', 'convertkit' ),
+			
+			// subscriber_authentication_verify().
+			'subscriber_authentication_verify_token_empty'					  => __( 'subscriber_authentication_verify(): the token parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_verify_subscriber_code_empty'		  => __( 'subscriber_authentication_verify(): the subscriber_code parameter is empty.', 'convertkit' ),
+			'subscriber_authentication_verify_response_error' 				  => __( 'The entered code is invalid. Please try again, or click the link sent in the email.', 'convertkit' ),
+
+			// profile().
+			'profiles_signed_subscriber_id_empty' 		  => __( 'profiles(): the signed_subscriber_id parameter is empty.', 'convertkit' ),
 
 			// request().
 			/* translators: HTTP method */
@@ -987,6 +1017,176 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Sends an email to the given email address, which will contain a ConvertKit link
+	 * which the subscriber can click to authenticate themselves.
+	 *
+	 * Upon successful authentication, the subscriber will be redirected from the ConvertKit
+	 * link to the given redirect URL.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $email          Email Address.
+	 * @param   string $redirect_url   Redirect URL.
+	 * @return  WP_Error|string
+	 */
+	public function subscriber_authentication_send_code( $email, $redirect_url ) {
+
+		$this->log( 'API: subscriber_authentication_send_code(): [ email: ' . $email . ', redirect_url: ' . $redirect_url . ']' );
+
+		// Sanitize some parameters.
+		$email        = trim( $email );
+		$redirect_url = trim( $redirect_url );
+
+		// Return error if no email address or redirect URL is specified.
+		if ( empty( $email ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_email_empty' ) );
+		}
+		if ( empty( $redirect_url ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_redirect_url_empty' ) );
+		}
+
+		// Return error if an invalid redirect URL is specified.
+		if ( ! filter_var( $redirect_url, FILTER_VALIDATE_URL ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_redirect_url_invalid' ) );
+		}
+
+		// Send request.
+		$response = $this->post(
+			'subscriber_authentication/send_code',
+			array(
+				'api_key'       => $this->api_key,
+				'api_secret'    => $this->api_secret,
+				'email_address' => $email,
+				'redirect_url'  => $redirect_url,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: subscriber_authentication_send_code(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// Confirm that a token was supplied in the response.
+		if ( ! isset( $response['token'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+		}
+
+		// Return token, which is used with the subscriber code (sent by email) when subsequently calling subscriber_authentication_verify().
+		return $response['token'];
+
+	}
+
+	/**
+	 * Verifies the given token and subscriber code, which are included in the link
+	 * sent by email in the subscriber_authentication_send_code() step.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $token              Token.
+	 * @param   string $subscriber_code    Subscriber Code.
+	 * @return  WP_Error|string
+	 */
+	public function subscriber_authentication_verify( $token, $subscriber_code ) {
+
+		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $token . ', subscriber_code: ' . $subscriber_code . ']' );
+
+		// Sanitize some parameters.
+		$token           = trim( $token );
+		$subscriber_code = trim( $subscriber_code );
+
+		// Return error if no email address or redirect URL is specified.
+		if ( empty( $token ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_token_empty' ) );
+		}
+		if ( empty( $subscriber_code ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_subscriber_code_empty' ) );
+		}
+
+		// Send request.
+		$response = $this->post(
+			'subscriber_authentication/verify',
+			array(
+				'api_key'         => $this->api_key,
+				'api_secret'      => $this->api_secret,
+				'token'           => $token,
+				'subscriber_code' => $subscriber_code,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: subscriber_authentication_verify(): Error: ' . $response->get_error_message() );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+		}
+
+		// Confirm that a subscriber ID was supplied in the response.
+		if ( ! isset( $response['subscriber_id'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+		}
+
+		// Return subscriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
+		// This can be used when calling profile().
+		return $response['subscriber_id'];
+
+	}
+
+	/**
+	 * Returns the subscriber's ID and products they are subscribed to for the given
+	 * signed subscriber ID.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $signed_subscriber_id   Signed Subscriber ID (i.e. from subscriber_authentication_verify()).
+	 * @return  WP_Error|array
+	 */
+	public function profile( $signed_subscriber_id ) {
+
+		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $signed_subscriber_id . ' ]' );
+
+		// Trim some parameters.
+		$signed_subscriber_id = trim( $signed_subscriber_id );
+
+		// Return error if no signed subscribed id is specified.
+		if ( empty( $signed_subscriber_id ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'profiles_signed_subscriber_id_empty' ) );
+		}
+
+		// Send request.
+		$response = $this->get(
+			'profile/' . $signed_subscriber_id,
+			array(
+				'api_key'    => $this->api_key,
+				'api_secret' => $this->api_secret,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: profile(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response contains a message, an error occured.
+		// Log and return it now.
+		if ( array_key_exists( 'message', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_error',
+				$response['message']
+			);
+
+			$this->log( 'API: profile(): Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		// Return profile data (subscriber ID, subscribed products).
+		return $response;
+
+	}
+
+	/**
 	 * Get HTML from ConvertKit for the given Legacy Form ID.
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
@@ -1624,14 +1824,14 @@ class ConvertKit_API {
 	 */
 	private function get_api_url( $endpoint ) {
 
-		// For the /posts endpoint, the API base is https://api.convertkit.com/api/v3/$endpoint.
-		if ( $endpoint === 'posts' ) {
-			return path_join( $this->api_url_base . 'api/' . $this->api_version, $endpoint );
-		}
-
-		// For the /products endpoint, the API base is https://api.convertkit.com/wordpress/$endpoint.
-		if ( $endpoint === 'products' ) {
-			return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+		// For some specific API endpoints created primarily for the WordPress Plugin, the API base is
+		// https://api.convertkit.com/wordpress/$endpoint.
+		// We perform a string search instead of in_array(), because the $endpoint might be e.g.
+		// profile/{subscriber_id} or subscriber_authentication/send_code.
+		foreach ( $this->api_endpoints_wordpress as $wordpress_endpoint ) {
+			if ( strpos( $endpoint, $wordpress_endpoint ) !== false ) {
+				return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+			}
 		}
 
 		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
