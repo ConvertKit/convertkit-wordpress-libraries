@@ -71,6 +71,15 @@ class ConvertKit_Resource {
 	public $order_by = 'name';
 
 	/**
+	 * The order to return resources.
+	 *
+	 * @since   1.3.1
+	 *
+	 * @var     string
+	 */
+	public $order = 'asc';
+
+	/**
 	 * Timestamp for when the resources stored in the option database table
 	 * were last queried from the API.
 	 *
@@ -137,13 +146,18 @@ class ConvertKit_Resource {
 			return $resources;
 		}
 
-		// Sort resources alphabetically by the order_by setting.
+		// Sort resources ascending by the order_by setting.
 		uasort(
 			$resources,
 			function( $a, $b ) {
 				return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
 			}
 		);
+
+		// Reverse the array if the results should be returned in descending order.
+		if ( $this->order === 'desc' ) {
+			$resources = array_reverse( $resources, true );
+		}
 
 		return $resources;
 
@@ -198,7 +212,7 @@ class ConvertKit_Resource {
 
 		return array(
 			// The subset of items based on the pagination.
-			'items'         => array_slice( $this->resources, ( $page * $per_page ) - $per_page, $per_page ),
+			'items'         => array_slice( $this->get(), ( $page * $per_page ) - $per_page, $per_page ),
 
 			// Sanitized inputs.
 			'page'          => $page,
