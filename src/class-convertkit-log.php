@@ -9,14 +9,14 @@
 /**
  * Class to read and write to the ConvertKit log file.
  *
- * @since   1.9.6
+ * @since   1.0.0
  */
 class ConvertKit_Log {
 
 	/**
 	 * The path and filename of the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @var     string
 	 */
@@ -25,7 +25,7 @@ class ConvertKit_Log {
 	/**
 	 * Constructor. Defines the log file location.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $path   Path to where log file should be created/edited/read.
 	 */
@@ -43,7 +43,7 @@ class ConvertKit_Log {
 	/**
 	 * Returns the path and filename of the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return string
 	 */
@@ -56,7 +56,7 @@ class ConvertKit_Log {
 	/**
 	 * Whether the log file exists.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  bool
 	 */
@@ -69,7 +69,7 @@ class ConvertKit_Log {
 	/**
 	 * Adds an entry to the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   string $entry  Log Line Entry.
 	 */
@@ -95,7 +95,7 @@ class ConvertKit_Log {
 	/**
 	 * Reads the given number of lines from the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $number_of_lines    Number of Lines.
 	 * @return  string                      Log file data
@@ -126,7 +126,7 @@ class ConvertKit_Log {
 	/**
 	 * Clears the log file without deleting the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 */
 	public function clear() {
 
@@ -140,7 +140,7 @@ class ConvertKit_Log {
 	/**
 	 * Deletes the log file.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 */
 	public function delete() {
 

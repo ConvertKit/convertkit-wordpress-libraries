@@ -18,7 +18,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Holds the Plugin name.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @var     string
 	 */
@@ -27,7 +27,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Holds the Plugin slug.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @var     string
 	 */
@@ -36,7 +36,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Holds the Plugin path.
 	 *
-	 * @since   1.9.7.8
+	 * @since   1.0.0
 	 *
 	 * @var     string
 	 */
@@ -46,7 +46,7 @@ class ConvertKit_Review_Request {
 	 * Holds the number of days after the Plugin requests a review to then
 	 * display the review notification in WordPress' Administration interface.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @var     int
 	 */
@@ -55,7 +55,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Registers action and filter hooks.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @param   string $plugin_name    Plugin Name (e.g. ConvertKit).
 	 * @param   string $plugin_slug    Plugin Slug (e.g. convertkit).
@@ -80,7 +80,7 @@ class ConvertKit_Review_Request {
 	 * Displays a dismissible WordPress Administration notice requesting a review, if requested
 	 * by the main Plugin and the Review Request hasn't been disabled.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 */
 	public function maybe_display_review_request() {
 
@@ -118,7 +118,7 @@ class ConvertKit_Review_Request {
 	 * Sets a flag in the options table requesting a review notification be displayed
 	 * in the WordPress Administration.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 */
 	public function request_review() {
 
@@ -138,7 +138,7 @@ class ConvertKit_Review_Request {
 	 * and the minimum time has passed between the Plugin requesting a review
 	 * and now.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @return  bool    Review Requested
 	 */
@@ -163,7 +163,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Dismisses the review notification, so it isn't displayed again.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 */
 	public function dismiss_review() {
 
@@ -179,7 +179,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Flag to indicate whether a review request has been dismissed by the user.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @return  bool    Review Dismissed
 	 */
@@ -192,7 +192,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Returns the Review URL for this Plugin.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @return  string  Review URL
 	 */
@@ -205,7 +205,7 @@ class ConvertKit_Review_Request {
 	/**
 	 * Returns the Support URL for this Plugin.
 	 *
-	 * @since   1.9.6.7
+	 * @since   1.0.0
 	 *
 	 * @return  string  Review URL
 	 */
