@@ -63,8 +63,10 @@ class ConvertKit_Resource {
 
 	/**
 	 * The key to use when alphabetically sorting resources.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
+	 *
+	 * @var     string
 	 */
 	public $order_by = 'name';
 
@@ -136,9 +138,12 @@ class ConvertKit_Resource {
 		}
 
 		// Sort resources alphabetically by the order_by setting.
-		uasort( $resources, function( $a, $b ) {
-			return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
-		} );
+		uasort(
+			$resources,
+			function( $a, $b ) {
+				return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
+			}
+		);
 
 		return $resources;
 
