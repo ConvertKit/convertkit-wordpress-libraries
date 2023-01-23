@@ -137,16 +137,17 @@ class ConvertKit_Resource {
 	 */
 	public function get() {
 
-		// Don't modify the underlying resources.
+		// Don't mutate the underlying resources, so multiple calls to get()
+		// with different order_by and order properties are supported.
 		$resources = $this->resources;
 
-		// Don't attempt sorting if the order_by setting doesn't exist as a key
+		// Don't attempt sorting if the order_by property doesn't exist as a key
 		// in the API response.
 		if ( ! array_key_exists( $this->order_by, reset( $resources ) ) ) {
 			return $resources;
 		}
 
-		// Sort resources ascending by the order_by setting.
+		// Sort resources ascending by the order_by property.
 		uasort(
 			$resources,
 			function( $a, $b ) {
