@@ -41,16 +41,16 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// (and therefore the ConvertKit APIs) to perform tests on.
 		$this->resource->resources = [
 			2780977 => [
-				'id'         	=> 2780977,
-				'name'       	=> 'Z Name', // 'name' used by forms, landing pages, products, tags.
-				'title'		 	=> 'Z Name', // 'title' used by posts.
-				'published_at' 	=> '2022-01-24T00:00:00.000Z', // used by posts.
+				'id'           => 2780977,
+				'name'         => 'Z Name', // 'name' used by forms, landing pages, products, tags.
+				'title'        => 'Z Name', // 'title' used by posts.
+				'published_at' => '2022-01-24T00:00:00.000Z', // used by posts.
 			],
 			2765139 => [
-				'id'         	=> 2765139,
-				'name'       	=> 'A Name', // 'name' used by forms, landing pages, products, tags.
-				'title'		 	=> 'A Name', // 'title' used by posts.
-				'published_at' 	=> '2022-05-03T14:51:50.000Z', // used by posts.
+				'id'           => 2765139,
+				'name'         => 'A Name', // 'name' used by forms, landing pages, products, tags.
+				'title'        => 'A Name', // 'title' used by posts.
+				'published_at' => '2022-05-03T14:51:50.000Z', // used by posts.
 			],
 		];
 
@@ -72,8 +72,8 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Tests that the get() function returns resources in alphabetical ascending order
 	 * by default.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
 	 */
 	public function testGet()
 	{
@@ -95,8 +95,8 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Tests that the get() function returns resources in alphabetical ascending order
 	 * when a valid order_by setting is defined.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
 	 */
 	public function testGetWithValidOrderBy()
 	{
@@ -121,8 +121,8 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Tests that the get() function returns resources in their original order
 	 * when populated with Forms and an invalid order_by value is specified.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
 	 */
 	public function testGetWithInvalidOrderBy()
 	{
@@ -147,14 +147,14 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Tests that the get() function returns resources in alphabetical descending order
 	 * when a valid order_by setting is defined.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
 	 */
 	public function testGetWithValidOrder()
 	{
 		// Define order to be descending.
 		$this->resource->order_by = 'name';
-		$this->resource->order = 'desc';
+		$this->resource->order    = 'desc';
 
 		// Call resource class' get() function.
 		$result = $this->resource->get();
@@ -174,14 +174,14 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	/**
 	 * Tests that the get() function returns resources in date descending order
 	 * when a valid order and order_by settings are defined.
-	 * 
-	 * @since 	1.3.1
+	 *
+	 * @since   1.3.1
 	 */
 	public function testGetWithValidOrderByAndOrder()
 	{
 		// Define order to be descending.
 		$this->resource->order_by = 'published_at';
-		$this->resource->order = 'desc';
+		$this->resource->order    = 'desc';
 
 		// Call resource class' get() function.
 		$result = $this->resource->get();
