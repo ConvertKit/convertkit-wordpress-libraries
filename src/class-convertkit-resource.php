@@ -62,6 +62,13 @@ class ConvertKit_Resource {
 	public $resources = array();
 
 	/**
+	 * The key to use when alphabetically sorting resources.
+	 * 
+	 * @since 	1.3.1
+	 */
+	public $order_by = 'name';
+
+	/**
 	 * Timestamp for when the resources stored in the option database table
 	 * were last queried from the API.
 	 *
@@ -111,15 +118,29 @@ class ConvertKit_Resource {
 	}
 
 	/**
-	 * Returns all resources.
+	 * Returns all resources based on the sort order.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  array
 	 */
 	public function get() {
 
-		return $this->resources;
+		// Don't modify the underlying resources.
+		$resources = $this->resources;
+
+		// Don't attempt sorting if the order_by setting doesn't exist as a key
+		// in the API response.
+		if ( ! array_key_exists( $this->order_by, reset( $resources ) ) ) {
+			return $resources;
+		}
+
+		// Sort resources alphabetically by the order_by setting.
+		uasort( $resources, function( $a, $b ) {
+			return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
+		} );
+
+		return $resources;
 
 	}
 
