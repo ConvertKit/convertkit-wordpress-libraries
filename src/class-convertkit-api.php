@@ -845,7 +845,7 @@ class ConvertKit_API {
 	/**
 	 * Gets all posts from the API.
 	 *
-	 * @since   1.9.7.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $posts_per_request   Number of Posts to fetch in each request.
 	 * @return  WP_Error|array
@@ -908,7 +908,7 @@ class ConvertKit_API {
 	/**
 	 * Gets posts from the API.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 *
 	 * @param   int $page       Page number.
 	 * @param   int $per_page   Number of Posts to return.
@@ -1621,7 +1621,7 @@ class ConvertKit_API {
 	/**
 	 * Performs a PUT request.
 	 *
-	 * @since  1.9.7.8
+	 * @since  1.0.0
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
@@ -1766,7 +1766,7 @@ class ConvertKit_API {
 		/**
 		 * Defines the maximum time to allow the API request to run.
 		 *
-		 * @since   2.2.9
+		 * @since   1.0.0
 		 *
 		 * @param   int     $timeout    Timeout, in seconds.
 		 */
@@ -1857,7 +1857,7 @@ class ConvertKit_API {
 	/**
 	 * Returns the localized/translated error message for the given error key.
 	 *
-	 * @since   1.9.7.8
+	 * @since   1.0.0
 	 *
 	 * @param   string $key    Key.
 	 * @return  string          Error message

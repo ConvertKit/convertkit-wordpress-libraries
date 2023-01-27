@@ -10,7 +10,7 @@
  * Abstract class defining variables and functions for a ConvertKit API Resource
  * (forms, landing pages, tags), which is stored in the WordPress option table.
  *
- * @since   1.9.6
+ * @since   1.0.0
  */
 class ConvertKit_Resource {
 
@@ -48,7 +48,7 @@ class ConvertKit_Resource {
 	 * If false, won't be refreshed through WordPress' Cron
 	 * If a string, must be a value from wp_get_schedules().
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 *
 	 * @var     bool|string
 	 */
@@ -65,7 +65,7 @@ class ConvertKit_Resource {
 	 * Timestamp for when the resources stored in the option database table
 	 * were last queried from the API.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 *
 	 * @var     int
 	 */
@@ -74,7 +74,7 @@ class ConvertKit_Resource {
 	/**
 	 * Constructor.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 */
 	public function __construct() {
 
@@ -86,7 +86,7 @@ class ConvertKit_Resource {
 	 * Initialization routine. Populate the resources array of e.g. forms, landing pages or tags,
 	 * depending on whether resources are already cached, if the resources have expired etc.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 */
 	public function init() {
 
@@ -113,7 +113,7 @@ class ConvertKit_Resource {
 	/**
 	 * Returns all resources.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  array
 	 */
@@ -126,7 +126,7 @@ class ConvertKit_Resource {
 	/**
 	 * Returns an individual resource by its ID.
 	 *
-	 * @since   1.9.7.7
+	 * @since   1.0.0
 	 *
 	 * @param   int $id     Resource ID (Form, Tag, Sequence).
 	 * @return  mixed           bool | array
@@ -149,7 +149,7 @@ class ConvertKit_Resource {
 	 * Returns a paginated subset of resources, including whether
 	 * previous and next resources in the array exist.
 	 *
-	 * @since   1.9.7.6
+	 * @since   1.0.0
 	 *
 	 * @param   int $page   Current Page.
 	 * @param   int $per_page   Number of resources to return per page.
@@ -193,7 +193,7 @@ class ConvertKit_Resource {
 	/**
 	 * Returns the number of resources.
 	 *
-	 * @since   1.9.7.6
+	 * @since   1.0.0
 	 *
 	 * @return  int
 	 */
@@ -206,7 +206,7 @@ class ConvertKit_Resource {
 	/**
 	 * Returns whether any resources exist in the options table.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  bool
 	 */
@@ -232,7 +232,7 @@ class ConvertKit_Resource {
 	 * Fetches resources (forms, landing pages or tags) from the API, storing them in the options table
 	 * with a last queried timestamp.
 	 *
-	 * @since   1.9.6
+	 * @since   1.0.0
 	 *
 	 * @return  bool|WP_Error|array
 	 */
@@ -324,7 +324,7 @@ class ConvertKit_Resource {
 	 * Schedules a WordPress Cron event to refresh this resource based on
 	 * the resource's $wp_cron_schedule.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 */
 	public function schedule_cron_event() {
 
@@ -350,7 +350,7 @@ class ConvertKit_Resource {
 	/**
 	 * Unschedules a WordPress Cron event to refresh this resource.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 */
 	public function unschedule_cron_event() {
 
@@ -364,7 +364,7 @@ class ConvertKit_Resource {
 	 * Returns false if no schedule exists i.e. wp_schedule_event() has not been
 	 * called or failed to register a scheduled event.
 	 *
-	 * @since   1.9.7.4
+	 * @since   1.0.0
 	 *
 	 * @return  bool|string
 	 */
@@ -377,7 +377,7 @@ class ConvertKit_Resource {
 	/**
 	 * Deletes resources (forms, landing pages or tags) from the options table.
 	 *
-	 * @since   1.9.7.8
+	 * @since   1.0.0
 	 */
 	public function delete() {
 
