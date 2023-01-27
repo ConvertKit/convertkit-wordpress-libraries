@@ -62,6 +62,24 @@ class ConvertKit_Resource {
 	public $resources = array();
 
 	/**
+	 * The key to use when alphabetically sorting resources.
+	 *
+	 * @since   1.3.1
+	 *
+	 * @var     string
+	 */
+	public $order_by = 'name';
+
+	/**
+	 * The order to return resources.
+	 *
+	 * @since   1.3.1
+	 *
+	 * @var     string
+	 */
+	public $order = 'asc';
+
+	/**
 	 * Timestamp for when the resources stored in the option database table
 	 * were last queried from the API.
 	 *
@@ -111,7 +129,7 @@ class ConvertKit_Resource {
 	}
 
 	/**
-	 * Returns all resources.
+	 * Returns all resources based on the sort order.
 	 *
 	 * @since   1.0.0
 	 *
@@ -119,7 +137,30 @@ class ConvertKit_Resource {
 	 */
 	public function get() {
 
-		return $this->resources;
+		// Don't mutate the underlying resources, so multiple calls to get()
+		// with different order_by and order properties are supported.
+		$resources = $this->resources;
+
+		// Don't attempt sorting if the order_by property doesn't exist as a key
+		// in the API response.
+		if ( ! array_key_exists( $this->order_by, reset( $resources ) ) ) {
+			return $resources;
+		}
+
+		// Sort resources ascending by the order_by property.
+		uasort(
+			$resources,
+			function( $a, $b ) {
+				return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
+			}
+		);
+
+		// Reverse the array if the results should be returned in descending order.
+		if ( $this->order === 'desc' ) {
+			$resources = array_reverse( $resources, true );
+		}
+
+		return $resources;
 
 	}
 
@@ -172,7 +213,7 @@ class ConvertKit_Resource {
 
 		return array(
 			// The subset of items based on the pagination.
-			'items'         => array_slice( $this->resources, ( $page * $per_page ) - $per_page, $per_page ),
+			'items'         => array_slice( $this->get(), ( $page * $per_page ) - $per_page, $per_page ),
 
 			// Sanitized inputs.
 			'page'          => $page,
