@@ -141,6 +141,11 @@ class ConvertKit_Resource {
 		// with different order_by and order properties are supported.
 		$resources = $this->resources;
 
+		// Don't attempt sorting if no resources exist.
+		if ( ! $this->exist() ) {
+			return $resources;
+		}
+
 		// Don't attempt sorting if the order_by property doesn't exist as a key
 		// in the API response.
 		if ( ! array_key_exists( $this->order_by, reset( $resources ) ) ) {
