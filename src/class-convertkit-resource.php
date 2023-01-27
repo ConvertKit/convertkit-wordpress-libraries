@@ -356,8 +356,8 @@ class ConvertKit_Resource {
 		 */
 		do_action( 'convertkit_resource_refreshed_' . $this->type, $results );
 
-		// Return resources.
-		return $results;
+		// Return resources, honoring the order_by and order properties.
+		return $this->get();
 
 	}
 
