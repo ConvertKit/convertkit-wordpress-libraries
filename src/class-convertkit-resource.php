@@ -330,15 +330,17 @@ class ConvertKit_Resource {
 				break;
 		}
 
-		// Bail if an error occured.
+		// Define and store the last query time now.
+		// This prevents multiple calls to refresh() when the above returns a 401 error.
+		$this->last_queried = time();
+		update_option( $this->settings_name . '_last_queried', $this->last_queried );
+
+		// Bail if an error occured, as we don't want to cache errors.
 		if ( is_wp_error( $results ) ) {
 			return $results;
 		}
 
-		// Define last query time now.
-		$last_queried = time();
-
-		// Store resources and their last query timestamp in the options table.
+		// Store resources in the options table.
 		// We don't use WordPress' Transients API (i.e. auto expiring options), because they're prone to being
 		// flushed by some third party "optimization" Plugins. They're also not guaranteed to remain in the options
 		// table for the amount of time specified; any expiry is a maximum, not a minimum.
@@ -346,11 +348,9 @@ class ConvertKit_Resource {
 		// a result of transients not being honored, so storing them as options with a separate, persistent expiry
 		// value is more reliable here.
 		update_option( $this->settings_name, $results );
-		update_option( $this->settings_name . '_last_queried', $last_queried );
 
-		// Store resources and last queried time in class variables.
-		$this->resources    = $results;
-		$this->last_queried = $last_queried;
+		// Store resources in class variable.
+		$this->resources = $results;
 
 		/**
 		 * Perform any actions immediately after the resource has been refreshed.
