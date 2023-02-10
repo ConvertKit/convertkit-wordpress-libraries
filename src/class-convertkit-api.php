@@ -1719,7 +1719,11 @@ class ConvertKit_API {
 			case 429:
 				// If retry on rate limit hit is disabled, return a WP_Error.
 				if ( ! $retry_if_rate_limit_hit ) {
-					return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'request_rate_limit_exceeded' ) );
+					return new WP_Error(
+						'convertkit_api_error',
+						$this->get_error_message( 'request_rate_limit_exceeded' ),
+						$http_response_code
+					);
 				}
 
 				// Retry the request a final time, waiting 2 seconds before.
@@ -1728,23 +1732,39 @@ class ConvertKit_API {
 
 			// Internal server error.
 			case 500:
-				return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'request_internal_server_error' ) );
+				return new WP_Error(
+					'convertkit_api_error',
+					$this->get_error_message( 'request_internal_server_error' ),
+					$http_response_code
+				);
 
 			// Bad gateway.
 			case 502:
-				return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'request_bad_gateway' ) );
+				return new WP_Error(
+					'convertkit_api_error',
+					$this->get_error_message( 'request_bad_gateway' ),
+					$http_response_code
+				);
 		}
 
 		// If the response is null, json_decode() failed as the body could not be decoded.
 		if ( is_null( $response ) ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
-			return new WP_Error( 'convertkit_api_error', sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
+			return new WP_Error(
+				'convertkit_api_error',
+				sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ),
+				$http_response_code
+			);
 		}
 
 		// If an error message or code exists in the response, return a WP_Error.
 		if ( isset( $response['error'] ) ) {
 			$this->log( 'API: Error: ' . $response['error'] . ': ' . $response['message'] );
-			return new WP_Error( 'convertkit_api_error', $response['error'] . ': ' . $response['message'] );
+			return new WP_Error(
+				'convertkit_api_error',
+				$response['error'] . ': ' . $response['message'],
+				$http_response_code
+			);
 		}
 
 		return $response;

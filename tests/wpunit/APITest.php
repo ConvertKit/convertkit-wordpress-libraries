@@ -63,6 +63,21 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that a 401 unauthorized error gracefully returns a WP_Error.
+	 *
+	 * @since   1.3.2
+	 */
+	public function test401Unauthorized()
+	{
+		$api    = new ConvertKit_API('fakeApiKey', 'fakeApiSecret');
+		$result = $api->account();
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Authorization Failed: API Key not valid');
+		$this->assertEquals($result->get_error_data($result->get_error_code()), 401);
+	}
+
+	/**
 	 * Test that a 429 internal server error gracefully returns a WP_Error.
 	 *
 	 * @since   1.0.0
@@ -75,6 +90,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Rate limit hit.');
+		$this->assertEquals($result->get_error_data($result->get_error_code()), 429);
 	}
 
 	/**
@@ -90,6 +106,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Internal server error.');
+		$this->assertEquals($result->get_error_data($result->get_error_code()), 500);
 	}
 
 	/**
@@ -105,6 +122,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Bad gateway.');
+		$this->assertEquals($result->get_error_data($result->get_error_code()), 502);
 	}
 
 	/**
