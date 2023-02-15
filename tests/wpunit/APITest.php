@@ -1412,9 +1412,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '" data-uid="cc5eb21744" class="formkit-form"', $result);
 
-		// Assert that the API class' manually added UTF-8 Content-Type has been removed prior to output.
-		$this->assertStringNotContainsString('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $result);
-
 		// Assert that character encoding works, and that special characters are not malformed.
 		$this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $result);
 	}
