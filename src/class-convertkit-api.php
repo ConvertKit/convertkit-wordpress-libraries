@@ -1443,7 +1443,7 @@ class ConvertKit_API {
 		// <meta charset="utf-8"> isn't enough, as DOMDocument still interprets the HTML as ISO-8859, which breaks character encoding
 		// Use of mb_convert_encoding() with HTML-ENTITIES is deprecated in PHP 8.2, so we have to use this method.
 		// If we don't, special characters render incorrectly.
-		$body = str_replace( '<head>', '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $body );
+		$body = str_replace( '<head>', '<head>' . "\n" . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $body );
 
 		// Get just the scheme and host from the URL.
 		$url_scheme           = wp_parse_url( $url );
