@@ -1433,19 +1433,31 @@ class ConvertKit_API {
 			);
 		}
 
+		// If the HTML is missing the <html> tag, it's likely to be a legacy form.
+		// Wrap it in <html>, <head> and <body> tags now, so we can inject the UTF-8 Content-Type meta tag.
+		if ( strpos( $body, '<html>' ) === false ) {
+			$body = '<html><head></head><body>' . $body . '</body></html>';
+		}
+
+		// Forcibly tell DOMDocument that this HTML uses the UTF-8 charset.
+		// <meta charset="utf-8"> isn't enough, as DOMDocument still interprets the HTML as ISO-8859, which breaks character encoding
+		// Use of mb_convert_encoding() with HTML-ENTITIES is deprecated in PHP 8.2, so we have to use this method.
+		// If we don't, special characters render incorrectly.
+		$body = str_replace( '<head>', '<head>' . "\n" . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $body );
+
 		// Get just the scheme and host from the URL.
 		$url_scheme           = wp_parse_url( $url );
 		$url_scheme_host_only = $url_scheme['scheme'] . '://' . $url_scheme['host'];
 
-		// Load the landing page HTML into a DOMDocument.
+		// Load the HTML into a DOMDocument.
 		libxml_use_internal_errors( true );
 		$html = new DOMDocument();
 		if ( $body_only ) {
 			// Prevent DOMDocument from including a doctype on saveHTML().
 			// We don't use LIBXML_HTML_NOIMPLIED, as it requires a single root element, which Legacy Forms don't have.
-			$html->loadHTML( mb_convert_encoding( $body, 'HTML-ENTITIES', 'UTF-8' ), LIBXML_HTML_NODEFDTD );
+			$html->loadHTML( $body, LIBXML_HTML_NODEFDTD );
 		} else {
-			$html->loadHTML( mb_convert_encoding( $body, 'HTML-ENTITIES', 'UTF-8' ) );
+			$html->loadHTML( $body );
 		}
 
 		// Convert any relative URLs to absolute URLs in the HTML DOM.
@@ -1519,7 +1531,8 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Strips <html>, <head> and <body> opening and closing tags from the given markup.
+	 * Strips <html>, <head> and <body> opening and closing tags from the given markup,
+	 * as well as the Content-Type meta tag we might have added in get_html().
 	 *
 	 * @since   1.0.0
 	 *
@@ -1534,6 +1547,7 @@ class ConvertKit_API {
 		$markup = str_replace( '</head>', '', $markup );
 		$markup = str_replace( '<body>', '', $markup );
 		$markup = str_replace( '</body>', '', $markup );
+		$markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
 
 		return $markup;
 
