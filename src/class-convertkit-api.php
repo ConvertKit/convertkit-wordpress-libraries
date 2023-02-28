@@ -270,9 +270,9 @@ class ConvertKit_API {
 
 		return add_query_arg( array(
 			'client_id' 	=> $this->client_id,
-			'redirect_uri' 	=> $redirect_uri,
+			'redirect_uri' 	=> rawurlencode( $redirect_uri ),
 			'response_type' => 'code',
-			'state' 		=> $state,
+			'state' 		=> rawurlencode( $state ),
 		), 'https://convertkit.com/oauth2/authorize' );
 
 	}
