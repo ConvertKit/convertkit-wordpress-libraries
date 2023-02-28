@@ -29,6 +29,20 @@ class ConvertKit_API {
 	protected $api_secret = false;
 
 	/**
+	 * ConvertKit oAuth Application Client ID
+	 *
+	 * @var bool|string.
+	 */
+	protected $client_id = false;
+
+	/**
+	 * Access Token
+	 *
+	 * @var bool|string
+	 */
+	protected $access_token = '';
+
+	/**
 	 * Optional context of the request.
 	 *
 	 * @var     bool|string
@@ -117,6 +131,10 @@ class ConvertKit_API {
 
 	/**
 	 * Sets up the API with the required credentials.
+	 * 
+	 * For API requests that use an access token, you'll need to call set_client_id()
+	 * and set_access_token() after initializing this class, with $api_key and $api_secret
+	 * set to false.
 	 *
 	 * @since   1.0.0
 	 *
@@ -205,6 +223,51 @@ class ConvertKit_API {
 			'response_type_unexpected' 					  => __( 'ConvertKit API Error: The response is not of the expected type array.', 'convertkit' ),
 		);
 		// phpcs:enable
+
+	}
+
+	/**
+	 * Sets the oAuth Client ID.
+	 * 
+	 * @since 	1.4.0
+	 * 
+	 * @param 	string 	$client_id 	Client ID.
+	 */
+	public function set_client_id( $client_id ) {
+
+		$this->client_id = $client_id;
+
+	}
+
+	/**
+	 * Sets the oAuth Access Token.
+	 * 
+	 * @since 	1.4.0
+	 * 
+	 * @param 	string 	$access_token 	Access Token.
+	 */
+	public function set_access_token( $access_token ) {
+
+		// Remove API Key and Secret, if defined, as we'll use an access token for API requests.
+		$this->api_key = false;
+		$this->api_secret = false;
+
+		// Set access token.
+		$this->access_token = $access_token;
+
+	}
+
+	/**
+	 * Returns the URL used to begin the oAuth process
+	 *
+	 * @since   1.4.0
+	 *
+	 * @param 	string 	$redirect_uri 	URI to redirect to once process is complete
+	 * @return  string  				oAuth URL
+	 */
+	public function get_oauth_url( $redirect_uri ) {
+
+		return 'https://convertkit.com/oauth2/authorize?client_id=' . $this->client_id . '&redirect_uri=' . rawurlencode( 'https://api.convertkit.com/oauth2/callback' ) . '&response_type=code&state=' . rawurlencode( $redirect_uri );
 
 	}
 
