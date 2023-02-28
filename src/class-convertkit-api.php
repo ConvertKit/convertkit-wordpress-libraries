@@ -262,12 +262,18 @@ class ConvertKit_API {
 	 *
 	 * @since   1.4.0
 	 *
-	 * @param 	string 	$redirect_uri 	URI to redirect to once process is complete
-	 * @return  string  				oAuth URL
+	 * @param 	string 			$redirect_uri 	URI to redirect to once the user logs in and authenticates the application.
+	 * @param 	bool|string 	$state 			Optional state parameter to track additional information.
+	 * @return  string  						oAuth URL
 	 */
-	public function get_oauth_url( $redirect_uri ) {
+	public function get_oauth_url( $redirect_uri, $state = false ) {
 
-		return 'https://convertkit.com/oauth2/authorize?client_id=' . $this->client_id . '&redirect_uri=' . rawurlencode( 'https://api.convertkit.com/oauth2/callback' ) . '&response_type=code&state=' . rawurlencode( $redirect_uri );
+		return add_query_arg( array(
+			'client_id' 	=> $this->client_id,
+			'redirect_uri' 	=> $redirect_uri,
+			'response_type' => 'code',
+			'state' 		=> $state,
+		), 'https://convertkit.com/oauth2/authorize' );
 
 	}
 
