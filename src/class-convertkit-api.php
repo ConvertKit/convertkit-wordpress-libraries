@@ -99,6 +99,25 @@ class ConvertKit_API {
 	protected $api_url_base = 'https://api.convertkit.com/';
 
 	/**
+	 * oAuth 2 Authorization URL
+	 * 
+	 * @var string
+	 */
+	protected $oauth2_authorize_url = 'https://app.convertkit.com/users/login';
+
+	/**
+	 * ConvertKit API endpoints that use the /oauth2/ namespace
+	 * i.e. https://api.convertkit.com/oauth2/endpoint
+	 *
+	 * @since   1.3.0
+	 *
+	 * @var     array
+	 */
+	protected $api_endpoints_oauth2 = array(
+		'token',
+	);
+
+	/**
 	 * ConvertKit API endpoints that use the /wordpress/ namespace
 	 * i.e. https://api.convertkit.com/wordpress/endpoint
 	 *
@@ -273,7 +292,30 @@ class ConvertKit_API {
 			'redirect_uri' 	=> rawurlencode( $redirect_uri ),
 			'response_type' => 'code',
 			'state' 		=> rawurlencode( $state ),
-		), 'https://convertkit.com/oauth2/authorize' );
+		), $this->oauth2_authorize_url );
+
+	}
+
+	/**
+	 * Exchanges the given code for an access token.
+	 * 
+	 * @since 	1.4.0
+	 * 
+	 * @param 	string 	$client_secret 	Client Secret
+	 * @param 	string 	$code 			Authorization Code, returned from get_oauth_url() flow.
+	 * @return 	WP_Error|string 		Error or Access Token
+	 */
+	public function get_access_token( $client_secret, $code ) {
+
+		return $this->post(
+			'token',
+			array(
+				'client_id' 	=> $this->client_id,
+				'client_secret' => $client_secret,
+				'code' 			=> $code,
+				'grant_type' 	=> 'authorization_code',
+			)
+		);
 
 	}
 
@@ -1934,6 +1976,13 @@ class ConvertKit_API {
 		foreach ( $this->api_endpoints_wordpress as $wordpress_endpoint ) {
 			if ( strpos( $endpoint, $wordpress_endpoint ) !== false ) {
 				return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+			}
+		}
+
+		// For oAuth2 API endpoints, the API base is https://api.convertkit.com/oauth2/$endpoint.
+		foreach ( $this->api_endpoints_oauth2 as $oauth2_endpoint ) {
+			if ( strpos( $endpoint, $oauth2_endpoint ) !== false ) {
+				return path_join( $this->api_url_base . 'oauth2', $endpoint );t
 			}
 		}
 
