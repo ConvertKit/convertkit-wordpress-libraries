@@ -1982,7 +1982,7 @@ class ConvertKit_API {
 		// For oAuth2 API endpoints, the API base is https://api.convertkit.com/oauth2/$endpoint.
 		foreach ( $this->api_endpoints_oauth2 as $oauth2_endpoint ) {
 			if ( strpos( $endpoint, $oauth2_endpoint ) !== false ) {
-				return path_join( $this->api_url_base . 'oauth2', $endpoint );t
+				return path_join( $this->api_url_base . 'oauth2', $endpoint );
 			}
 		}
 
