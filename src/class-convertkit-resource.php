@@ -57,7 +57,7 @@ class ConvertKit_Resource {
 	/**
 	 * Holds the resources from the ConvertKit API
 	 *
-	 * @var     WP_Error|array
+	 * @var     WP_Error|array|bool|null
 	 */
 	public $resources = array();
 
@@ -258,7 +258,7 @@ class ConvertKit_Resource {
 	 */
 	public function exist() {
 
-		if ( $this->resources === false ) { // @phpstan-ignore-line.
+		if ( $this->resources === false ) {
 			return false;
 		}
 
