@@ -282,16 +282,16 @@ class ConvertKit_API {
 	 * @since   1.4.0
 	 *
 	 * @param 	string 			$redirect_uri 	URI to redirect to once the user logs in and authenticates the application.
-	 * @param 	bool|string 	$state 			Optional state parameter to track additional information.
 	 * @return  string  						oAuth URL
 	 */
-	public function get_oauth_url( $redirect_uri, $state = false ) {
+	public function get_oauth_url( $redirect_uri ) {
 
 		return add_query_arg( array(
-			'client_id' 	=> $this->client_id,
-			'redirect_uri' 	=> rawurlencode( $redirect_uri ),
-			'response_type' => 'code',
-			'state' 		=> rawurlencode( $state ),
+			'client_id' 			=> $this->client_id,
+			'redirect_uri' 			=> rawurlencode( $redirect_uri ),
+			'response_type' 		=> 'code',
+			'code_challenge'		=> '',
+			'code_challenge_method' => 'S256',
 		), $this->oauth2_authorize_url );
 
 	}
@@ -301,17 +301,17 @@ class ConvertKit_API {
 	 * 
 	 * @since 	1.4.0
 	 * 
-	 * @param 	string 	$client_secret 	Client Secret
-	 * @param 	string 	$code 			Authorization Code, returned from get_oauth_url() flow.
-	 * @return 	WP_Error|string 		Error or Access Token
+	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
+	 * @param 	string 	$authorization_code 	Authorization Code, returned from get_oauth_url() flow.
+	 * @return 	WP_Error|string 				Error or Access Token
 	 */
-	public function get_access_token( $client_secret, $code ) {
+	public function get_access_token( $code_verifier, $authorization_code ) {
 
 		return $this->post(
 			'token',
 			array(
 				'client_id' 	=> $this->client_id,
-				'client_secret' => $client_secret,
+				'code_verifier' => $code_verifier,
 				'code' 			=> $code,
 				'grant_type' 	=> 'authorization_code',
 			)
