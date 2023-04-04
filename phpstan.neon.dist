@@ -10,6 +10,10 @@ parameters:
     paths:
         - src/
 
+    # Paths to exclude
+    excludePaths:
+        - src/views/
+
     # Location of WordPress Plugins for PHPStan to scan, building symbols.
     scanDirectories:
         - /home/runner/work/convertkit-wordpress-libraries/convertkit-wordpress-libraries/wordpress/wp-content/plugins
