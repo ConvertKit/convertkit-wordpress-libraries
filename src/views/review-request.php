@@ -11,7 +11,7 @@
 <div class="notice notice-info is-dismissible review-<?php echo esc_attr( $this->plugin_slug ); ?>">
 	<p>
 		<?php
-		echo esc_html( $this->get_intro_text() );
+		echo esc_html( $this->get_message_text() );
 		?>
 	</p>
 	<p>
@@ -28,7 +28,7 @@
 			// Dismiss Review Notification.
 			$( 'div.review-<?php echo esc_attr( $this->plugin_slug ); ?>' ).on( 'click', 'a, button.notice-dismiss', function( e ) {
 
-				// Do request
+				// Do request.
 				$.post( 
 					ajaxurl, 
 					{
@@ -38,7 +38,7 @@
 					}
 				);
 
-				// Hide notice
+				// Hide notice.
 				$( 'div.review-<?php echo esc_attr( $this->plugin_slug ); ?>' ).hide();
 
 			} );
