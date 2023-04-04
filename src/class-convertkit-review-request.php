@@ -69,32 +69,24 @@ class ConvertKit_Review_Request {
 	 * @param   string 		$plugin_name    Plugin Name (e.g. ConvertKit).
 	 * @param   string 		$plugin_slug    Plugin Slug (e.g. convertkit).
 	 * @param   string 		$plugin_path    Plugin Path.
-	 * @param   bool|array  $text_items 	Array of text items to display on the review request notification.
 	 */
-	public function __construct( $plugin_name, $plugin_slug, $plugin_path, $text_items = false ) {
+	public function __construct( $plugin_name, $plugin_slug, $plugin_path ) {
 
 		// Store the Plugin name, slug and path in the class.
 		$this->plugin_name = $plugin_name;
 		$this->plugin_slug = $plugin_slug;
 		$this->plugin_path = $plugin_path;
-
-		// If text items are defined, use them.
-		if ( is_array( $text_items ) ) {
-			$this->text_items = $text_items;
-		} else {
-			// Fallback to some sensible defaults. These won't be localized by WordPress.
-			$this->text_items = array(
-				'message' 		=> sprintf(
-					'We\'d be super grateful if you could spread the word about %s and give it a 5 star rating on WordPress?',
-					$this->plugin_name
-				),
-				'leave_review' 	=> 'Yes, leave review',
-				'having_issues' => sprintf(
-					'No, I\'m having issues with %s',
-					$this->plugin_name
-				),
-			);
-		}
+		$this->text_items = array(
+			'message' 		=> sprintf(
+				'We\'d be super grateful if you could spread the word about %s and give it a 5 star rating on WordPress?',
+				$this->plugin_name
+			),
+			'leave_review' 	=> 'Yes, leave review',
+			'having_issues' => sprintf(
+				'No, I\'m having issues with %s',
+				$this->plugin_name
+			),
+		);
 
 		// Register an AJAX action to dismiss the review.
 		add_action( 'wp_ajax_' . str_replace( '-', '_', $this->plugin_slug ) . '_dismiss_review', array( $this, 'dismiss_review' ) );
