@@ -1773,10 +1773,17 @@ class ConvertKit_API {
 
 		// If an error message or code exists in the response, return a WP_Error.
 		if ( isset( $response['error'] ) ) {
-			$this->log( 'API: Error: ' . $response['error'] . ': ' . $response['message'] );
+			// Build the message.
+			$message = $response['error'];
+			if ( array_key_exists( 'message', $response ) ) {
+				$message .= ': ' . $response['message'];
+			}
+
+			// Log and return.
+			$this->log( 'API: Error: ' . $message );
 			return new WP_Error(
 				'convertkit_api_error',
-				$response['error'] . ': ' . $response['message'],
+				$message,
 				$http_response_code
 			);
 		}
