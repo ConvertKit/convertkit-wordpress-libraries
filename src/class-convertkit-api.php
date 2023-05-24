@@ -103,7 +103,7 @@ class ConvertKit_API {
 	/**
 	 * Holds the log class for writing to the log file
 	 *
-	 * @var bool|ConvertKit_Log
+	 * @var bool|ConvertKit_Log|WC_Logger
 	 */
 	public $log = false;
 
