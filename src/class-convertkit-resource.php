@@ -146,26 +146,8 @@ class ConvertKit_Resource {
 			return $resources;
 		}
 
-		// Don't attempt sorting if the order_by property doesn't exist as a key
-		// in the API response.
-		if ( ! array_key_exists( $this->order_by, reset( $resources ) ) ) {
-			return $resources;
-		}
-
-		// Sort resources ascending by the order_by property.
-		uasort(
-			$resources,
-			function( $a, $b ) {
-				return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
-			}
-		);
-
-		// Reverse the array if the results should be returned in descending order.
-		if ( $this->order === 'desc' ) {
-			$resources = array_reverse( $resources, true );
-		}
-
-		return $resources;
+		// Return resources sorted by order_by and order.
+		return $this->sort( $resources );
 
 	}
 
@@ -192,12 +174,12 @@ class ConvertKit_Resource {
 
 	/**
 	 * Returns resources where the resource's key matches the given value.
-	 * 
-	 * @since 	1.3.6
-	 * 
-	 * @param 	string 			$key 	Resource Key.
-	 * @param 	string|array 	$value 	Value(s).
-	 * @return 	bool|array
+	 *
+	 * @since   1.3.6
+	 *
+	 * @param   string       $key    Resource Key.
+	 * @param   string|array $value  Value(s).
+	 * @return  bool|array
 	 */
 	public function get_by( $key, $value ) {
 
@@ -222,7 +204,7 @@ class ConvertKit_Resource {
 				unset( $resources[ $id ] );
 				continue;
 			}
-			
+
 			// Remove this resource if the value doesn't match.
 			if ( ! is_array( $value ) && $resource[ $key ] !== $value ) {
 				unset( $resources[ $id ] );
@@ -234,6 +216,21 @@ class ConvertKit_Resource {
 		if ( empty( $resources ) ) {
 			return false;
 		}
+
+		// Return resources sorted by order_by and order.
+		return $this->sort( $resources );
+
+	}
+
+	/**
+	 * Sorts the given array of resources by the class' order_by and order properties.
+	 *
+	 * @since   1.3.6
+	 *
+	 * @param   array $resources  Resources.
+	 * @return  array               Resources
+	 */
+	public function sort( $resources ) {
 
 		// Don't attempt sorting if the order_by property doesn't exist as a key
 		// in the API response.
