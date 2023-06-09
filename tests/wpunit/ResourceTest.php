@@ -197,4 +197,55 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('2022-05-03T14:51:50.000Z', reset($result)['published_at']);
 		$this->assertEquals('2022-01-24T00:00:00.000Z', end($result)['published_at']);
 	}
+
+	/**
+	 * Tests that the get_by() function returns the matching resource when queried
+	 * by name.
+	 *
+	 * @since   1.3.6
+	 */
+	public function testGetBy()
+	{
+		// Call resource class' get_by() function.
+		$result = $this->resource->get_by('name', 'Z Name');
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert one item was returned.
+		$this->assertCount(1, $result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey(array_key_first($this->resource->resources), $result);
+
+		// Assert resource is the one we requested.
+		$this->assertEquals('Z Name', reset($result)[ $this->resource->order_by ]);
+	}
+
+	/**
+	 * Tests that the get_by() function returns the matching resources when queried
+	 * by multiple values.
+	 *
+	 * @since   1.3.6
+	 */
+	public function testGetByMultipleValues()
+	{
+		// Call resource class' get_by() function.
+		$result = $this->resource->get_by('name', [ 'A Name', 'Z Name' ]);
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert two items were returned.
+		$this->assertCount(2, $result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey(array_key_first($this->resource->resources), $result);
+		$this->assertArrayHasKey(array_key_last($this->resource->resources), $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('A Name', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('Z Name', end($result)[ $this->resource->order_by ]);
+	}
+
 }
