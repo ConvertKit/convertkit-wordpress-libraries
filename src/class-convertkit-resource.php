@@ -222,9 +222,9 @@ class ConvertKit_Resource {
 				unset( $resources[ $id ] );
 				continue;
 			}
-
+			
 			// Remove this resource if the value doesn't match.
-			if ( $resource[ $key ] !== $value ) {
+			if ( ! is_array( $value ) && $resource[ $key ] !== $value ) {
 				unset( $resources[ $id ] );
 				continue;
 			}
