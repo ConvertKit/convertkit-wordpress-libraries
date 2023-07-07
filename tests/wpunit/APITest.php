@@ -1356,6 +1356,20 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `get_recommendations_script()` function returns expected data.
+	 *
+	 * @since   1.3.7
+	 */
+	public function testGetRecommendationsScript()
+	{
+		$result = $this->api->get_recommendations_script();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('enabled', $result);
+		$this->assertArrayHasKey('embed_js', $result);
+	}
+
+	/**
 	 * Test that the `get_form_html()` function returns expected data
 	 * when a valid legacy form ID is specified.
 	 *

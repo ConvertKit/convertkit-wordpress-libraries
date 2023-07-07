@@ -1294,6 +1294,26 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Returns the recommendations script URL for this account from the API.
+	 *
+	 * @since   1.3.7
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function get_recommendations_script() {
+
+		$this->log( 'API: get_recommendations_script()' );
+
+		// For now, mocking the expected data when calling https://api.convertkit.com/wordpress/recommendations_script.
+		// @TODO Don't mock this.
+		return array(
+			'enabled'  => true,
+			'embed_js' => 'https://cheerful-architect-3237.ck.page/WnaDZ370gtgOq750dwOl-recommendations.js',
+		);
+
+	}
+
+	/**
 	 * Backward compat. function for getting a ConvertKit subscriber by their ID.
 	 *
 	 * @since   1.0.0
