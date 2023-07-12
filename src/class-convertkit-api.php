@@ -96,6 +96,7 @@ class ConvertKit_API {
 		'posts',
 		'products',
 		'profile',
+		'recommendations_script',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
 	);
@@ -1294,7 +1295,8 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Returns the recommendations script URL for this account from the API.
+	 * Returns the recommendations script URL for this account from the API,
+	 * used to display the Creator Network modal when a form is submitted.
 	 *
 	 * @since   1.3.7
 	 *
@@ -1304,11 +1306,11 @@ class ConvertKit_API {
 
 		$this->log( 'API: get_recommendations_script()' );
 
-		// For now, mocking the expected data when calling https://api.convertkit.com/wordpress/recommendations_script.
-		// @TODO Don't mock this.
-		return array(
-			'enabled'  => true,
-			'embed_js' => 'https://cheerful-architect-3237.ck.page/WnaDZ370gtgOq750dwOl-recommendations.js',
+		return $this->get(
+			'recommendations_script',
+			array(
+				'api_secret' => $this->api_secret,
+			)
 		);
 
 	}

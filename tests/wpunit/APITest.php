@@ -1356,7 +1356,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_recommendations_script()` function returns expected data.
+	 * Test that the `get_recommendations_script()` function returns expected data
+	 * for a ConvertKit account that has the Creator Network enabled.
 	 *
 	 * @since   1.3.7
 	 */
@@ -1367,6 +1368,26 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('enabled', $result);
 		$this->assertArrayHasKey('embed_js', $result);
+		$this->assertTrue($result['enabled']);
+		$this->assertEquals($result['embed_js'], $_ENV['CONVERTKIT_API_RECOMMENDATIONS_JS']);
+	}
+
+	/**
+	 * Test that the `get_recommendations_script()` function returns expected data
+	 * for a ConvertKit account that has the Creator Network disabled.
+	 *
+	 * @since   1.3.7
+	 */
+	public function testGetRecommendationsScriptWhenCreatorNetworkDisabled()
+	{
+		$api    = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA']);
+		$result = $api->get_recommendations_script();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('enabled', $result);
+		$this->assertArrayHasKey('embed_js', $result);
+		$this->assertFalse($result['enabled']);
+		$this->assertNull($result['embed_js']);
 	}
 
 	/**
