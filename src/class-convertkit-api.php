@@ -1302,9 +1302,9 @@ class ConvertKit_API {
 	 *
 	 * @return  WP_Error|array
 	 */
-	public function get_recommendations_script() {
+	public function recommendations_script() {
 
-		$this->log( 'API: get_recommendations_script()' );
+		$this->log( 'API: recommendations_script()' );
 
 		return $this->get(
 			'recommendations_script',

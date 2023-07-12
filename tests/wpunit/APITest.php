@@ -1356,14 +1356,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_recommendations_script()` function returns expected data
+	 * Test that the `recommendations_script()` function returns expected data
 	 * for a ConvertKit account that has the Creator Network enabled.
 	 *
 	 * @since   1.3.7
 	 */
-	public function testGetRecommendationsScript()
+	public function testRecommendationsScript()
 	{
-		$result = $this->api->get_recommendations_script();
+		$result = $this->api->recommendations_script();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('enabled', $result);
@@ -1373,15 +1373,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_recommendations_script()` function returns expected data
+	 * Test that the `recommendations_script()` function returns expected data
 	 * for a ConvertKit account that has the Creator Network disabled.
 	 *
 	 * @since   1.3.7
 	 */
-	public function testGetRecommendationsScriptWhenCreatorNetworkDisabled()
+	public function testRecommendationsScriptWhenCreatorNetworkDisabled()
 	{
 		$api    = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA']);
-		$result = $api->get_recommendations_script();
+		$result = $api->recommendations_script();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('enabled', $result);
