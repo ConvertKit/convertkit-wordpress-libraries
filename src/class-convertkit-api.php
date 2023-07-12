@@ -96,6 +96,7 @@ class ConvertKit_API {
 		'posts',
 		'products',
 		'profile',
+		'recommendations_script',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
 	);
@@ -1290,6 +1291,27 @@ class ConvertKit_API {
 		do_action( 'convertkit_api_purchase_create_success', $response, $purchase );
 
 		return $response;
+
+	}
+
+	/**
+	 * Returns the recommendations script URL for this account from the API,
+	 * used to display the Creator Network modal when a form is submitted.
+	 *
+	 * @since   1.3.7
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function recommendations_script() {
+
+		$this->log( 'API: recommendations_script()' );
+
+		return $this->get(
+			'recommendations_script',
+			array(
+				'api_secret' => $this->api_secret,
+			)
+		);
 
 	}
 
