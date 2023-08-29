@@ -486,10 +486,10 @@ class ConvertKit_Resource {
 
 	/**
 	 * Returns the timestamp for when the WordPress Cron event is next scheduled to run.
-	 * 
-	 * @since 	1.3.8
-	 * 
-	 * @return 	bool|int
+	 *
+	 * @since   1.3.8
+	 *
+	 * @return  bool|int
 	 */
 	public function get_cron_event_next_scheduled() {
 
