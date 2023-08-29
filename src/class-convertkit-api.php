@@ -970,6 +970,48 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Gets a specific post.
+	 *
+	 * @since   1.3.8
+	 *
+	 * @param   int $post_id   Post ID.
+	 * @return  WP_Error|array
+	 */
+	public function get_post( $post_id ) {
+
+		$this->log( 'API: get_post(): [ post_id: ' . $post_id . ']' );
+
+		// Send request.
+		$response = $this->get(
+			sprintf( 'posts/%s', $post_id ),
+			array(
+				'api_secret' => $this->api_secret,
+			)
+		);
+
+		// If an error occured, return WP_Error.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_posts(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response contains a message, an error occured.
+		// Log and return it now.
+		if ( array_key_exists( 'message', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_error',
+				$response['message']
+			);
+
+			$this->log( 'API: get_post(): Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		return $response['post'];
+
+	}
+
+	/**
 	 * Fetches all products from the API.
 	 *
 	 * @since   1.1.0

@@ -1089,6 +1089,42 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `get_post()` function returns expected data.
+	 *
+	 * @since   1.3.8
+	 */
+	public function testGetPostByID()
+	{
+		$result = $this->api->get_post($_ENV['CONVERTKIT_API_POST_ID']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result);
+		$this->assertArrayHasKey('title', $result);
+		$this->assertArrayHasKey('description', $result);
+		$this->assertArrayHasKey('published_at', $result);
+		$this->assertArrayHasKey('is_paid', $result);
+		$this->assertArrayHasKey('thumbnail_alt', $result);
+		$this->assertArrayHasKey('thumbnail_url', $result);
+		$this->assertArrayHasKey('url', $result);
+		$this->assertArrayHasKey('product_id', $result);
+		$this->assertArrayHasKey('content', $result);
+	}
+
+	/**
+	 * Test that the `get_post()` function returns a WP_Error when an invalid
+	 * Post ID is specified.
+	 *
+	 * @since   1.3.8
+	 */
+	public function testGetPostByInvalidID()
+	{
+		$result = $this->api->get_post(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Post not found', $result->get_error_message());
+	}
+
+	/**
 	 * Test that the `get_products()` function returns expected data.
 	 *
 	 * @since   1.1.0
