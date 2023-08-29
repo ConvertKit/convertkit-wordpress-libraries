@@ -144,7 +144,7 @@ class ConvertKit_Log {
 	 */
 	public function delete() {
 
-		unlink( $this->get_filename() );
+		wp_delete_file( $this->get_filename() );
 
 	}
 

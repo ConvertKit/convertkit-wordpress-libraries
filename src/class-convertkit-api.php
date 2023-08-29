@@ -1548,12 +1548,12 @@ class ConvertKit_API {
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param   string $string     Possible JSON String.
-	 * @return  bool                Is JSON String.
+	 * @param   string $json_string     Possible JSON String.
+	 * @return  bool                    Is JSON String.
 	 */
-	private function is_json( $string ) {
+	private function is_json( $json_string ) {
 
-		json_decode( $string );
+		json_decode( $json_string );
 		return json_last_error() === JSON_ERROR_NONE;
 
 	}
