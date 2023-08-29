@@ -241,7 +241,7 @@ class ConvertKit_Resource {
 		// Sort resources ascending by the order_by property.
 		uasort(
 			$resources,
-			function( $a, $b ) {
+			function ( $a, $b ) {
 				return strcmp( $a[ $this->order_by ], $b[ $this->order_by ] );
 			}
 		);

@@ -1059,7 +1059,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_all_posts(2); // Number of posts to fetch in each request within the function.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(3, $result);
+		$this->assertCount(4, $result);
 		$this->assertArrayHasKey('id', reset($result));
 		$this->assertArrayHasKey('title', reset($result));
 		$this->assertArrayHasKey('url', reset($result));
@@ -1432,7 +1432,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
-
 	}
 
 	/**

@@ -53,7 +53,6 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 				'published_at' => '2022-05-03T14:51:50.000Z', // used by posts.
 			],
 		];
-
 	}
 
 	/**
@@ -247,5 +246,4 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('A Name', reset($result)[ $this->resource->order_by ]);
 		$this->assertEquals('Z Name', end($result)[ $this->resource->order_by ]);
 	}
-
 }
