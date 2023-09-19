@@ -174,6 +174,9 @@ class ConvertKit_API {
 			// unsubscribe_email().
 			'unsubscribe_email_empty'                     => __( 'unsubscribe(): the email parameter is empty.', 'convertkit' ),
 
+			// broadcast_delete().
+			'broadcast_delete_broadcast_id_empty'		  => __( 'broadcast_delete(): the broadcast_is parameter is empty.', 'convertkit' ),
+
 			// get_all_posts().
 			'get_all_posts_posts_per_request_bound_too_low' => __( 'get_all_posts(): the posts_per_request parameter must be equal to or greater than 1.', 'convertkit' ),
 			'get_all_posts_posts_per_request_bound_too_high' => __( 'get_all_posts(): the posts_per_request parameter must be equal to or less than 50.', 'convertkit' ),
@@ -883,6 +886,55 @@ class ConvertKit_API {
 		 * @param   array   $params     Request parameters.
 		 */
 		do_action( 'convertkit_api_broadcast_create_success', $response, $params );
+
+		// Return broadcast.
+		return $response['broadcast'];
+
+	}
+
+	/**
+	 * Deletes a Broadcast.
+	 *
+	 * @since   1.3.9
+	 *
+	 * @param   int $broadcast_id   Broadcast ID.
+	 * @return  WP_Error|array
+	 */
+	public function broadcast_delete( $broadcast_id ) {
+
+		$this->log( 'API: broadcast_delete(): [ broadcast_id: ' . $broadcast_id . ']' );
+
+		// Sanitize some parameters.
+		$broadcast_id = absint( $broadcast_id );
+
+		// Return error if no Broadcast ID is specified.
+		if ( empty( $broadcast_id ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'broadcast_delete_broadcast_id_empty' ) );
+		}
+
+		// Build request parameters.
+		$params = array(
+			'api_secret' => $this->api_secret,
+		);
+
+		// Send request.
+		$response = $this->delete( 'broadcasts/' . $broadcast_id, $params );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: broadcast_delete(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		/**
+		 * Runs actions immediately after the broadcast was deleted.
+		 *
+		 * @since   1.0.0
+		 *
+		 * @param   array   $response       API Response
+		 * @param   int     $broadcast_id   Broadcast ID
+		 */
+		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
 
 		return $response;
 
