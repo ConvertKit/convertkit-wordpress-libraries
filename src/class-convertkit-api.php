@@ -898,7 +898,7 @@ class ConvertKit_API {
 	 * @since   1.3.9
 	 *
 	 * @param   int $broadcast_id   Broadcast ID.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|null
 	 */
 	public function broadcast_delete( $broadcast_id ) {
 
@@ -936,6 +936,7 @@ class ConvertKit_API {
 		 */
 		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
 
+		// Response will be null if successful.
 		return $response;
 
 	}
@@ -2000,8 +2001,8 @@ class ConvertKit_API {
 				);
 		}
 
-		// If the response is null, json_decode() failed as the body could not be decoded.
-		if ( is_null( $response ) ) {
+		// If the response is null for a non-DELETE method, json_decode() failed as the body could not be decoded.
+		if ( is_null( $response ) && $method !== 'delete' ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 			return new WP_Error(
 				'convertkit_api_error',
