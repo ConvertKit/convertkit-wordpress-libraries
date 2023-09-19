@@ -797,6 +797,98 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Creates a broadcast.
+	 *
+	 * @since   1.3.9
+	 *
+	 * @param string    $subject               The broadcast email's subject.
+	 * @param string    $content               The broadcast's email HTML content.
+	 * @param string    $description           An internal description of this broadcast.
+	 * @param boolean   $is_public             Specifies whether or not this is a public post.
+	 * @param \DateTime $published_at          Specifies the time that this post was published (applicable
+	 *                                         only to public posts).
+	 * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
+	 *                                         a draft broadcast. If set to a future time, this is the time that
+	 *                                         the broadcast will be scheduled to send.
+	 * @param string    $email_address         Sending email address; leave blank to use your account's
+	 *                                         default sending email address.
+	 * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+	 *                                         account's default email template.
+	 * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
+	 *                                         (applicable only to public posts).
+	 * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
+	 *                                         post (applicable only to public posts).
+	 *
+	 * @see https://developers.convertkit.com/#create-a-broadcast
+	 *
+	 * @return false|object
+	 */
+	public function broadcast_create(
+		string $subject = '',
+		string $content = '',
+		string $description = '',
+		bool $is_public = false,
+		\DateTime $published_at = null,
+		\DateTime $send_at = null,
+		string $email_address = '',
+		string $email_layout_template = '',
+		string $thumbnail_alt = '',
+		string $thumbnail_url = ''
+	) {
+
+		$this->log( 'API: broadcast_create(): [ subject: ' . $subject . ']' );
+
+		// Build request parameters.
+		$params = array(
+			'api_secret'            => $this->api_secret,
+			'content'               => $content,
+			'description'           => $description,
+			'email_address'         => $email_address,
+			'email_layout_template' => $email_layout_template,
+			'public'                => $is_public,
+			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'subject'               => $subject,
+			'thumbnail_alt'         => $thumbnail_alt,
+			'thumbnail_url'         => $thumbnail_url,
+		);
+
+		// Iterate through parameters, removing blank entries.
+		foreach ( $params as $key => $value ) {
+			if ( is_string( $value ) && strlen( $value ) === 0 ) {
+				unset( $params[ $key ] );
+			}
+		}
+
+		// If the post isn't public, remove some params that don't apply.
+		if ( ! $public ) {
+			unset( $params['published_at'], $params['thumbnail_alt'], $params['thumbnail_url'] );
+		}
+
+		// Send request.
+		$response = $this->post( 'broadcasts', $params );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: broadcast_create(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		/**
+		 * Runs actions immediately after the email address was successfully subscribed to the tag.
+		 *
+		 * @since   1.3.9
+		 *
+		 * @param   array   $response   API Response.
+		 * @param   array   $params     Request parameters.
+		 */
+		do_action( 'convertkit_api_broadcast_create_success', $response, $params );
+
+		return $response;
+
+	}
+
+	/**
 	 * Gets all custom fields from the API.
 	 *
 	 * @since   1.0.0
