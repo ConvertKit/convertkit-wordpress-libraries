@@ -861,7 +861,7 @@ class ConvertKit_API {
 		}
 
 		// If the post isn't public, remove some params that don't apply.
-		if ( ! $public ) {
+		if ( ! $is_public ) {
 			unset( $params['published_at'], $params['thumbnail_alt'], $params['thumbnail_url'] );
 		}
 
