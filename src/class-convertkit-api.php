@@ -1856,6 +1856,21 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Performs a DELETE request.
+	 *
+	 * @since  1.3.9
+	 *
+	 * @param   string $endpoint       API Endpoint.
+	 * @param   array  $params         Params.
+	 * @return  WP_Error|array
+	 */
+	private function delete( $endpoint, $params ) {
+
+		return $this->request( $endpoint, 'delete', $params, true );
+
+	}
+
+	/**
 	 * Main function which handles sending requests to the API using WordPress functions.
 	 *
 	 * @since   1.0.0
@@ -1901,6 +1916,22 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'method'          => 'PUT',
+						'Accept-Encoding' => 'gzip',
+						'headers'         => array(
+							'Content-Type' => 'application/json; charset=utf-8',
+						),
+						'body'            => wp_json_encode( $params ),
+						'timeout'         => $this->get_timeout(),
+						'user-agent'      => $this->get_user_agent(),
+					)
+				);
+				break;
+
+			case 'delete':
+				$result = wp_remote_request(
+					$this->get_api_url( $endpoint ),
+					array(
+						'method'          => 'DELETE',
 						'Accept-Encoding' => 'gzip',
 						'headers'         => array(
 							'Content-Type' => 'application/json; charset=utf-8',
