@@ -824,7 +824,7 @@ class ConvertKit_API {
 	 *
 	 * @see https://developers.convertkit.com/#create-a-broadcast
 	 *
-	 * @return false|object
+	 * @return WP_Error|array
 	 */
 	public function broadcast_create(
 		string $subject = '',
