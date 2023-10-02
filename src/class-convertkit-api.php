@@ -931,8 +931,8 @@ class ConvertKit_API {
 		 *
 		 * @since   1.0.0
 		 *
-		 * @param   array   $response       API Response
-		 * @param   int     $broadcast_id   Broadcast ID
+		 * @param   null|array   $response       API Response
+		 * @param   int          $broadcast_id   Broadcast ID
 		 */
 		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
 
@@ -1863,7 +1863,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|null
 	 */
 	private function delete( $endpoint, $params ) {
 
@@ -1880,7 +1880,7 @@ class ConvertKit_API {
 	 * @param   string $method                  HTTP Method (optional).
 	 * @param   mixed  $params                  Params (array|boolean|string).
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
