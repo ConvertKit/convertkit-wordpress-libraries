@@ -175,7 +175,7 @@ class ConvertKit_API {
 			'unsubscribe_email_empty'                     => __( 'unsubscribe(): the email parameter is empty.', 'convertkit' ),
 
 			// broadcast_delete().
-			'broadcast_delete_broadcast_id_empty'		  => __( 'broadcast_delete(): the broadcast_is parameter is empty.', 'convertkit' ),
+			'broadcast_delete_broadcast_id_empty'		  => __( 'broadcast_delete(): the broadcast_id parameter is empty.', 'convertkit' ),
 
 			// get_all_posts().
 			'get_all_posts_posts_per_request_bound_too_low' => __( 'get_all_posts(): the posts_per_request parameter must be equal to or greater than 1.', 'convertkit' ),
