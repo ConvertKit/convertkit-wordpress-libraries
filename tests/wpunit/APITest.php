@@ -876,6 +876,110 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that broadcast_create() and broadcast_delete() works when valid parameters are specified.
+	 *
+	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
+	 * on the ConvertKit account when running tests, which might impact
+	 * other tests that expect (or do not expect) specific Broadcasts.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testCreateAndDeleteDraftBroadcast()
+	{
+		// Create a broadcast first.
+		$result = $this->api->broadcast_create(
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
+		);
+
+		// Confirm the Broadcast saved.
+		$this->assertArrayHasKey('id', $result);
+		$this->assertEquals('Test Subject', $result['subject']);
+		$this->assertEquals('Test Content', $result['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
+		$this->assertEquals(null, $result['published_at']);
+		$this->assertEquals(null, $result['send_at']);
+
+		// Delete the broadcast.
+		$this->api->broadcast_delete($result['id']);
+	}
+
+	/**
+	 * Test that broadcast_create() and broadcast_delete() works when valid published_at and send_at
+	 * parameters are specified.
+	 *
+	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
+	 * on the ConvertKit account when running tests, which might impact
+	 * other tests that expect (or do not expect) specific Broadcasts.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testCreateAndDeletePublicBroadcastWithValidDates()
+	{
+		// Create DateTime object.
+		$publishedAt = new \DateTime('now');
+		$publishedAt->modify('+7 days');
+		$sendAt = new \DateTime('now');
+		$sendAt->modify('+14 days');
+
+		// Create a broadcast first.
+		$result = $this->api->broadcast_create(
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
+			true,
+			$publishedAt,
+			$sendAt
+		);
+
+		// Confirm the Broadcast saved.
+		$this->assertArrayHasKey('id', $result);
+		$this->assertEquals('Test Subject', $result['subject']);
+		$this->assertEquals('Test Content', $result['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
+		$this->assertEquals(
+			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . '.000Z',
+			$result['published_at']
+		);
+		$this->assertEquals(
+			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . '.000Z',
+			$result['send_at']
+		);
+
+		// Delete the broadcast.
+		$this->api->broadcast_delete($result['id']);
+	}
+
+	/**
+	 * Test that the `broadcast_delete()` function returns a WP_Error
+	 * when no $broadcast_id parameter is provided.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testDeleteBroadcastWithNoBroadcastID()
+	{
+		$result = $this->api->broadcast_delete('');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('broadcast_delete(): the broadcast_id parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `broadcast_delete()` function returns a WP_Error
+	 * when an invalid $broadcast_id parameter is provided.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testDeleteBroadcastWithInvalidBroadcastID()
+	{
+		$result = $this->api->broadcast_delete(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+	}
+
+	/**
 	 * Test that the `get_custom_fields()` function returns expected data.
 	 *
 	 * @since   1.0.0

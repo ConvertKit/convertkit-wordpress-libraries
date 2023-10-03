@@ -174,6 +174,9 @@ class ConvertKit_API {
 			// unsubscribe_email().
 			'unsubscribe_email_empty'                     => __( 'unsubscribe(): the email parameter is empty.', 'convertkit' ),
 
+			// broadcast_delete().
+			'broadcast_delete_broadcast_id_empty'		  => __( 'broadcast_delete(): the broadcast_id parameter is empty.', 'convertkit' ),
+
 			// get_all_posts().
 			'get_all_posts_posts_per_request_bound_too_low' => __( 'get_all_posts(): the posts_per_request parameter must be equal to or greater than 1.', 'convertkit' ),
 			'get_all_posts_posts_per_request_bound_too_high' => __( 'get_all_posts(): the posts_per_request parameter must be equal to or less than 50.', 'convertkit' ),
@@ -792,6 +795,148 @@ class ConvertKit_API {
 		 */
 		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email );
 
+		return $response;
+
+	}
+
+	/**
+	 * Creates a broadcast.
+	 *
+	 * @since   1.3.9
+	 *
+	 * @param string    $subject               The broadcast email's subject.
+	 * @param string    $content               The broadcast's email HTML content.
+	 * @param string    $description           An internal description of this broadcast.
+	 * @param boolean   $is_public             Specifies whether or not this is a public post.
+	 * @param \DateTime $published_at          Specifies the time that this post was published (applicable
+	 *                                         only to public posts).
+	 * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
+	 *                                         a draft broadcast. If set to a future time, this is the time that
+	 *                                         the broadcast will be scheduled to send.
+	 * @param string    $email_address         Sending email address; leave blank to use your account's
+	 *                                         default sending email address.
+	 * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+	 *                                         account's default email template.
+	 * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
+	 *                                         (applicable only to public posts).
+	 * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
+	 *                                         post (applicable only to public posts).
+	 *
+	 * @see https://developers.convertkit.com/#create-a-broadcast
+	 *
+	 * @return WP_Error|array
+	 */
+	public function broadcast_create(
+		string $subject = '',
+		string $content = '',
+		string $description = '',
+		bool $is_public = false,
+		\DateTime $published_at = null,
+		\DateTime $send_at = null,
+		string $email_address = '',
+		string $email_layout_template = '',
+		string $thumbnail_alt = '',
+		string $thumbnail_url = ''
+	) {
+
+		$this->log( 'API: broadcast_create(): [ subject: ' . $subject . ']' );
+
+		// Build request parameters.
+		$params = array(
+			'api_secret'            => $this->api_secret,
+			'content'               => $content,
+			'description'           => $description,
+			'email_address'         => $email_address,
+			'email_layout_template' => $email_layout_template,
+			'public'                => $is_public,
+			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'subject'               => $subject,
+			'thumbnail_alt'         => $thumbnail_alt,
+			'thumbnail_url'         => $thumbnail_url,
+		);
+
+		// Iterate through parameters, removing blank entries.
+		foreach ( $params as $key => $value ) {
+			if ( is_string( $value ) && strlen( $value ) === 0 ) {
+				unset( $params[ $key ] );
+			}
+		}
+
+		// If the post isn't public, remove some params that don't apply.
+		if ( ! $is_public ) {
+			unset( $params['published_at'], $params['thumbnail_alt'], $params['thumbnail_url'] );
+		}
+
+		// Send request.
+		$response = $this->post( 'broadcasts', $params );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: broadcast_create(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		/**
+		 * Runs actions immediately after the email address was successfully subscribed to the tag.
+		 *
+		 * @since   1.3.9
+		 *
+		 * @param   array   $response   API Response.
+		 * @param   array   $params     Request parameters.
+		 */
+		do_action( 'convertkit_api_broadcast_create_success', $response, $params );
+
+		// Return broadcast.
+		return $response['broadcast'];
+
+	}
+
+	/**
+	 * Deletes a Broadcast.
+	 *
+	 * @since   1.3.9
+	 *
+	 * @param   int $broadcast_id   Broadcast ID.
+	 * @return  WP_Error|null
+	 */
+	public function broadcast_delete( $broadcast_id ) {
+
+		$this->log( 'API: broadcast_delete(): [ broadcast_id: ' . $broadcast_id . ']' );
+
+		// Sanitize some parameters.
+		$broadcast_id = absint( $broadcast_id );
+
+		// Return error if no Broadcast ID is specified.
+		if ( empty( $broadcast_id ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'broadcast_delete_broadcast_id_empty' ) );
+		}
+
+		// Build request parameters.
+		$params = array(
+			'api_secret' => $this->api_secret,
+		);
+
+		// Send request.
+		$response = $this->delete( 'broadcasts/' . $broadcast_id, $params );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: broadcast_delete(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		/**
+		 * Runs actions immediately after the broadcast was deleted.
+		 *
+		 * @since   1.0.0
+		 *
+		 * @param   null|array   $response       API Response
+		 * @param   int          $broadcast_id   Broadcast ID
+		 */
+		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
+
+		// Response will be null if successful.
 		return $response;
 
 	}
@@ -1712,6 +1857,21 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Performs a DELETE request.
+	 *
+	 * @since  1.3.9
+	 *
+	 * @param   string $endpoint       API Endpoint.
+	 * @param   array  $params         Params.
+	 * @return  WP_Error|null
+	 */
+	private function delete( $endpoint, $params ) {
+
+		return $this->request( $endpoint, 'delete', $params, true );
+
+	}
+
+	/**
 	 * Main function which handles sending requests to the API using WordPress functions.
 	 *
 	 * @since   1.0.0
@@ -1720,7 +1880,7 @@ class ConvertKit_API {
 	 * @param   string $method                  HTTP Method (optional).
 	 * @param   mixed  $params                  Params (array|boolean|string).
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
@@ -1757,6 +1917,22 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'method'          => 'PUT',
+						'Accept-Encoding' => 'gzip',
+						'headers'         => array(
+							'Content-Type' => 'application/json; charset=utf-8',
+						),
+						'body'            => wp_json_encode( $params ),
+						'timeout'         => $this->get_timeout(),
+						'user-agent'      => $this->get_user_agent(),
+					)
+				);
+				break;
+
+			case 'delete':
+				$result = wp_remote_request(
+					$this->get_api_url( $endpoint ),
+					array(
+						'method'          => 'DELETE',
 						'Accept-Encoding' => 'gzip',
 						'headers'         => array(
 							'Content-Type' => 'application/json; charset=utf-8',
@@ -1825,8 +2001,8 @@ class ConvertKit_API {
 				);
 		}
 
-		// If the response is null, json_decode() failed as the body could not be decoded.
-		if ( is_null( $response ) ) {
+		// If the response is null for a non-DELETE method, json_decode() failed as the body could not be decoded.
+		if ( is_null( $response ) && $method !== 'delete' ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 			return new WP_Error(
 				'convertkit_api_error',
