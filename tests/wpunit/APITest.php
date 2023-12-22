@@ -638,6 +638,105 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
 	}
 
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns expected data
+	 * when valid parameters are provided.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribe()
+	{
+		// Subscribe the email address to the tag.
+		$result = $this->api->tag_subscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+
+		// Unsubscribe the email address from the tag.
+		$result = $this->api->tag_unsubscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result);
+		$this->assertArrayHasKey('name', $result);
+		$this->assertArrayHasKey('created_at', $result);
+		$this->assertEquals($result['name'], $_ENV['CONVERTKIT_API_TAG_NAME']);
+	}
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns a WP_Error
+	 * when an invalid $tag_id parameter is provided.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribeWithInvalidTagID()
+	{
+		$result = $this->api->tag_unsubscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns a WP_Error
+	 * when an empty $tag_id parameter is provided.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribeWithEmptyTagID()
+	{
+		$result = $this->api->tag_unsubscribe('', $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('tag_unsubscribe(): the tag_id parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns a WP_Error
+	 * when an empty $email parameter is provided.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribeWithEmptyEmail()
+	{
+		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], '');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('tag_unsubscribe(): the email parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns a WP_Error
+	 * when the $email parameter only consists of spaces.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribeWithSpacesInEmail()
+	{
+		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], '     ');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('tag_unsubscribe(): the email parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `tag_unsubscribe()` function returns a WP_Error
+	 * when an invalid $email parameter is provided.
+	 *
+	 * @since   1.4.0
+	 */
+	public function testTagUnsubscribeWithInvalidEmail()
+	{
+		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], 'invalid-email-address');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('tag_unsubscribe(): the email parameter is not a valid email address.', $result->get_error_message());
+	}
+
 	/**
 	 * Test that the `get_subscriber_by_email()` function returns expected data
 	 * when valid parameters are provided.
@@ -732,6 +831,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetSubscriberTags()
 	{
+		// Subscribe the email address to the tag.
+		$result = $this->api->tag_subscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+
 		$result = $this->api->get_subscriber_tags($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -870,6 +975,110 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testUnsubscribeWithInvalidEmail()
 	{
 		$result = $this->api->unsubscribe('invalid-email-address');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+	}
+
+	/**
+	 * Test that broadcast_create() and broadcast_delete() works when valid parameters are specified.
+	 *
+	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
+	 * on the ConvertKit account when running tests, which might impact
+	 * other tests that expect (or do not expect) specific Broadcasts.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testCreateAndDeleteDraftBroadcast()
+	{
+		// Create a broadcast first.
+		$result = $this->api->broadcast_create(
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
+		);
+
+		// Confirm the Broadcast saved.
+		$this->assertArrayHasKey('id', $result);
+		$this->assertEquals('Test Subject', $result['subject']);
+		$this->assertEquals('Test Content', $result['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
+		$this->assertEquals(null, $result['published_at']);
+		$this->assertEquals(null, $result['send_at']);
+
+		// Delete the broadcast.
+		$this->api->broadcast_delete($result['id']);
+	}
+
+	/**
+	 * Test that broadcast_create() and broadcast_delete() works when valid published_at and send_at
+	 * parameters are specified.
+	 *
+	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
+	 * on the ConvertKit account when running tests, which might impact
+	 * other tests that expect (or do not expect) specific Broadcasts.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testCreateAndDeletePublicBroadcastWithValidDates()
+	{
+		// Create DateTime object.
+		$publishedAt = new \DateTime('now');
+		$publishedAt->modify('+7 days');
+		$sendAt = new \DateTime('now');
+		$sendAt->modify('+14 days');
+
+		// Create a broadcast first.
+		$result = $this->api->broadcast_create(
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
+			true,
+			$publishedAt,
+			$sendAt
+		);
+
+		// Confirm the Broadcast saved.
+		$this->assertArrayHasKey('id', $result);
+		$this->assertEquals('Test Subject', $result['subject']);
+		$this->assertEquals('Test Content', $result['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
+		$this->assertEquals(
+			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . '.000Z',
+			$result['published_at']
+		);
+		$this->assertEquals(
+			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . '.000Z',
+			$result['send_at']
+		);
+
+		// Delete the broadcast.
+		$this->api->broadcast_delete($result['id']);
+	}
+
+	/**
+	 * Test that the `broadcast_delete()` function returns a WP_Error
+	 * when no $broadcast_id parameter is provided.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testDeleteBroadcastWithNoBroadcastID()
+	{
+		$result = $this->api->broadcast_delete('');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('broadcast_delete(): the broadcast_id parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `broadcast_delete()` function returns a WP_Error
+	 * when an invalid $broadcast_id parameter is provided.
+	 *
+	 * @since   1.3.9
+	 */
+	public function testDeleteBroadcastWithInvalidBroadcastID()
+	{
+		$result = $this->api->broadcast_delete(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
@@ -1059,7 +1268,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_all_posts(2); // Number of posts to fetch in each request within the function.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(3, $result);
+		$this->assertCount(4, $result);
 		$this->assertArrayHasKey('id', reset($result));
 		$this->assertArrayHasKey('title', reset($result));
 		$this->assertArrayHasKey('url', reset($result));
@@ -1086,6 +1295,42 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals('get_all_posts(): the posts_per_request parameter must be equal to or less than 50.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `get_post()` function returns expected data.
+	 *
+	 * @since   1.3.8
+	 */
+	public function testGetPostByID()
+	{
+		$result = $this->api->get_post($_ENV['CONVERTKIT_API_POST_ID']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result);
+		$this->assertArrayHasKey('title', $result);
+		$this->assertArrayHasKey('description', $result);
+		$this->assertArrayHasKey('published_at', $result);
+		$this->assertArrayHasKey('is_paid', $result);
+		$this->assertArrayHasKey('thumbnail_alt', $result);
+		$this->assertArrayHasKey('thumbnail_url', $result);
+		$this->assertArrayHasKey('url', $result);
+		$this->assertArrayHasKey('product_id', $result);
+		$this->assertArrayHasKey('content', $result);
+	}
+
+	/**
+	 * Test that the `get_post()` function returns a WP_Error when an invalid
+	 * Post ID is specified.
+	 *
+	 * @since   1.3.8
+	 */
+	public function testGetPostByInvalidID()
+	{
+		$result = $this->api->get_post(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Post not found', $result->get_error_message());
 	}
 
 	/**
@@ -1356,6 +1601,41 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `recommendations_script()` function returns expected data
+	 * for a ConvertKit account that has the Creator Network enabled.
+	 *
+	 * @since   1.3.7
+	 */
+	public function testRecommendationsScript()
+	{
+		$result = $this->api->recommendations_script();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('enabled', $result);
+		$this->assertArrayHasKey('embed_js', $result);
+		$this->assertTrue($result['enabled']);
+		$this->assertEquals($result['embed_js'], $_ENV['CONVERTKIT_API_RECOMMENDATIONS_JS']);
+	}
+
+	/**
+	 * Test that the `recommendations_script()` function returns expected data
+	 * for a ConvertKit account that has the Creator Network disabled.
+	 *
+	 * @since   1.3.7
+	 */
+	public function testRecommendationsScriptWhenCreatorNetworkDisabled()
+	{
+		$api    = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA']);
+		$result = $api->recommendations_script();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('enabled', $result);
+		$this->assertArrayHasKey('embed_js', $result);
+		$this->assertFalse($result['enabled']);
+		$this->assertNull($result['embed_js']);
+	}
+
+	/**
 	 * Test that the `get_form_html()` function returns expected data
 	 * when a valid legacy form ID is specified.
 	 *
@@ -1397,7 +1677,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
-
 	}
 
 	/**

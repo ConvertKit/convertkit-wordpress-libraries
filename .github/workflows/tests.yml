@@ -30,6 +30,7 @@ jobs:
       DB_USER: root
       DB_PASS: root
       DB_HOST: localhost
+      INSTALL_PLUGINS: "woocommerce" # Don't include this repository's Plugin here.
       CONVERTKIT_API_KEY: ${{ secrets.CONVERTKIT_API_KEY }} # ConvertKit API Key, stored in the repository's Settings > Secrets
       CONVERTKIT_API_SECRET: ${{ secrets.CONVERTKIT_API_SECRET }} # ConvertKit API Secret, stored in the repository's Settings > Secrets
       CONVERTKIT_API_KEY_NO_DATA: ${{ secrets.CONVERTKIT_API_KEY_NO_DATA }} # ConvertKit API Key for ConvertKit account with no data, stored in the repository's Settings > Secrets
@@ -41,7 +42,7 @@ jobs:
     strategy:
       matrix:
         wp-versions: [ 'latest' ] #[ 'latest', '6.1.1' ]
-        php-versions: [ '7.4', '8.0', '8.1', '8.2' ] #[ '7.4', '8.0', '8.1', '8.2' ]
+        php-versions: [ '7.4', '8.0', '8.1', '8.2', '8.3' ] #[ '7.4', '8.0', '8.1', '8.2' ]
 
     # Steps to install, configure and run tests
     steps:
@@ -67,17 +68,9 @@ jobs:
 
       # Checkout (copy) this repository's Plugin to this VM.
       - name: Checkout Plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ${{ env.PLUGIN_DIR }}
-
-      # This step is deliberate, to force PHP 7.4 for WP-CLI to work.
-      # PHP 8.x results in the workflow failing due to incompatibilities between WP-CLI and PHP 8.x.
-      - name: Install PHP 7.4.26
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 7.4.26
-          coverage: xdebug
 
       # We install WP-CLI, as it provides useful commands to setup and install WordPress through the command line.
       - name: Install WP-CLI
@@ -94,12 +87,18 @@ jobs:
         working-directory: ${{ env.ROOT_DIR }}
         run: wp-cli core install --url=127.0.0.1 --title=ConvertKit --admin_user=admin --admin_password=password --admin_email=wordpress@convertkit.local
 
+      # env.INSTALL_PLUGINS is a list of Plugin slugs, space separated e.g. contact-form-7 woocommerce.
+      - name: Install Free Third Party WordPress Plugins
+        working-directory: ${{ env.ROOT_DIR }}
+        run: wp-cli plugin install ${{ env.INSTALL_PLUGINS }}
+
       # Install PHP version to run tests against.
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           coverage: xdebug
+          tools: cs2pr
 
       # Write any secrets, such as API keys, to the .env.dist.testing file now.
       # Make sure your committed .env.dist.testing file ends with a newline.
@@ -130,17 +129,17 @@ jobs:
       # Run Coding Standards on Tests.
       - name: Run Coding Standards on Tests
         working-directory: ${{ env.PLUGIN_DIR }}
-        run: php vendor/bin/phpcs ./tests --standard=phpcs.tests.xml -v -s
+        run: php vendor/bin/phpcs -q --standard=phpcs.tests.xml --report=checkstyle ./tests | cs2pr
 
-      # Run WordPress Coding Standards tests.
-      - name: Run WordPress Coding Standards Tests
+      # Run WordPress Coding Standards on Plugin.
+      - name: Run WordPress Coding Standards
         working-directory: ${{ env.PLUGIN_DIR }}
-        run: php vendor/bin/phpcs ./ -v -s
+        run: php vendor/bin/phpcs -q --standard=phpcs.xml --report=checkstyle ./ | cs2pr
 
       # Run PHPStan for static analysis.
       - name: Run PHPStan Static Analysis
         working-directory: ${{ env.PLUGIN_DIR }}
-        run: php vendor/bin/phpstan --memory-limit=1024M
+        run: php vendor/bin/phpstan analyse --memory-limit=1024M
 
       # Build Codeception Tests.
       - name: Build Tests

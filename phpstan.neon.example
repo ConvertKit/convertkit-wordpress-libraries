@@ -10,6 +10,10 @@ parameters:
     paths:
         - src/
 
+    # Paths to exclude
+    excludePaths:
+        - src/views/
+
     # Location of WordPress Plugins for PHPStan to scan, building symbols.
     scanDirectories:
         - /Users/tim/Local Sites/convertkit-github/app/public/wp-content/plugins
