@@ -1497,9 +1497,7 @@ class ConvertKit_API {
 		// Inject JS for subscriber forms to work.
 		// wp_enqueue_script() isn't called when we load a Landing Page, so we can't use it.
 		// phpcs:disable WordPress.WP.EnqueuedResources
-		$scripts = new WP_Scripts();
-		$script  = "<script type='text/javascript' src='" . trailingslashit( $scripts->base_url ) . "wp-includes/js/jquery/jquery.js?ver=1.4.0'></script>";
-		$script .= "<script type='text/javascript' src='" . $this->plugin_url . 'resources/frontend/js/convertkit.js?ver=' . $this->plugin_version . "'></script>";
+		$script  = "<script type='text/javascript' src='" . $this->plugin_url . 'resources/frontend/js/convertkit.js?ver=' . $this->plugin_version . "'></script>";
 		$script .= "<script type='text/javascript'>/* <![CDATA[ */var convertkit = {\"ajaxurl\":\"" . admin_url( 'admin-ajax.php' ) . '"};/* ]]> */</script>';
 		// phpcs:enable
 
