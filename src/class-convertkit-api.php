@@ -1481,7 +1481,7 @@ class ConvertKit_API {
 	 * @param   string $url     URL of Landing Page.
 	 * @return  WP_Error|string HTML
 	 */
-	public function get_landing_page_html( $url ) {
+	public function get_landing_page_html( $url, $js_convertkit_object = false ) {
 
 		$this->log( 'API: get_landing_page_html(): [ url: ' . $url . ']' );
 
@@ -1498,7 +1498,9 @@ class ConvertKit_API {
 		// wp_enqueue_script() isn't called when we load a Landing Page, so we can't use it.
 		// phpcs:disable WordPress.WP.EnqueuedResources
 		$script  = "<script type='text/javascript' src='" . $this->plugin_url . 'resources/frontend/js/convertkit.js?ver=' . $this->plugin_version . "'></script>";
-		$script .= "<script type='text/javascript'>/* <![CDATA[ */var convertkit = {\"ajaxurl\":\"" . admin_url( 'admin-ajax.php' ) . '"};/* ]]> */</script>';
+		if ( $js_convertkit_object ) {
+			$script .= "<script type='text/javascript'>/* <![CDATA[ */var convertkit = " . wp_json_encode( $js_convertkit_object ) . ";/* ]]> */</script>";
+		}
 		// phpcs:enable
 
 		$body = str_replace( '</head>', '</head>' . $script, $body );
