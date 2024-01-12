@@ -1479,9 +1479,10 @@ class ConvertKit_API {
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
 	 * @param   string $url     URL of Landing Page.
+	 * @param 	bool   $debug   Enable debugging.
 	 * @return  WP_Error|string HTML
 	 */
-	public function get_landing_page_html( $url ) {
+	public function get_landing_page_html( $url, $debug = false ) {
 
 		$this->log( 'API: get_landing_page_html(): [ url: ' . $url . ']' );
 
@@ -1497,6 +1498,7 @@ class ConvertKit_API {
 		// Define convertkit JS object.
 		$js_convertkit_object = array(
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'debug'	  => $debug,
 			'nonce'   => wp_create_nonce( 'convertkit' ),
 		);
 
