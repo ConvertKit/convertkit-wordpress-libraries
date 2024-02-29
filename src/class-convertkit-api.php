@@ -30,17 +30,39 @@ class ConvertKit_API {
 
 	/**
 	 * ConvertKit oAuth Application Client ID
+	 * 
+	 * @since 	2.0.0
 	 *
 	 * @var bool|string.
 	 */
 	protected $client_id = false;
 
 	/**
+	 * ConvertKit oAuth Application Client Secret
+	 * 
+	 * @since 	2.0.0
+	 *
+	 * @var bool|string.
+	 */
+	protected $client_secret = false;
+
+	/**
 	 * Access Token
+	 * 
+	 * @since 	2.0.0
 	 *
 	 * @var bool|string
 	 */
 	protected $access_token = '';
+
+	/**
+	 * Refresh Token
+	 * 
+	 * @since 	2.0.0
+	 *
+	 * @var bool|string
+	 */
+	protected $refresh_token = '';
 
 	/**
 	 * Optional context of the request.
@@ -99,21 +121,32 @@ class ConvertKit_API {
 	protected $api_url_base = 'https://api.convertkit.com/';
 
 	/**
-	 * oAuth 2 Authorization URL
+	 * oAuth Authorization URL
+	 * 
+	 * @since 	2.0.0
 	 * 
 	 * @var string
 	 */
-	protected $oauth2_authorize_url = 'https://app.convertkit.com/users/login';
+	protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
 
 	/**
-	 * ConvertKit API endpoints that use the /oauth2/ namespace
-	 * i.e. https://api.convertkit.com/oauth2/endpoint
+	 * oAuth Token URL
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @var string
+	 */
+	protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
+
+	/**
+	 * ConvertKit API endpoints that use the /oauth/ namespace
+	 * i.e. https://api.convertkit.com/oauth/endpoint
 	 *
-	 * @since   1.3.0
+	 * @since   2.0.0
 	 *
 	 * @var     array
 	 */
-	protected $api_endpoints_oauth2 = array(
+	protected $api_endpoints_oauth = array(
 		'token',
 	);
 
@@ -257,7 +290,7 @@ class ConvertKit_API {
 	/**
 	 * Sets the oAuth Client ID.
 	 * 
-	 * @since 	1.4.0
+	 * @since 	2.0.0
 	 * 
 	 * @param 	string 	$client_id 	Client ID.
 	 */
@@ -268,9 +301,22 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Sets the oAuth Client Secret.
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @param 	string 	$client_secret 	Client Secret.
+	 */
+	public function set_client_secret( $client_secret ) {
+
+		$this->client_secret = $client_secret;
+
+	}
+
+	/**
 	 * Sets the oAuth Access Token.
 	 * 
-	 * @since 	1.4.0
+	 * @since 	2.0.0
 	 * 
 	 * @param 	string 	$access_token 	Access Token.
 	 */
@@ -286,9 +332,27 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Sets the oAuth Refresh Token.
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @param 	string 	$refresh_token 	Refresh Token.
+	 */
+	public function set_refresh_token( $refresh_token ) {
+
+		// Remove API Key and Secret, if defined, as we'll use an access token for API requests.
+		$this->api_key = false;
+		$this->api_secret = false;
+
+		// Set access token.
+		$this->set_refresh_token = $set_refresh_token;
+
+	}
+
+	/**
 	 * Returns the URL used to begin the oAuth process
 	 *
-	 * @since   1.4.0
+	 * @since   2.0.0
 	 *
 	 * @param 	string 			$redirect_uri 	URI to redirect to once the user logs in and authenticates the application.
 	 * @return  string  						oAuth URL
@@ -301,14 +365,14 @@ class ConvertKit_API {
 			'response_type' 		=> 'code',
 			'code_challenge'		=> '',
 			'code_challenge_method' => 'S256',
-		), $this->oauth2_authorize_url );
+		), $this->oauth_authorize_url );
 
 	}
 
 	/**
 	 * Exchanges the given code for an access token.
 	 * 
-	 * @since 	1.4.0
+	 * @since 	2.0.0
 	 * 
 	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
 	 * @param 	string 	$authorization_code 	Authorization Code, returned from get_oauth_url() flow.
@@ -2298,10 +2362,10 @@ class ConvertKit_API {
 			}
 		}
 
-		// For oAuth2 API endpoints, the API base is https://api.convertkit.com/oauth2/$endpoint.
-		foreach ( $this->api_endpoints_oauth2 as $oauth2_endpoint ) {
-			if ( strpos( $endpoint, $oauth2_endpoint ) !== false ) {
-				return path_join( $this->api_url_base . 'oauth2', $endpoint );
+		// For oAuth API endpoints, the API base is https://api.convertkit.com/oauth/$endpoint.
+		foreach ( $this->api_endpoints_oauth as $oauth_endpoint ) {
+			if ( strpos( $endpoint, $oauth_endpoint ) !== false ) {
+				return path_join( $this->api_url_base . 'oauth', $endpoint );
 			}
 		}
 
