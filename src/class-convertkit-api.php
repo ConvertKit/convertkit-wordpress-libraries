@@ -376,19 +376,22 @@ class ConvertKit_API {
 	 * 
 	 * @since 	2.0.0
 	 * 
-	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
 	 * @param 	string 	$authorization_code 	Authorization Code, returned from get_oauth_url() flow.
+	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
 	 * @return 	WP_Error|string 				Error or Access Token
 	 */
-	public function get_access_token( $code_verifier, $authorization_code ) {
+	public function get_access_token( $authorization_code, $code_verifier = false ) {
 
 		return $this->post(
 			'token',
 			array(
-				'client_id' 	=> $this->client_id,
-				'code_verifier' => $code_verifier,
 				'code' 			=> $code,
+				'client_id' 	=> $this->client_id,
+				'client_secret' => $this->client_secret,
 				'grant_type' 	=> 'authorization_code',
+
+				// PKCE would use a code_verifier instead of a client_secret, not yet supported.
+				//'code_verifier' => $code_verifier,
 			)
 		);
 
