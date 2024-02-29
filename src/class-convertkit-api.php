@@ -363,8 +363,10 @@ class ConvertKit_API {
 			'client_id' 			=> $this->client_id,
 			'redirect_uri' 			=> rawurlencode( $redirect_uri ),
 			'response_type' 		=> 'code',
-			'code_challenge'		=> '',
-			'code_challenge_method' => 'S256',
+
+			// PKCE specific, not yet supported.
+			//'code_challenge'		=> '',
+			//'code_challenge_method' => 'S256',
 		), $this->oauth_authorize_url );
 
 	}
