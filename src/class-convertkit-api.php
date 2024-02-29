@@ -359,19 +359,15 @@ class ConvertKit_API {
 	 */
 	public function get_oauth_url( $redirect_uri ) {
 
-		return $this->oauth_authorize_url . '?client_id=' . $this->client_id . '&redirect_uri=' . rawurlencode( $redirect_uri ) . '&response_type=code';
-
-		/*
 		return add_query_arg( array(
 			'client_id' 			=> $this->client_id,
-			'redirect_uri' 			=> $redirect_uri,
+			'redirect_uri' 			=> rawurlencode( $redirect_uri ),
 			'response_type' 		=> 'code',
 
 			// PKCE specific, not yet supported.
 			//'code_challenge'		=> '',
 			//'code_challenge_method' => 'S256',
 		), $this->oauth_authorize_url );
-		*/
 
 	}
 
