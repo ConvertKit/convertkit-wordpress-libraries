@@ -385,7 +385,7 @@ class ConvertKit_API {
 		return $this->post(
 			'token',
 			array(
-				'code' 			=> $code,
+				'code' 			=> $authorization_code,
 				'client_id' 	=> $this->client_id,
 				'client_secret' => $this->client_secret,
 				'grant_type' 	=> 'authorization_code',
