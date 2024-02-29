@@ -380,20 +380,52 @@ class ConvertKit_API {
 	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
 	 * @return 	WP_Error|string 				Error or Access Token
 	 */
-	public function get_access_token( $authorization_code, $code_verifier = false ) {
+	public function get_access_token( $authorization_code, $redirect_uri, $code_verifier = false ) {
 
-		return $this->post(
-			'token',
+		$result = wp_remote_post(
+			$this->get_api_url( 'token' ),
 			array(
-				'code' 			=> $authorization_code,
-				'client_id' 	=> $this->client_id,
-				'client_secret' => $this->client_secret,
-				'grant_type' 	=> 'authorization_code',
+				'headers'         => array(
+					'Content-Type'  => 'application/x-www-form-urlencoded',
+				),
+				'body'            => array(
+					'code' 			=> $authorization_code,
+					'client_id' 	=> $this->client_id,
+					'client_secret' => $this->client_secret,
+					'grant_type' 	=> 'authorization_code',
+					'redirect_uri'  => $redirect_uri,
 
-				// PKCE would use a code_verifier instead of a client_secret, not yet supported.
-				//'code_verifier' => $code_verifier,
+					// PKCE would use a code_verifier instead of a client_secret, not yet supported.
+					//'code_verifier' => $code_verifier,
+				),
+				'timeout'         => $this->get_timeout(),
+				'user-agent'      => $this->get_user_agent(),
 			)
 		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $result ) ) {
+			$this->log( 'API: Error: ' . $result->get_error_message() );
+			return $result;
+		}
+
+		// Fetch HTTP response code and body.
+		$body               = wp_remote_retrieve_body( $result );
+		$response           = json_decode( $body, true );
+
+		// Check for errors.
+		if ( array_key_exists( 'error', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_get_access_token_' . $response['error'],
+				$response['error_description']
+			);
+
+			$this->log( 'API: Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		// Return.
+		return $response;
 
 	}
 
