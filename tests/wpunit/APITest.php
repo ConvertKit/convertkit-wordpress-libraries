@@ -44,8 +44,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		require_once 'src/class-convertkit-api.php';
 
 		// Initialize the classes we want to test.
-		$this->api         = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'] );
-		$this->api_no_data = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA'] );
+		$this->api         = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN'], $_ENV['CONVERTKIT_REFRESH_TOKEN'] );
+		$this->api_no_data = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN_NO_DATA'], $_ENV['CONVERTKIT_REFRESH_TOKEN_NO_DATA'] );
 	}
 
 	/**
@@ -73,7 +73,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $api->account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Authorization Failed: API Key not valid');
+		$this->assertEquals('The access token is invalid', $result->get_error_message());
 		$this->assertEquals($result->get_error_data($result->get_error_code()), 401);
 	}
 
@@ -135,7 +135,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Force WordPress HTTP classes and functions to return an invalid JSON response.
 		$this->mockResponses( 200, '', 'invalid JSON string' );
-		$result = $this->api->get_posts(); // The API function we use doesn't matter.
+		$result = $this->api->account(); // The API function we use doesn't matter.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: The response is not of the expected type array.');
@@ -211,10 +211,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->account();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('name', $result);
-		$this->assertArrayHasKey('plan_type', $result);
-		$this->assertArrayHasKey('primary_email_address', $result);
-		$this->assertEquals('wordpress@convertkit.com', $result['primary_email_address']);
+		$this->assertArrayHasKey('user', $result);
+		$this->assertArrayHasKey('account', $result);
+		$this->assertArrayHasKey('name', $result['account']);
+		$this->assertArrayHasKey('plan_type', $result['account']);
+		$this->assertArrayHasKey('primary_email_address', $result['account']);
+		$this->assertEquals('wordpress@convertkit.com', $result['account']['primary_email_address']);
 	}
 
 	/**
@@ -228,7 +230,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('form_id', reset($result));
+		$this->assertArrayHasKey('name', reset($result));
+		$this->assertArrayHasKey('format', reset($result));
+		$this->assertArrayHasKey('embed_js', reset($result));
 	}
 
 	/**
@@ -285,7 +289,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			$this->generateEmailAddress(),
 			'First',
 			array(
 				'last_name'    => 'Last',
@@ -294,7 +298,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+		$this->assertArrayHasKey('subscriber', $result);
+		
 	}
 
 	/**
@@ -1862,5 +1867,21 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				);
 			}
 		);
+	}
+
+	/**
+	 * Generates a unique email address for use in a test, comprising of a prefix,
+	 * date + time and PHP version number.
+	 *
+	 * This ensures that if tests are run in parallel, the same email address
+	 * isn't used for two tests across parallel testing runs.
+	 *
+	 * @since   1.9.6.7
+	 *
+	 * @param   string $domain     Domain (default: convertkit.com).
+	 */
+	private function generateEmailAddress($domain = 'convertkit.com')
+	{
+		return 'wp-libs-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@' . $domain;
 	}
 }

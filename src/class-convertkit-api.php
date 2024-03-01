@@ -15,20 +15,6 @@
 class ConvertKit_API {
 
 	/**
-	 * ConvertKit API Key
-	 *
-	 * @var bool|string
-	 */
-	protected $api_key = false;
-
-	/**
-	 * ConvertKit API Secret
-	 *
-	 * @var bool|string
-	 */
-	protected $api_secret = false;
-
-	/**
 	 * ConvertKit oAuth Application Client ID
 	 * 
 	 * @since 	2.0.0
@@ -111,7 +97,7 @@ class ConvertKit_API {
 	 *
 	 * @var string
 	 */
-	protected $api_version = 'v3';
+	protected $api_version = 'v4';
 
 	/**
 	 * ConvertKit API URL
@@ -191,16 +177,16 @@ class ConvertKit_API {
 	 *
 	 * @since   1.0.0
 	 *
-	 * @param   bool|string $api_key        ConvertKit API Key.
-	 * @param   bool|string $api_secret     ConvertKit API Secret.
-	 * @param   bool|object $debug          Save data to log.
-	 * @param   bool|string $context        Context of originating request.
+	 * @param   bool|string $access_token      ConvertKit OAuth Access Token.
+	 * @param   bool|string $refresh_token     ConvertKit OAuth Refresh Token.
+	 * @param   bool|object $debug          	Save data to log.
+	 * @param   bool|string $context        	Context of originating request.
 	 */
-	public function __construct( $api_key = false, $api_secret = false, $debug = false, $context = false ) {
+	public function __construct( $access_token = false, $refresh_token = false, $debug = false, $context = false ) {
 
 		// Set API credentials, debugging and logging class.
-		$this->api_key        = $api_key;
-		$this->api_secret     = $api_secret;
+		$this->access_token        = $access_token;
+		$this->refresh_token     = $refresh_token;
 		$this->debug          = $debug;
 		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
@@ -314,42 +300,6 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Sets the oAuth Access Token.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$access_token 	Access Token.
-	 */
-	public function set_access_token( $access_token ) {
-
-		// Remove API Key and Secret, if defined, as we'll use an access token for API requests.
-		$this->api_key = false;
-		$this->api_secret = false;
-
-		// Set access token.
-		$this->access_token = $access_token;
-
-	}
-
-	/**
-	 * Sets the oAuth Refresh Token.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$refresh_token 	Refresh Token.
-	 */
-	public function set_refresh_token( $refresh_token ) {
-
-		// Remove API Key and Secret, if defined, as we'll use an access token for API requests.
-		$this->api_key = false;
-		$this->api_secret = false;
-
-		// Set access token.
-		$this->set_refresh_token = $set_refresh_token;
-
-	}
-
-	/**
 	 * Returns the URL used to begin the oAuth process
 	 *
 	 * @since   2.0.0
@@ -440,12 +390,7 @@ class ConvertKit_API {
 
 		$this->log( 'API: account()' );
 
-		return $this->get(
-			'account',
-			array(
-				'api_secret' => $this->api_secret,
-			)
-		);
+		return $this->get( 'account' );
 
 	}
 
@@ -458,15 +403,11 @@ class ConvertKit_API {
 	 */
 	public function get_subscription_forms() {
 
-		$this->log( 'API: get_subscription_forms()' );
+		// Warn the developer that they shouldn't use this function.
+		_deprecated_function( __FUNCTION__, '2.0.0', 'get_forms()' );
 
-		// Send request.
-		return $this->get(
-			'subscription_forms',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
+		// Pass request to new function.
+		return $this->get_forms();
 
 	}
 
@@ -532,19 +473,23 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
+			'email_address' => $email,
+			//'first_name' 	=> $first_name,
 		);
+		/*
 		if ( $fields ) {
 			$params['fields'] = $fields;
 		}
 		if ( $tag_ids ) {
 			$params['tags'] = $tag_ids;
 		}
+		*/
 
 		// Send request.
-		$response = $this->post( 'forms/' . $form_id . '/subscribe', $params );
+		$response = $this->post( 'forms/' . $form_id . '/subscribers', $params );
+
+		var_dump( $response );
+		die();
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -2059,7 +2004,7 @@ class ConvertKit_API {
 		$response = $this->get(
 			'forms',
 			array(
-				'api_key' => $this->api_key,
+				'per_page' => 1000,
 			)
 		);
 
@@ -2104,7 +2049,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function get( $endpoint, $params ) {
+	private function get( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'get', $params, true );
 
@@ -2174,7 +2119,11 @@ class ConvertKit_API {
 				$result = wp_remote_get(
 					$this->add_params_to_url( $this->get_api_url( $endpoint ), $params ),
 					array(
-						'Accept-Encoding' => 'gzip',
+						'headers'         => array(
+							'Accept' 		  => 'application/json',
+							'Authorization'	  => 'Bearer ' . $this->access_token,
+							'Content-Type' 	  => 'application/json; charset=utf-8',
+						),
 						'timeout'         => $this->get_timeout(),
 						'user-agent'      => $this->get_user_agent(),
 					)
@@ -2185,9 +2134,10 @@ class ConvertKit_API {
 				$result = wp_remote_post(
 					$this->get_api_url( $endpoint ),
 					array(
-						'Accept-Encoding' => 'gzip',
 						'headers'         => array(
-							'Content-Type' => 'application/json; charset=utf-8',
+							'Accept' 		  => 'application/json',
+							'Authorization'	  => 'Bearer ' . $this->access_token,
+							'Content-Type' 	  => 'application/json; charset=utf-8',
 						),
 						'body'            => wp_json_encode( $params ),
 						'timeout'         => $this->get_timeout(),
@@ -2201,9 +2151,10 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'method'          => 'PUT',
-						'Accept-Encoding' => 'gzip',
 						'headers'         => array(
-							'Content-Type' => 'application/json; charset=utf-8',
+							'Accept' 		  => 'application/json',
+							'Authorization'	  => 'Bearer ' . $this->access_token,
+							'Content-Type' 	  => 'application/json; charset=utf-8',
 						),
 						'body'            => wp_json_encode( $params ),
 						'timeout'         => $this->get_timeout(),
@@ -2217,9 +2168,10 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'method'          => 'DELETE',
-						'Accept-Encoding' => 'gzip',
 						'headers'         => array(
-							'Content-Type' => 'application/json; charset=utf-8',
+							'Accept' 		  => 'application/json',
+							'Authorization'	  => 'Bearer ' . $this->access_token,
+							'Content-Type' 	  => 'application/json; charset=utf-8',
 						),
 						'body'            => wp_json_encode( $params ),
 						'timeout'         => $this->get_timeout(),
@@ -2250,39 +2202,51 @@ class ConvertKit_API {
 		$body               = wp_remote_retrieve_body( $result );
 		$response           = json_decode( $body, true );
 
-		// Depending on the response code from the API, try again or return an error.
-		// We don't handle 422 errors here, as the response object for 422 will provide a more verbose reason why the request failed.
-		switch ( $http_response_code ) {
-			// Rate limit hit.
-			case 429:
-				// If retry on rate limit hit is disabled, return a WP_Error.
-				if ( ! $retry_if_rate_limit_hit ) {
-					return new WP_Error(
-						'convertkit_api_error',
-						$this->get_error_message( 'request_rate_limit_exceeded' ),
-						$http_response_code
-					);
-				}
-
-				// Retry the request a final time, waiting 2 seconds before.
-				sleep( 2 );
-				return $this->request( $endpoint, $method, $params, false );
-
-			// Internal server error.
-			case 500:
+		// If a rate limit was hit, maybe try again.
+		if ( $http_response_code === 429 ) {
+			// If retry on rate limit hit is disabled, return a WP_Error.
+			if ( ! $retry_if_rate_limit_hit ) {
 				return new WP_Error(
 					'convertkit_api_error',
-					$this->get_error_message( 'request_internal_server_error' ),
+					$this->get_error_message( 'request_rate_limit_exceeded' ),
 					$http_response_code
 				);
+			}
 
-			// Bad gateway.
-			case 502:
-				return new WP_Error(
-					'convertkit_api_error',
-					$this->get_error_message( 'request_bad_gateway' ),
-					$http_response_code
-				);
+			// Retry the request a final time, waiting 2 seconds before.
+			sleep( 2 );
+			return $this->request( $endpoint, $method, $params, false );
+		}
+
+		// Return a WP_Error if the HTTP response code is a 5xx code.
+		// The API respose won't contain an error message, so we use this class' error messages.
+		if ( $http_response_code >= 500 ) {
+			switch ( $http_response_code ) {
+				// Internal server error.
+				case 500:
+					$error = $this->get_error_message( 'request_internal_server_error' );
+					break;
+
+				// Bad gateway.
+				case 502:
+					$error = $this->get_error_message( 'request_bad_gateway' );
+					break;
+			}
+			return new WP_Error(
+				'convertkit_api_error',
+				$error,
+				$http_response_code
+			);
+		}
+
+		// Return the API error message as a WP_Error if the HTTP response code is a 4xx code.
+		if ( $http_response_code >= 400 ) {
+			$this->log( 'API: Error: ' . implode( "\n", $response['errors'] ) );
+			return new WP_Error(
+				'convertkit_api_error',
+				implode( "\n", $response['errors'] ),
+				$http_response_code
+			);
 		}
 
 		// If the response is null for a non-DELETE method, json_decode() failed as the body could not be decoded.
@@ -2291,23 +2255,6 @@ class ConvertKit_API {
 			return new WP_Error(
 				'convertkit_api_error',
 				sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ),
-				$http_response_code
-			);
-		}
-
-		// If an error message or code exists in the response, return a WP_Error.
-		if ( isset( $response['error'] ) ) {
-			// Build the message.
-			$message = $response['error'];
-			if ( array_key_exists( 'message', $response ) ) {
-				$message .= ': ' . $response['message'];
-			}
-
-			// Log and return.
-			$this->log( 'API: Error: ' . $message );
-			return new WP_Error(
-				'convertkit_api_error',
-				$message,
 				$http_response_code
 			);
 		}
