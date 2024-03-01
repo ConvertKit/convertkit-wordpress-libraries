@@ -1618,7 +1618,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 						'quantity'   => 1,
 					),
 				),
-				'integration'      => 'WooCommerce',
 			)
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);

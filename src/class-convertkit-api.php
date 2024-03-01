@@ -1146,12 +1146,7 @@ class ConvertKit_API {
 		$custom_fields = array();
 
 		// Send request.
-		$response = $this->get(
-			'custom_fields',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
+		$response = $this->get('custom_fields');
 
 		// If an error occured, return WP_Error.
 		if ( is_wp_error( $response ) ) {
@@ -1655,7 +1650,6 @@ class ConvertKit_API {
 		$response = $this->post(
 			'purchases',
 			array(
-				'api_secret' => $this->api_secret,
 				'purchase'   => $purchase,
 			)
 		);
@@ -1674,7 +1668,7 @@ class ConvertKit_API {
 		 */
 		do_action( 'convertkit_api_purchase_create_success', $response, $purchase );
 
-		return $response;
+		return $response['purchase'];
 
 	}
 
