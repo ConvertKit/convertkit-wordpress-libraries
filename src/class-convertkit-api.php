@@ -16,8 +16,8 @@ class ConvertKit_API {
 
 	/**
 	 * ConvertKit oAuth Application Client ID
-	 * 
-	 * @since 	2.0.0
+	 *
+	 * @since   2.0.0
 	 *
 	 * @var bool|string.
 	 */
@@ -25,8 +25,8 @@ class ConvertKit_API {
 
 	/**
 	 * ConvertKit oAuth Application Client Secret
-	 * 
-	 * @since 	2.0.0
+	 *
+	 * @since   2.0.0
 	 *
 	 * @var bool|string.
 	 */
@@ -34,8 +34,8 @@ class ConvertKit_API {
 
 	/**
 	 * Access Token
-	 * 
-	 * @since 	2.0.0
+	 *
+	 * @since   2.0.0
 	 *
 	 * @var bool|string
 	 */
@@ -43,8 +43,8 @@ class ConvertKit_API {
 
 	/**
 	 * Refresh Token
-	 * 
-	 * @since 	2.0.0
+	 *
+	 * @since   2.0.0
 	 *
 	 * @var bool|string
 	 */
@@ -107,19 +107,19 @@ class ConvertKit_API {
 	protected $api_url_base = 'https://api.convertkit.com/';
 
 	/**
-	 * oAuth Authorization URL
-	 * 
-	 * @since 	2.0.0
-	 * 
+	 * OAuth Authorization URL
+	 *
+	 * @since   2.0.0
+	 *
 	 * @var string
 	 */
 	protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
 
 	/**
-	 * oAuth Token URL
-	 * 
-	 * @since 	2.0.0
-	 * 
+	 * OAuth Token URL
+	 *
+	 * @since   2.0.0
+	 *
 	 * @var string
 	 */
 	protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
@@ -170,7 +170,7 @@ class ConvertKit_API {
 
 	/**
 	 * Sets up the API with the required credentials.
-	 * 
+	 *
 	 * For API requests that use an access token, you'll need to call set_client_id()
 	 * and set_access_token() after initializing this class, with $api_key and $api_secret
 	 * set to false.
@@ -179,14 +179,14 @@ class ConvertKit_API {
 	 *
 	 * @param   bool|string $access_token      ConvertKit OAuth Access Token.
 	 * @param   bool|string $refresh_token     ConvertKit OAuth Refresh Token.
-	 * @param   bool|object $debug          	Save data to log.
-	 * @param   bool|string $context        	Context of originating request.
+	 * @param   bool|object $debug              Save data to log.
+	 * @param   bool|string $context            Context of originating request.
 	 */
 	public function __construct( $access_token = false, $refresh_token = false, $debug = false, $context = false ) {
 
 		// Set API credentials, debugging and logging class.
-		$this->access_token        = $access_token;
-		$this->refresh_token     = $refresh_token;
+		$this->access_token   = $access_token;
+		$this->refresh_token  = $refresh_token;
 		$this->debug          = $debug;
 		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
@@ -275,10 +275,10 @@ class ConvertKit_API {
 
 	/**
 	 * Sets the oAuth Client ID.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$client_id 	Client ID.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $client_id  Client ID.
 	 */
 	public function set_client_id( $client_id ) {
 
@@ -288,10 +288,10 @@ class ConvertKit_API {
 
 	/**
 	 * Sets the oAuth Client Secret.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$client_secret 	Client Secret.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $client_secret  Client Secret.
 	 */
 	public function set_client_secret( $client_secret ) {
 
@@ -304,52 +304,56 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param 	string 			$redirect_uri 	URI to redirect to once the user logs in and authenticates the application.
-	 * @return  string  						oAuth URL
+	 * @param   string $redirect_uri   URI to redirect to once the user logs in and authenticates the application.
+	 * @return  string                          oAuth URL
 	 */
 	public function get_oauth_url( $redirect_uri ) {
 
-		return add_query_arg( array(
-			'client_id' 			=> $this->client_id,
-			'redirect_uri' 			=> rawurlencode( $redirect_uri ),
-			'response_type' 		=> 'code',
+		return add_query_arg(
+			array(
+				'client_id'     => $this->client_id,
+				'redirect_uri'  => rawurlencode( $redirect_uri ),
+				'response_type' => 'code',
 
 			// PKCE specific, not yet supported.
-			//'code_challenge'		=> '',
-			//'code_challenge_method' => 'S256',
-		), $this->oauth_authorize_url );
+			// 'code_challenge'      => '',
+			// 'code_challenge_method' => 'S256',
+			),
+			$this->oauth_authorize_url
+		);
 
 	}
 
 	/**
 	 * Exchanges the given code for an access token.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$authorization_code 	Authorization Code, returned from get_oauth_url() flow.
-	 * @param 	string  $code_verifier 			Code verifier, created by get_oauth_url() and returned.
-	 * @return 	WP_Error|string 				Error or Access Token
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $authorization_code     Authorization Code, returned from get_oauth_url() flow.
+	 * @param   string $redirect_uri           URL that was redirected to i.e. specified in get_oauth_url().
+	 * @param   string $code_verifier          Code verifier, created by get_oauth_url() and returned.
+	 * @return  WP_Error|string                 Error or Access Token
 	 */
 	public function get_access_token( $authorization_code, $redirect_uri, $code_verifier = false ) {
 
 		$result = wp_remote_post(
 			$this->get_api_url( 'token' ),
 			array(
-				'headers'         => array(
-					'Content-Type'  => 'application/x-www-form-urlencoded',
+				'headers'    => array(
+					'Content-Type' => 'application/x-www-form-urlencoded',
 				),
-				'body'            => array(
-					'code' 			=> $authorization_code,
-					'client_id' 	=> $this->client_id,
+				'body'       => array(
+					'code'          => $authorization_code,
+					'client_id'     => $this->client_id,
 					'client_secret' => $this->client_secret,
-					'grant_type' 	=> 'authorization_code',
+					'grant_type'    => 'authorization_code',
 					'redirect_uri'  => $redirect_uri,
 
 					// PKCE would use a code_verifier instead of a client_secret, not yet supported.
-					//'code_verifier' => $code_verifier,
+					// 'code_verifier' => $code_verifier.
 				),
-				'timeout'         => $this->get_timeout(),
-				'user-agent'      => $this->get_user_agent(),
+				'timeout'    => $this->get_timeout(),
+				'user-agent' => $this->get_user_agent(),
 			)
 		);
 
@@ -360,8 +364,8 @@ class ConvertKit_API {
 		}
 
 		// Fetch HTTP response code and body.
-		$body               = wp_remote_retrieve_body( $result );
-		$response           = json_decode( $body, true );
+		$body     = wp_remote_retrieve_body( $result );
+		$response = json_decode( $body, true );
 
 		// Check for errors.
 		if ( array_key_exists( 'error', $response ) ) {
@@ -474,7 +478,7 @@ class ConvertKit_API {
 		// Build request parameters.
 		$params = array(
 			'email_address' => $email,
-			'first_name' 	=> $first_name,
+			'first_name'    => $first_name,
 		);
 		if ( $fields ) {
 			$params['fields'] = $fields;
@@ -548,7 +552,7 @@ class ConvertKit_API {
 		$sequences = array();
 
 		// Send request.
-		$response = $this->get('sequences');
+		$response = $this->get( 'sequences' );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -652,7 +656,7 @@ class ConvertKit_API {
 		$tags = array();
 
 		// Send request.
-		$response = $this->get('tags');
+		$response = $this->get( 'tags' );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -876,7 +880,7 @@ class ConvertKit_API {
 		}
 
 		// Send request.
-		$response = $this->get('subscribers/' . $subscriber_id);
+		$response = $this->get( 'subscribers/' . $subscriber_id );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -909,7 +913,7 @@ class ConvertKit_API {
 		}
 
 		// Send request.
-		$response = $this->get('subscribers/' . $subscriber_id . '/tags');
+		$response = $this->get( 'subscribers/' . $subscriber_id . '/tags' );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -974,7 +978,7 @@ class ConvertKit_API {
 		}
 
 		// Send request.
-		$response = $this->post('subscribers/{id}/unsubscribe');
+		$response = $this->post( 'subscribers/{id}/unsubscribe' );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -1040,16 +1044,16 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'content'               => $content,
-			'description'           => $description,
-			'email_address'         => $email_address,
-			'email_template_id' 	=> $email_layout_template,
-			'public'                => $is_public,
-			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'subject'               => $subject,
-			'thumbnail_alt'         => $thumbnail_alt,
-			'thumbnail_url'         => $thumbnail_url,
+			'content'           => $content,
+			'description'       => $description,
+			'email_address'     => $email_address,
+			'email_template_id' => $email_layout_template,
+			'public'            => $is_public,
+			'published_at'      => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'send_at'           => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'subject'           => $subject,
+			'thumbnail_alt'     => $thumbnail_alt,
+			'thumbnail_url'     => $thumbnail_url,
 		);
 
 		// Iterate through parameters, removing blank entries.
@@ -1146,7 +1150,7 @@ class ConvertKit_API {
 		$custom_fields = array();
 
 		// Send request.
-		$response = $this->get('custom_fields');
+		$response = $this->get( 'custom_fields' );
 
 		// If an error occured, return WP_Error.
 		if ( is_wp_error( $response ) ) {
@@ -1650,7 +1654,7 @@ class ConvertKit_API {
 		$response = $this->post(
 			'purchases',
 			array(
-				'purchase'   => $purchase,
+				'purchase' => $purchase,
 			)
 		);
 
@@ -2081,13 +2085,13 @@ class ConvertKit_API {
 				$result = wp_remote_get(
 					$this->add_params_to_url( $this->get_api_url( $endpoint ), $params ),
 					array(
-						'headers'         => array(
-							'Accept' 		  => 'application/json',
-							'Authorization'	  => 'Bearer ' . $this->access_token,
-							'Content-Type' 	  => 'application/json; charset=utf-8',
+						'headers'    => array(
+							'Accept'        => 'application/json',
+							'Authorization' => 'Bearer ' . $this->access_token,
+							'Content-Type'  => 'application/json; charset=utf-8',
 						),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2096,14 +2100,14 @@ class ConvertKit_API {
 				$result = wp_remote_post(
 					$this->get_api_url( $endpoint ),
 					array(
-						'headers'         => array(
-							'Accept' 		  => 'application/json',
-							'Authorization'	  => 'Bearer ' . $this->access_token,
-							'Content-Type' 	  => 'application/json; charset=utf-8',
+						'headers'    => array(
+							'Accept'        => 'application/json',
+							'Authorization' => 'Bearer ' . $this->access_token,
+							'Content-Type'  => 'application/json; charset=utf-8',
 						),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2112,15 +2116,15 @@ class ConvertKit_API {
 				$result = wp_remote_request(
 					$this->get_api_url( $endpoint ),
 					array(
-						'method'          => 'PUT',
-						'headers'         => array(
-							'Accept' 		  => 'application/json',
-							'Authorization'	  => 'Bearer ' . $this->access_token,
-							'Content-Type' 	  => 'application/json; charset=utf-8',
+						'method'     => 'PUT',
+						'headers'    => array(
+							'Accept'        => 'application/json',
+							'Authorization' => 'Bearer ' . $this->access_token,
+							'Content-Type'  => 'application/json; charset=utf-8',
 						),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2129,15 +2133,15 @@ class ConvertKit_API {
 				$result = wp_remote_request(
 					$this->get_api_url( $endpoint ),
 					array(
-						'method'          => 'DELETE',
-						'headers'         => array(
-							'Accept' 		  => 'application/json',
-							'Authorization'	  => 'Bearer ' . $this->access_token,
-							'Content-Type' 	  => 'application/json; charset=utf-8',
+						'method'     => 'DELETE',
+						'headers'    => array(
+							'Accept'        => 'application/json',
+							'Authorization' => 'Bearer ' . $this->access_token,
+							'Content-Type'  => 'application/json; charset=utf-8',
 						),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2211,10 +2215,9 @@ class ConvertKit_API {
 			);
 		}
 
-		// @TODO Check for 204 no content instead?
-
-		// If the response is null for a non-DELETE method, json_decode() failed as the body could not be decoded.
-		if ( is_null( $response ) && $method !== 'delete' ) {
+		// If the HTTP response code isn't 204 (no content), and a non-DELETE method was used, json_decode() failed
+		// as the body could not be decoded.
+		if ( $http_response_code !== 204 && is_null( $response ) && $method !== 'delete' ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 			return new WP_Error(
 				'convertkit_api_error',
