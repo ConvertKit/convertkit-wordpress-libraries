@@ -676,12 +676,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
 		);
 
+		// Confirm no error.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertArrayHasKey('name', $result);
-		$this->assertArrayHasKey('created_at', $result);
-		$this->assertEquals($result['name'], $_ENV['CONVERTKIT_API_TAG_NAME']);
 	}
 
 	/**
@@ -770,6 +766,21 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `get_subscriber_by_email()` function returns expected data
+	 * when an email address is supplied that is not a subscriber.
+	 *
+	 * @since   1.0.0
+	 */
+	public function testGetSubscriberByEmailWhenNotSubscribed()
+	{
+		$email = $this->generateEmailAddress();
+		$result = $this->api->get_subscriber_by_email($email);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address '.$email.'.', $result->get_error_message());
+	}
+
+	/**
 	 * Test that the `get_subscriber_by_email()` function returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 *
@@ -794,7 +805,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_subscriber_by_email('invalid-email-address');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address invalid-email-address.', $result->get_error_message());
+		$this->assertEquals('email_address is an invalid email address', $result->get_error_message());
 	}
 
 	/**
@@ -942,7 +953,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_subscriber_id('invalid-email-address');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address invalid-email-address.', $result->get_error_message());
+		$this->assertEquals('email_address is an invalid email address', $result->get_error_message());
 	}
 
 	/**
@@ -957,7 +968,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// for other tests.
 
 		// Subscribe an email address.
-		$emailAddress = 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@convertkit.com';
+		$emailAddress = $this->generateEmailAddress();
 		$this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], $emailAddress);
 
 		// Unsubscribe the email address.
@@ -994,7 +1005,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->unsubscribe('invalid-email-address');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
+		$this->assertEquals('email_address is an invalid email address', $result->get_error_message());
 	}
 
 	/**

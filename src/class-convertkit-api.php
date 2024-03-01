@@ -775,12 +775,11 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'api_secret' => $this->api_secret,
-			'email'      => $email,
+			'email_address' => $email,
 		);
 
 		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/unsubscribe', $params );
+		$response = $this->delete( 'tags/' . $tag_id . '/subscribers', $params );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -827,7 +826,6 @@ class ConvertKit_API {
 		$response = $this->get(
 			'subscribers',
 			array(
-				'api_secret'    => $this->api_secret,
 				'email_address' => $email,
 			)
 		);
@@ -839,7 +837,7 @@ class ConvertKit_API {
 		}
 
 		// If no matching subscribers exist, log that no matching subscribers exist and return a blank array.
-		if ( (int) $response['total_subscribers'] === 0 ) {
+		if ( count( $response['subscribers'] ) === 0 ) {
 			$error = new WP_Error(
 				'convertkit_api_error',
 				sprintf(
@@ -878,12 +876,7 @@ class ConvertKit_API {
 		}
 
 		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id,
-			array(
-				'api_secret' => $this->api_secret,
-			)
-		);
+		$response = $this->get('subscribers/' . $subscriber_id);
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -916,12 +909,7 @@ class ConvertKit_API {
 		}
 
 		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id . '/tags',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
+		$response = $this->get('subscribers/' . $subscriber_id . '/tags');
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -976,14 +964,17 @@ class ConvertKit_API {
 			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'unsubscribe_email_empty' ) );
 		}
 
+		// Get subscriber ID by email.
+		$response = $this->get_subscriber_id( $email );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: unsubscribe(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
 		// Send request.
-		$response = $this->put(
-			'unsubscribe',
-			array(
-				'api_secret' => $this->api_secret,
-				'email'      => $email,
-			)
-		);
+		$response = $this->post('subscribers/{id}/unsubscribe');
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -1021,7 +1012,7 @@ class ConvertKit_API {
 	 *                                         the broadcast will be scheduled to send.
 	 * @param string    $email_address         Sending email address; leave blank to use your account's
 	 *                                         default sending email address.
-	 * @param string    $email_layout_template Name of the email template to use; leave blank to use your
+	 * @param string    $email_layout_template ID of the email template to use; leave blank to use your
 	 *                                         account's default email template.
 	 * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
 	 *                                         (applicable only to public posts).
@@ -1049,11 +1040,10 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'api_secret'            => $this->api_secret,
 			'content'               => $content,
 			'description'           => $description,
 			'email_address'         => $email_address,
-			'email_layout_template' => $email_layout_template,
+			'email_template_id' 	=> $email_layout_template,
 			'public'                => $is_public,
 			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
 			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
@@ -1118,13 +1108,8 @@ class ConvertKit_API {
 			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'broadcast_delete_broadcast_id_empty' ) );
 		}
 
-		// Build request parameters.
-		$params = array(
-			'api_secret' => $this->api_secret,
-		);
-
 		// Send request.
-		$response = $this->delete( 'broadcasts/' . $broadcast_id, $params );
+		$response = $this->delete( 'broadcasts/' . $broadcast_id );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -2047,7 +2032,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function post( $endpoint, $params ) {
+	private function post( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'post', $params, true );
 
@@ -2062,7 +2047,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function put( $endpoint, $params ) {
+	private function put( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'put', $params, true );
 
@@ -2077,7 +2062,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|null
 	 */
-	private function delete( $endpoint, $params ) {
+	private function delete( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'delete', $params, true );
 
@@ -2231,6 +2216,8 @@ class ConvertKit_API {
 				$http_response_code
 			);
 		}
+
+		// @TODO Check for 204 no content instead?
 
 		// If the response is null for a non-DELETE method, json_decode() failed as the body could not be decoded.
 		if ( is_null( $response ) && $method !== 'delete' ) {
