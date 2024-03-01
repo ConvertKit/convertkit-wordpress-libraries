@@ -32,6 +32,18 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
+	 * Holds the expected API error messages by HTTP code.
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @var 	array
+	 */
+	private $errorMessages = [
+		401 => 'The access token is invalid',
+		404 => 'Not Found',
+	];
+
+	/**
 	 * Performs actions before each test.
 	 *
 	 * @since   1.0.0
@@ -327,7 +339,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->form_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -369,7 +381,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->form_subscribe( $_ENV['CONVERTKIT_API_FORM_ID'], 'invalid-email-address', 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -450,7 +462,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+		$this->assertArrayHasKey('subscriber', $result);
 	}
 
 	/**
@@ -464,7 +476,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->sequence_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Course not found: ', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -520,7 +532,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->sequence_subscribe($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'invalid-email-address', 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -561,7 +573,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->tag_subscribe(
 			$_ENV['CONVERTKIT_API_TAG_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			'test123123@n7studios.com',
 			'First',
 			array(
 				'last_name'    => 'Last',
@@ -584,7 +596,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->tag_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Tag not found: ', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -640,7 +652,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->tag_subscribe($_ENV['CONVERTKIT_API_TAG_ID'], 'invalid-email-address', 'First');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 
@@ -683,7 +695,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->tag_unsubscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -825,7 +837,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_subscriber_by_id(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -887,7 +899,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_subscriber_tags(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -982,7 +994,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->unsubscribe('invalid-email-address');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**
@@ -1086,7 +1098,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->broadcast_delete(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		$this->assertEquals($this->errorMessages[404], $result->get_error_message());
 	}
 
 	/**

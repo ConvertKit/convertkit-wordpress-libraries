@@ -474,22 +474,17 @@ class ConvertKit_API {
 		// Build request parameters.
 		$params = array(
 			'email_address' => $email,
-			//'first_name' 	=> $first_name,
+			'first_name' 	=> $first_name,
 		);
-		/*
 		if ( $fields ) {
 			$params['fields'] = $fields;
 		}
 		if ( $tag_ids ) {
 			$params['tags'] = $tag_ids;
 		}
-		*/
 
 		// Send request.
 		$response = $this->post( 'forms/' . $form_id . '/subscribers', $params );
-
-		var_dump( $response );
-		die();
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -553,12 +548,7 @@ class ConvertKit_API {
 		$sequences = array();
 
 		// Send request.
-		$response = $this->get(
-			'sequences',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
+		$response = $this->get('sequences');
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -567,18 +557,18 @@ class ConvertKit_API {
 		}
 
 		// If the response isn't an array as we expect, log that no sequences exist and return a blank array.
-		if ( ! is_array( $response['courses'] ) ) {
+		if ( ! is_array( $response['sequences'] ) ) {
 			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
 			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
 		}
 
 		// If no sequences exist, log that no sequences exist and return a blank array.
-		if ( ! count( $response['courses'] ) ) {
+		if ( ! count( $response['sequences'] ) ) {
 			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
 			return $sequences;
 		}
 
-		foreach ( $response['courses'] as $sequence ) {
+		foreach ( $response['sequences'] as $sequence ) {
 			$sequences[ $sequence['id'] ] = $sequence;
 		}
 
@@ -616,16 +606,15 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
+			'email_address' => $email,
+			'first_name'    => $first_name,
 		);
 		if ( $fields ) {
 			$params['fields'] = $fields;
 		}
 
 		// Send request.
-		$response = $this->post( 'sequences/' . $sequence_id . '/subscribe', $params );
+		$response = $this->post( 'sequences/' . $sequence_id . '/subscribers', $params );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -663,12 +652,7 @@ class ConvertKit_API {
 		$tags = array();
 
 		// Send request.
-		$response = $this->get(
-			'tags',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
+		$response = $this->get('tags');
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -726,16 +710,15 @@ class ConvertKit_API {
 
 		// Build request parameters.
 		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
+			'email_address' => $email,
+			'first_name'    => $first_name,
 		);
 		if ( $fields ) {
 			$params['fields'] = $fields;
 		}
 
 		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/subscribe', $params );
+		$response = $this->post( 'tags/' . $tag_id . '/subscribers', $params );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
