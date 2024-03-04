@@ -15,7 +15,7 @@
 class ConvertKit_API {
 
 	/**
-	 * ConvertKit oAuth Application Client ID
+	 * ConvertKit OAuth Application Client ID
 	 *
 	 * @since   2.0.0
 	 *
@@ -24,13 +24,22 @@ class ConvertKit_API {
 	protected $client_id = false;
 
 	/**
-	 * ConvertKit oAuth Application Client Secret
+	 * ConvertKit OAuth Application Client Secret
 	 *
 	 * @since   2.0.0
 	 *
 	 * @var bool|string.
 	 */
 	protected $client_secret = false;
+
+	/**
+	 * ConvertKit OAuth Redirect URI
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var bool|string.
+	 */
+	protected $redirect_uri = false;
 
 	/**
 	 * Access Token
@@ -266,7 +275,11 @@ class ConvertKit_API {
 			'request_method_unsupported'                  => __( 'API request method %s is not supported in ConvertKit_API class.', 'convertkit' ),
 			'request_rate_limit_exceeded'                 => __( 'ConvertKit API Error: Rate limit hit.', 'convertkit' ),
 			'request_internal_server_error'               => __( 'ConvertKit API Error: Internal server error.', 'convertkit' ),
+			'request_not_implemented'                 	  => __( 'ConvertKit API Error: Request method not implemented.', 'convertkit' ),
 			'request_bad_gateway'                 		  => __( 'ConvertKit API Error: Bad gateway.', 'convertkit' ),
+			'request_service_unavailable'                 => __( 'ConvertKit API Error: Service unavailable.', 'convertkit' ),
+			'request_gateway_timeout'                 	  => __( 'ConvertKit API Error: Gateway timeout.', 'convertkit' ),
+			'request_http_not_supported'                  => __( 'ConvertKit API Error: HTTP version not supported.', 'convertkit' ),
 			'response_type_unexpected' 					  => __( 'ConvertKit API Error: The response is not of the expected type array.', 'convertkit' ),
 		);
 		// phpcs:enable
@@ -274,7 +287,7 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Sets the oAuth Client ID.
+	 * Sets the OAuth Client ID.
 	 *
 	 * @since   2.0.0
 	 *
@@ -287,7 +300,7 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Sets the oAuth Client Secret.
+	 * Sets the OAuth Client Secret.
 	 *
 	 * @since   2.0.0
 	 *
@@ -300,19 +313,31 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Returns the URL used to begin the oAuth process
+	 * Sets the OAuth Redirect URI.
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $redirect_uri   URI to redirect to once the user logs in and authenticates the application.
-	 * @return  string                          oAuth URL
+	 * @param   string $client_secret  Client Secret.
 	 */
-	public function get_oauth_url( $redirect_uri ) {
+	public function set_redirect_uri( $redirect_uri ) {
+
+		$this->redirect_uri = $redirect_uri;
+
+	}
+
+	/**
+	 * Returns the URL used to begin the OAuth process
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return  string                 OAuth URL
+	 */
+	public function get_oauth_url() {
 
 		return add_query_arg(
 			array(
 				'client_id'     => $this->client_id,
-				'redirect_uri'  => rawurlencode( $redirect_uri ),
+				'redirect_uri'  => rawurlencode( $this->redirect_uri ),
 				'response_type' => 'code',
 
 			// PKCE specific, not yet supported.
@@ -330,11 +355,10 @@ class ConvertKit_API {
 	 * @since   2.0.0
 	 *
 	 * @param   string $authorization_code     Authorization Code, returned from get_oauth_url() flow.
-	 * @param   string $redirect_uri           URL that was redirected to i.e. specified in get_oauth_url().
 	 * @param   string $code_verifier          Code verifier, created by get_oauth_url() and returned.
 	 * @return  WP_Error|string                 Error or Access Token
 	 */
-	public function get_access_token( $authorization_code, $redirect_uri, $code_verifier = false ) {
+	public function get_access_token( $authorization_code, $code_verifier = false ) {
 
 		$result = wp_remote_post(
 			$this->get_api_url( 'token' ),
@@ -347,7 +371,7 @@ class ConvertKit_API {
 					'client_id'     => $this->client_id,
 					'client_secret' => $this->client_secret,
 					'grant_type'    => 'authorization_code',
-					'redirect_uri'  => $redirect_uri,
+					'redirect_uri'  => $this->redirect_uri,
 
 					// PKCE would use a code_verifier instead of a client_secret, not yet supported.
 					// 'code_verifier' => $code_verifier.
@@ -377,6 +401,71 @@ class ConvertKit_API {
 			$this->log( 'API: Error: ' . $error->get_error_message() );
 			return $error;
 		}
+
+		// Return.
+		return $response;
+
+	}
+
+	/**
+	 * Fetches a new access token using the supplied refresh token.
+	 *
+	 * @since   2.0.0
+	 */
+	public function refresh_token() {
+
+		$result = wp_remote_post(
+			$this->get_api_url( 'token' ),
+			array(
+				'headers'    => array(
+					'Content-Type' => 'application/x-www-form-urlencoded',
+				),
+				'body'       => array(
+					'refresh_token' => $this->refresh_token,
+					'client_id'     => $this->client_id,
+					'client_secret' => $this->client_secret,
+					'grant_type' => 'refresh_token',
+					'redirect_uri' => $this->redirect_uri,
+				),
+				'timeout'    => $this->get_timeout(),
+				'user-agent' => $this->get_user_agent(),
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $result ) ) {
+			$this->log( 'API: Error: ' . $result->get_error_message() );
+			return $result;
+		}
+
+		// Fetch HTTP response code and body.
+		$body     = wp_remote_retrieve_body( $result );
+		$response = json_decode( $body, true );
+
+		// Check for errors.
+		if ( array_key_exists( 'error', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_refresh_token_' . $response['error'],
+				$response['error_description']
+			);
+
+			$this->log( 'API: Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		// Update the access and refresh tokens in this class.
+		$this->access_token = $response['access_token'];
+		$this->refresh_token = $response['refresh_token'];
+
+		/**
+		 * Perform any actions with the new access token, such as saving it.
+		 * 
+		 * @since 	2.0.0
+		 * 
+		 * @param 	array 	$response 	Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param 	string 	$client_id  OAUth Client ID.
+		 */
+		do_action( 'convertkit_api_refresh_token', $response, $this->client_id );
 
 		// Return.
 		return $response;
@@ -2193,11 +2282,32 @@ class ConvertKit_API {
 					$error = $this->get_error_message( 'request_internal_server_error' );
 					break;
 
+				// Not implemented.
+				case 501:
+					$error = $this->get_error_message( 'request_method_unsupported' );
+					break;
+
 				// Bad gateway.
 				case 502:
 					$error = $this->get_error_message( 'request_bad_gateway' );
 					break;
+
+				// Service unavailable.
+				case 503:
+					$error = $this->get_error_message( 'request_service_unavailable' );
+					break;
+
+				// Gateway timeout.
+				case 504:
+					$error = $this->get_error_message( 'request_gateway_timeout' );
+					break;
+
+				// HTTP version not supported.
+				case 505:
+					$error = $this->get_error_message( 'request_http_not_supported' );
+					break;
 			}
+
 			return new WP_Error(
 				'convertkit_api_error',
 				$error,
@@ -2208,15 +2318,41 @@ class ConvertKit_API {
 		// Return the API error message as a WP_Error if the HTTP response code is a 4xx code.
 		if ( $http_response_code >= 400 ) {
 			$this->log( 'API: Error: ' . implode( "\n", $response['errors'] ) );
+
+			switch ( $http_response_code ) {
+				// If the HTTP response code is 401, and the error matches 'The access token expired', refresh the access token now
+				// and re-attempt the request.
+				case 401:
+					$error = implode( "\n", $response['errors'] );
+					if ( $error !== 'The access token expired' ) {
+						break;
+					}
+					
+					// Refresh the access token.
+					$result = $this->refresh_token();
+
+					// If an error occured, bail.
+					if ( is_wp_error( $result ) ) {
+						return $result;
+					}
+
+					// Attempt the request again, now we have a new access token.
+					return $this->request( $endpoint, $method, $params, false );
+
+				default:
+					$error = implode( "\n", $response['errors'] );
+			}
+
 			return new WP_Error(
 				'convertkit_api_error',
-				implode( "\n", $response['errors'] ),
+				$error,
 				$http_response_code
 			);
 		}
 
 		// If the HTTP response code isn't 204 (no content), and a non-DELETE method was used, json_decode() failed
 		// as the body could not be decoded.
+		// @TODO We might no longer need this with v4.
 		if ( $http_response_code !== 204 && is_null( $response ) && $method !== 'delete' ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 			return new WP_Error(
