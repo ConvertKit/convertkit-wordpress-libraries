@@ -405,6 +405,16 @@ class ConvertKit_API {
 			return $error;
 		}
 
+		/**
+		 * Perform any actions with the new access token, such as saving it.
+		 *
+		 * @since   2.0.0
+		 *
+		 * @param   array   $response   Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   string  $client_id  OAUth Client ID.
+		 */
+		do_action( 'convertkit_api_get_access_token', $response, $this->client_id );
+
 		// Return.
 		return $response;
 
