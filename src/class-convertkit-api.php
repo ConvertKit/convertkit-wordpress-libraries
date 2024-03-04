@@ -320,7 +320,7 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $client_secret  Client Secret.
+	 * @param   string $redirect_uri  Redirect URI.
 	 */
 	public function set_redirect_uri( $redirect_uri ) {
 
@@ -343,9 +343,9 @@ class ConvertKit_API {
 				'redirect_uri'  => rawurlencode( $this->redirect_uri ),
 				'response_type' => 'code',
 
-			// PKCE specific, not yet supported.
-			// 'code_challenge'      => '',
-			// 'code_challenge_method' => 'S256',
+				// PKCE specific, not yet supported.
+				// 'code_challenge'      => '',.
+				// 'code_challenge_method' => 'S256',.
 			),
 			$this->oauth_authorize_url
 		);
@@ -427,8 +427,8 @@ class ConvertKit_API {
 					'refresh_token' => $this->refresh_token,
 					'client_id'     => $this->client_id,
 					'client_secret' => $this->client_secret,
-					'grant_type' => 'refresh_token',
-					'redirect_uri' => $this->redirect_uri,
+					'grant_type'    => 'refresh_token',
+					'redirect_uri'  => $this->redirect_uri,
 				),
 				'timeout'    => $this->get_timeout(),
 				'user-agent' => $this->get_user_agent(),
@@ -457,16 +457,16 @@ class ConvertKit_API {
 		}
 
 		// Update the access and refresh tokens in this class.
-		$this->access_token = $response['access_token'];
+		$this->access_token  = $response['access_token'];
 		$this->refresh_token = $response['refresh_token'];
 
 		/**
 		 * Perform any actions with the new access token, such as saving it.
-		 * 
-		 * @since 	2.0.0
-		 * 
-		 * @param 	array 	$response 	Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param 	string 	$client_id  OAUth Client ID.
+		 *
+		 * @since   2.0.0
+		 *
+		 * @param   array   $response   Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   string  $client_id  OAUth Client ID.
 		 */
 		do_action( 'convertkit_api_refresh_token', $response, $this->client_id );
 
@@ -1140,9 +1140,9 @@ class ConvertKit_API {
 		 *
 		 * @since   1.0.0
 		 *
-		 * @param   array   $response   	API Response
-		 * @param   string  $email      	Email Address
-		 * @param 	int 	$subscriber_id 	Subscriber ID
+		 * @param   array   $response       API Response
+		 * @param   string  $email          Email Address
+		 * @param   int     $subscriber_id  Subscriber ID
 		 */
 		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email, $subscriber_id );
 
@@ -1172,6 +1172,7 @@ class ConvertKit_API {
 	 *                                         (applicable only to public posts).
 	 * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
 	 *                                         post (applicable only to public posts).
+	 * @param array     $subscriber_filter     Specify subscriber filters to determine who should receive this broadcast.
 	 *
 	 * @see https://developers.convertkit.com/#create-a-broadcast
 	 *
@@ -2390,7 +2391,7 @@ class ConvertKit_API {
 					if ( $error !== 'The access token expired' ) {
 						break;
 					}
-					
+
 					// Refresh the access token.
 					$result = $this->refresh_token();
 
@@ -2415,7 +2416,6 @@ class ConvertKit_API {
 
 		// If the HTTP response code isn't 204 (no content), and a non-DELETE method was used, json_decode() failed
 		// as the body could not be decoded.
-		// @TODO We might no longer need this with v4.
 		if ( $http_response_code !== 204 && is_null( $response ) && $method !== 'delete' ) {
 			$this->log( 'API: Error: ' . sprintf( $this->get_error_message( 'response_type_unexpected' ), $body ) );
 			return new WP_Error(
