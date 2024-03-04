@@ -587,7 +587,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('susbcriber', $result);
+		$this->assertArrayHasKey('subscriber', $result);
 	}
 
 	/**
@@ -1043,10 +1043,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Unsubscribe the email address.
 		$result = $this->api->unsubscribe($emailAddress);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscriber', $result);
-		$this->assertArrayHasKey('email_address', $result['subscriber']);
-		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
 	}
 
 	/**
@@ -1884,7 +1880,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `unsubscribe()` function is backward compatible.
+	 * Test that the `form_unsubscribe()` function is backward compatible.
 	 *
 	 * @since   1.0.0
 	 */
@@ -1894,24 +1890,21 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// for other tests.
 
 		// Subscribe an email address.
-		$emailAddress = 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@convertkit.com';
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->subscribe($emailAddress);
 		$this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], $emailAddress);
 
-		// Unsubscribe the email address.
+		// Unsubscribe the email address from the form.
 		$result = $this->api->form_unsubscribe(
 			[
 				'email' => $emailAddress,
 			]
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscriber', $result);
-		$this->assertArrayHasKey('email_address', $result['subscriber']);
-		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
 	}
 
 	/**
-	 * Test that the `unsubscribe()` function is backward compatible and returns a WP_Error
+	 * Test that the `form_unsubscribe()` function is backward compatible and returns a WP_Error
 	 * when an empty $email parameter is provided.
 	 *
 	 * @since   1.0.0

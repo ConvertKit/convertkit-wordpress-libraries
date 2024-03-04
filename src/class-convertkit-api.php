@@ -1118,16 +1118,16 @@ class ConvertKit_API {
 		}
 
 		// Get subscriber ID by email.
-		$response = $this->get_subscriber_id( $email );
+		$subscriber_id = $this->get_subscriber_id( $email );
 
 		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: unsubscribe(): Error: ' . $response->get_error_message() );
-			return $response;
+		if ( is_wp_error( $subscriber_id ) ) {
+			$this->log( 'API: unsubscribe(): Error: ' . $subscriber_id->get_error_message() );
+			return $subscriber_id;
 		}
 
 		// Send request.
-		$response = $this->post( 'subscribers/{id}/unsubscribe' );
+		$response = $this->post( 'subscribers/' . $subscriber_id . '/unsubscribe' );
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $response ) ) {
@@ -1140,10 +1140,11 @@ class ConvertKit_API {
 		 *
 		 * @since   1.0.0
 		 *
-		 * @param   array   $response   API Response
-		 * @param   string  $email      Email Address
+		 * @param   array   $response   	API Response
+		 * @param   string  $email      	Email Address
+		 * @param 	int 	$subscriber_id 	Subscriber ID
 		 */
-		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email );
+		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email, $subscriber_id );
 
 		return $response;
 
