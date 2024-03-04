@@ -306,7 +306,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
-			$this->generateEmailAddress(),
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
 			'First',
 			array(
 				'last_name'    => 'Last',
@@ -578,7 +578,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->tag_subscribe(
 			$_ENV['CONVERTKIT_API_TAG_ID'],
-			'test123123@n7studios.com',
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
 			'First',
 			array(
 				'last_name'    => 'Last',
@@ -587,7 +587,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+		$this->assertArrayHasKey('susbcriber', $result);
 	}
 
 	/**
@@ -962,6 +962,70 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `subscribe()` function returns expected data
+	 * when valid parameters are provided.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testSubscribe()
+	{
+		$email = $this->generateEmailAddress();
+		$result = $this->api->subscribe(
+			$email,
+			'First',
+			array(
+				'last_name'    => 'Last',
+				'phone_number' => '123-456-7890',
+			)
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('subscriber', $result);
+	}
+
+	/**
+	 * Test that the `subscribe()` function returns a WP_Error
+	 * when an empty $email parameter is provided.
+	 *
+	 * @since   1.0.0
+	 */
+	public function testSubscribeWithEmptyEmail()
+	{
+		$result = $this->api->subscribe('', 'First');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('subscribe(): the email parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `subscribe()` function returns a WP_Error
+	 * when the $email parameter only consists of spaces.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testSubscribeWithSpacesInEmail()
+	{
+		$result = $this->api->subscribe('     ', 'First');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('subscribe(): the email parameter is empty.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that the `subscribe()` function returns a WP_Error
+	 * when an invalid email parameter is provided.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testSubscribeWithInvalidEmail()
+	{
+		$result = $this->api->subscribe('invalid-email-address', 'First');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Email address is invalid', $result->get_error_message());
+	}
+
+	/**
 	 * Test that the `unsubscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 *
@@ -974,7 +1038,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Subscribe an email address.
 		$emailAddress = $this->generateEmailAddress();
-		$this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], $emailAddress);
+		$this->api->subscribe($emailAddress);
 
 		// Unsubscribe the email address.
 		$result = $this->api->unsubscribe($emailAddress);
@@ -1077,11 +1141,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('Test Content', $result['content']);
 		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
 		$this->assertEquals(
-			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . '.000Z',
+			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . 'Z',
 			$result['published_at']
 		);
 		$this->assertEquals(
-			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . '.000Z',
+			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . 'Z',
 			$result['send_at']
 		);
 
@@ -1778,7 +1842,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+		$this->assertArrayHasKey('subscriber', $result);
 	}
 
 	/**

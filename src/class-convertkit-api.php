@@ -241,6 +241,9 @@ class ConvertKit_API {
 			// get_subscriber_tags().
 			'get_subscriber_tags_subscriber_id_empty'     => __( 'get_subscriber_tags(): the subscriber_id parameter is empty.', 'convertkit' ),
 
+			// subscribe().
+			'subscribe_email_empty'                  	  => __( 'subscribe(): the email parameter is empty.', 'convertkit' ),
+
 			// unsubscribe_email().
 			'unsubscribe_email_empty'                     => __( 'unsubscribe(): the email parameter is empty.', 'convertkit' ),
 
@@ -896,6 +899,63 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Creates a subscriber.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $email      Email Address.
+	 * @param   string $first_name First Name.
+	 * @param   mixed  $fields     Custom Fields (false|array).
+	 * @return  WP_Error|array
+	 */
+	public function subscribe( $email, $first_name = '', $fields = false ) {
+
+		$this->log( 'API: subscribe(): [ email: ' . $email . ', first_name: ' . $first_name . ' ]' );
+
+		// Sanitize some parameters.
+		$email      = trim( $email );
+		$first_name = trim( $first_name );
+
+		// Return error if no email address is specified.
+		if ( empty( $email ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscribe_email_empty' ) );
+		}
+
+		// Build request parameters.
+		$params = array(
+			'email_address' => $email,
+			'first_name'    => $first_name,
+		);
+		if ( $fields ) {
+			$params['fields'] = $fields;
+		}
+
+		// Send request.
+		$response = $this->post( 'subscribers', $params );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: subscribe(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		/**
+		 * Runs actions immediately after the subscriber was created.
+		 *
+		 * @since   2.0.0
+		 *
+		 * @param   array   $response   API Response
+		 * @param   string  $email      Email Address
+		 * @param   string  $first_name First Name
+		 * @param   mixed   $fields     Custom Fields (false|array)
+		 */
+		do_action( 'convertkit_api_subscribe_success', $response, $email, $first_name, $fields );
+
+		return $response;
+
+	}
+
+	/**
 	 * Gets a subscriber by their email address.
 	 *
 	 * @since   1.0.0
@@ -1126,7 +1186,8 @@ class ConvertKit_API {
 		string $email_address = '',
 		string $email_layout_template = '',
 		string $thumbnail_alt = '',
-		string $thumbnail_url = ''
+		string $thumbnail_url = '',
+		array $subscriber_filter = array(),
 	) {
 
 		$this->log( 'API: broadcast_create(): [ subject: ' . $subject . ']' );
@@ -1143,6 +1204,7 @@ class ConvertKit_API {
 			'subject'           => $subject,
 			'thumbnail_alt'     => $thumbnail_alt,
 			'thumbnail_url'     => $thumbnail_url,
+			'subscriber_filter' => $subscriber_filter,
 		);
 
 		// Iterate through parameters, removing blank entries.
