@@ -74,6 +74,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Define location for log file.
 		define( 'CONVERTKIT_PLUGIN_PATH', $_ENV['WP_ROOT_FOLDER'] . '/wp-content/uploads' );
 
+		// Create a log.txt file.
+		$this->tester->writeToFile(CONVERTKIT_PLUGIN_PATH . '/log.txt', 'historical log file');
+
 		// Initialize API.
 		$api = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true );
 
@@ -87,6 +90,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			)
 		);
 		$api->profile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);
+
+		// Confirm the historical log.txt file has been deleted.
+		$this->assertFileDoesNotExist(CONVERTKIT_PLUGIN_PATH . '/log.txt');
 
 		// Confirm the .htaccess and index.html files exist.
 		$this->assertDirectoryExists(CONVERTKIT_PLUGIN_PATH . '/log');

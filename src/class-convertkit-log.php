@@ -48,8 +48,25 @@ class ConvertKit_Log {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		WP_Filesystem();
 
-		// If the path does not exist, create it now.
-		$this->maybe_create_log_directory();
+		// If a historic log file exists, delete it now.
+		$this->maybe_delete_historic_log_file( $path );
+
+		// If the secure log directory does not exist, create it now.
+		$this->maybe_create_secure_log_directory();
+
+	}
+
+	/**
+	 * Deletes a log.txt file for the given 'old' log file path location,
+	 * which does not have .htaccess or index.html protection.
+	 *
+	 * @since   1.4.2
+	 *
+	 * @param   string $old_path   Path to possible historic log file.
+	 */
+	private function maybe_delete_historic_log_file( $old_path ) {
+
+		wp_delete_file( trailingslashit( $old_path ) . 'log.txt' );
 
 	}
 
@@ -59,7 +76,7 @@ class ConvertKit_Log {
 	 *
 	 * @since   1.4.2
 	 */
-	private function maybe_create_log_directory() {
+	private function maybe_create_secure_log_directory() {
 
 		// Initialize WordPress file system.
 		global $wp_filesystem;
