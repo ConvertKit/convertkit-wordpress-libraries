@@ -2233,7 +2233,7 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Helper method to mask all but the first 4 characters of a string.
+	 * Helper method to mask all but the last 4 characters of a string.
 	 *
 	 * @since   1.4.2
 	 *
@@ -2242,9 +2242,14 @@ class ConvertKit_API {
 	 */
 	private function mask_string( $str ) {
 
+		// Don't mask if less than 4 characters.
+		if ( strlen( $str ) < 4 ) {
+			return $str;
+		}
+
 		return str_replace(
 			$str,
-			str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, - 4 ),
+			str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, -4 ),
 			$str
 		);
 
