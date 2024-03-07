@@ -41,8 +41,8 @@ class ConvertKit_Log {
 	public function __construct( $path ) {
 
 		// Define location of log file.
-		$this->path     = $path . '/log';
-		$this->log_file = trailingslashit( $this->path ) . 'log.txt';
+		$this->path     = trailingslashit( $path . '/log' );
+		$this->log_file = $this->path . 'log.txt';
 
 		// Initialize WP_Filesystem.
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -61,29 +61,15 @@ class ConvertKit_Log {
 	 */
 	private function maybe_create_log_directory() {
 
-		// Define files to protect the directory.
-		$files = array(
-			array(
-				'base'    => $this->path,
-				'file'    => '.htaccess',
-				'content' => 'deny from all',
-			),
-			array(
-				'base'    => $this->path,
-				'file'    => 'index.html',
-				'content' => '',
-			),
-		);
+		// Initialize WordPress file system.
+		global $wp_filesystem;
 
-		foreach ( $files as $file ) {
-			if ( wp_mkdir_p( $file['base'] ) && ! file_exists( trailingslashit( $file['base'] ) . $file['file'] ) ) {
-				$file_handle = @fopen( trailingslashit( $file['base'] ) . $file['file'], 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions
-				if ( $file_handle ) {
-					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-				}
-			}
-		}
+		// Create directory.
+		wp_mkdir_p( $this->path );
+
+		// Define files to protect the directory.
+		$wp_filesystem->put_contents( $this->path . '.htaccess', 'deny from all' );
+		$wp_filesystem->put_contents( $this->path . 'index.html', '' );
 
 	}
 
