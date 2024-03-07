@@ -2243,7 +2243,7 @@ class ConvertKit_API {
 	private function mask_string( $str ) {
 
 		return str_replace(
-            $str
+            $str,
             str_repeat('*', (strlen($this->str) - 4)) . substr($this->str, - 4),
             $str
         );
