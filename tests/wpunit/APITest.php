@@ -77,8 +77,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Initialize API.
 		$api = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true );
 
-		// Perform an action that will write to the log file.
-		$result = $api->form_subscribe(
+		// Perform actions that will write sensitive data to the log file.
+		$api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
 			'First Name',
@@ -86,6 +86,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				'last_name' => 'Last',
 			)
 		);
+		$api->profile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);
 
 		// Confirm the .htaccess and index.html files exist.
 		$this->assertDirectoryExists(CONVERTKIT_PLUGIN_PATH . '/log');
@@ -93,11 +94,13 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertFileExists(CONVERTKIT_PLUGIN_PATH . '/log/index.html');
 		$this->assertFileExists(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
 
-		// Confirm the contents of the log file have masked the email address and name.
+		// Confirm the contents of the log file have masked the email address, name and signed subscriber ID.
 		$this->tester->openFile(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
 		$this->tester->seeInThisFile('API: form_subscribe(): [ form_id: ' . $_ENV['CONVERTKIT_API_FORM_ID'] . ', email: o****@n********.c**, first_name: ******Name ]');
+		$this->tester->seeInThisFile('API: profile(): [ signed_subscriber_id: ********************');
 		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
 		$this->tester->dontSeeInThisFile('First Name');
+		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);
 
 		// Cleanup test.
 		$this->tester->cleanDir(CONVERTKIT_PLUGIN_PATH . '/log');
