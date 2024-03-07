@@ -134,7 +134,7 @@ class ConvertKit_API {
 		$this->debug          = $debug;
 		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
-		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_PATH' ) ? CONVERTKIT_PLUGIN_PATH : false );
+		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_LOG_PATH' ) ? CONVERTKIT_PLUGIN_LOG_PATH : false );
 		$this->plugin_url     = ( defined( 'CONVERTKIT_PLUGIN_URL' ) ? CONVERTKIT_PLUGIN_URL : false );
 		$this->plugin_version = ( defined( 'CONVERTKIT_PLUGIN_VERSION' ) ? CONVERTKIT_PLUGIN_VERSION : false );
 
@@ -303,7 +303,7 @@ class ConvertKit_API {
 			$email      = $email['email'];
 		}
 
-		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $first_name . ' ]' );
+		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $this->mask_string( $first_name ) . ' ]' );
 
 		// Sanitize some parameters.
 		$form_id    = absint( $form_id );
@@ -1344,7 +1344,7 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
-		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $token . ', subscriber_code: ' . $subscriber_code . ']' );
+		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $this->mask_string( $token ) . ', subscriber_code: ' . $this->mask_string( $subscriber_code ) . ']' );
 
 		// Sanitize some parameters.
 		$token           = trim( $token );
@@ -1398,7 +1398,7 @@ class ConvertKit_API {
 	 */
 	public function profile( $signed_subscriber_id ) {
 
-		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $signed_subscriber_id . ' ]' );
+		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $this->mask_string( $signed_subscriber_id ) . ' ]' );
 
 		// Trim some parameters.
 		$signed_subscriber_id = trim( $signed_subscriber_id );
@@ -2229,6 +2229,24 @@ class ConvertKit_API {
 
 		// Return error message.
 		return $this->error_messages[ $key ];
+
+	}
+
+	/**
+	 * Helper method to mask all but the first 4 characters of a string.
+	 * 
+	 * @since 	1.4.2
+	 * 
+	 * @param 	string 	$str 	String to mask.
+	 * @return 	string 			Masked string
+	 */
+	private function mask_string( $str ) {
+
+		return str_replace(
+            $str
+            str_repeat('*', (strlen($this->str) - 4)) . substr($this->str, - 4),
+            $str
+        );
 
 	}
 
