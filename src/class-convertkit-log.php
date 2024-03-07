@@ -41,8 +41,8 @@ class ConvertKit_Log {
 	public function __construct( $path ) {
 
 		// Define location of log file.
-		$this->path = $path;
-		$this->log_file = trailingslashit( $path ) . 'log.txt';
+		$this->path     = $path . '/log';
+		$this->log_file = trailingslashit( $this->path ) . 'log.txt';
 
 		// Initialize WP_Filesystem.
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -56,8 +56,8 @@ class ConvertKit_Log {
 	/**
 	 * Creates a directory to store the log file, with .htaccess and index.html
 	 * files to protect the log file, as WooCommerce does.
-	 * 
-	 * @since 	1.4.2
+	 *
+	 * @since   1.4.2
 	 */
 	private function maybe_create_log_directory() {
 
@@ -77,10 +77,10 @@ class ConvertKit_Log {
 
 		foreach ( $files as $file ) {
 			if ( wp_mkdir_p( $file['base'] ) && ! file_exists( trailingslashit( $file['base'] ) . $file['file'] ) ) {
-				$file_handle = @fopen( trailingslashit( $file['base'] ) . $file['file'], 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_fopen
+				$file_handle = @fopen( trailingslashit( $file['base'] ) . $file['file'], 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions
 				if ( $file_handle ) {
-					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
-					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 				}
 			}
 		}
@@ -134,11 +134,11 @@ class ConvertKit_Log {
 		// Mask email addresses that may be contained within the entry.
 		$entry = preg_replace_callback(
 			'^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})^',
-			function( $matches ) {
+			function ( $matches ) {
 				return preg_replace( '/\B[^@.]/', '*', $matches[0] );
-	        },
-	        $entry
-	    );
+			},
+			$entry
+		);
 
 		// Append entry.
 		$contents .= $entry;

@@ -134,7 +134,7 @@ class ConvertKit_API {
 		$this->debug          = $debug;
 		$this->context        = $context;
 		$this->plugin_name    = ( defined( 'CONVERTKIT_PLUGIN_NAME' ) ? CONVERTKIT_PLUGIN_NAME : false );
-		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_LOG_PATH' ) ? CONVERTKIT_PLUGIN_LOG_PATH : false );
+		$this->plugin_path    = ( defined( 'CONVERTKIT_PLUGIN_PATH' ) ? CONVERTKIT_PLUGIN_PATH : false );
 		$this->plugin_url     = ( defined( 'CONVERTKIT_PLUGIN_URL' ) ? CONVERTKIT_PLUGIN_URL : false );
 		$this->plugin_version = ( defined( 'CONVERTKIT_PLUGIN_VERSION' ) ? CONVERTKIT_PLUGIN_VERSION : false );
 
@@ -2234,19 +2234,19 @@ class ConvertKit_API {
 
 	/**
 	 * Helper method to mask all but the first 4 characters of a string.
-	 * 
-	 * @since 	1.4.2
-	 * 
-	 * @param 	string 	$str 	String to mask.
-	 * @return 	string 			Masked string
+	 *
+	 * @since   1.4.2
+	 *
+	 * @param   string $str    String to mask.
+	 * @return  string          Masked string
 	 */
 	private function mask_string( $str ) {
 
 		return str_replace(
-            $str,
-            str_repeat('*', (strlen($this->str) - 4)) . substr($this->str, - 4),
-            $str
-        );
+			$str,
+			str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, - 4 ),
+			$str
+		);
 
 	}
 

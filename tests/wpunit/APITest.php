@@ -42,6 +42,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Include class from /src to test.
 		require_once 'src/class-convertkit-api.php';
+		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
 		$this->api         = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'] );
@@ -60,6 +61,47 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		unset($this->api_no_data);
 
 		parent::tearDown();
+	}
+
+	/**
+	 * Test that a log directory and file are created in the expected location, with .htaccess
+	 * and index.html protection, and that the name and email addresses are masked.
+	 *
+	 * @since   1.4.2
+	 */
+	public function testLog()
+	{
+		// Define location for log file.
+		define( 'CONVERTKIT_PLUGIN_PATH', $_ENV['WP_ROOT_FOLDER'] . '/wp-content/uploads' );
+
+		// Initialize API.
+		$api = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true );
+
+		// Perform an action that will write to the log file.
+		$result = $api->form_subscribe(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
+			'First Name',
+			array(
+				'last_name' => 'Last',
+			)
+		);
+
+		// Confirm the .htaccess and index.html files exist.
+		$this->assertDirectoryExists(CONVERTKIT_PLUGIN_PATH . '/log');
+		$this->assertFileExists(CONVERTKIT_PLUGIN_PATH . '/log/.htaccess');
+		$this->assertFileExists(CONVERTKIT_PLUGIN_PATH . '/log/index.html');
+		$this->assertFileExists(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
+
+		// Confirm the contents of the log file have masked the email address and name.
+		$this->tester->openFile(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
+		$this->tester->seeInThisFile('API: form_subscribe(): [ form_id: ' . $_ENV['CONVERTKIT_API_FORM_ID'] . ', email: o****@n********.c**, first_name: ******Name ]');
+		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+		$this->tester->dontSeeInThisFile('First Name');
+
+		// Cleanup test.
+		$this->tester->cleanDir(CONVERTKIT_PLUGIN_PATH . '/log');
+		$this->tester->deleteDir(CONVERTKIT_PLUGIN_PATH . '/log');
 	}
 
 	/**
