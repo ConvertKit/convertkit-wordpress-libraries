@@ -66,6 +66,11 @@ class ConvertKit_Log {
 	 */
 	private function maybe_delete_historic_log_file( $old_path ) {
 
+		// Bail if file doesn't exist.
+		if ( ! file_exists( trailingslashit( $old_path ) . 'log.txt' ) ) {
+			return;
+		}
+
 		wp_delete_file( trailingslashit( $old_path ) . 'log.txt' );
 
 	}
