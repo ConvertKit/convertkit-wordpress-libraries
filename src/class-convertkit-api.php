@@ -2247,11 +2247,7 @@ class ConvertKit_API {
 			return $str;
 		}
 
-		return str_replace(
-			$str,
-			str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, -4 ),
-			$str
-		);
+		return str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, -4 );
 
 	}
 
