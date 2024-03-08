@@ -303,7 +303,7 @@ class ConvertKit_API {
 			$email      = $email['email'];
 		}
 
-		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $first_name . ' ]' );
+		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $this->mask_string( $first_name ) . ' ]' );
 
 		// Sanitize some parameters.
 		$form_id    = absint( $form_id );
@@ -1344,7 +1344,7 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
-		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $token . ', subscriber_code: ' . $subscriber_code . ']' );
+		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $this->mask_string( $token ) . ', subscriber_code: ' . $this->mask_string( $subscriber_code ) . ']' );
 
 		// Sanitize some parameters.
 		$token           = trim( $token );
@@ -1398,7 +1398,7 @@ class ConvertKit_API {
 	 */
 	public function profile( $signed_subscriber_id ) {
 
-		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $signed_subscriber_id . ' ]' );
+		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $this->mask_string( $signed_subscriber_id ) . ' ]' );
 
 		// Trim some parameters.
 		$signed_subscriber_id = trim( $signed_subscriber_id );
@@ -2229,6 +2229,25 @@ class ConvertKit_API {
 
 		// Return error message.
 		return $this->error_messages[ $key ];
+
+	}
+
+	/**
+	 * Helper method to mask all but the last 4 characters of a string.
+	 *
+	 * @since   1.4.2
+	 *
+	 * @param   string $str    String to mask.
+	 * @return  string          Masked string
+	 */
+	private function mask_string( $str ) {
+
+		// Don't mask if less than 4 characters.
+		if ( strlen( $str ) < 4 ) {
+			return $str;
+		}
+
+		return str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, -4 );
 
 	}
 

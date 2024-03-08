@@ -14,6 +14,15 @@
 class ConvertKit_Log {
 
 	/**
+	 * The path to the directory that will contain the log file.
+	 *
+	 * @since   1.4.2
+	 *
+	 * @var     string
+	 */
+	private $path;
+
+	/**
 	 * The path and filename of the log file.
 	 *
 	 * @since   1.0.0
@@ -32,11 +41,57 @@ class ConvertKit_Log {
 	public function __construct( $path ) {
 
 		// Define location of log file.
-		$this->log_file = trailingslashit( $path ) . 'log.txt';
+		$this->path     = trailingslashit( $path . '/log' );
+		$this->log_file = $this->path . 'log.txt';
 
 		// Initialize WP_Filesystem.
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		WP_Filesystem();
+
+		// If a historic log file exists, delete it now.
+		$this->maybe_delete_historic_log_file( $path );
+
+		// If the secure log directory does not exist, create it now.
+		$this->maybe_create_secure_log_directory();
+
+	}
+
+	/**
+	 * Deletes a log.txt file for the given 'old' log file path location,
+	 * which does not have .htaccess or index.html protection.
+	 *
+	 * @since   1.4.2
+	 *
+	 * @param   string $old_path   Path to possible historic log file.
+	 */
+	private function maybe_delete_historic_log_file( $old_path ) {
+
+		// Bail if file doesn't exist.
+		if ( ! file_exists( trailingslashit( $old_path ) . 'log.txt' ) ) {
+			return;
+		}
+
+		wp_delete_file( trailingslashit( $old_path ) . 'log.txt' );
+
+	}
+
+	/**
+	 * Creates a directory to store the log file, with .htaccess and index.html
+	 * files to protect the log file, as WooCommerce does.
+	 *
+	 * @since   1.4.2
+	 */
+	private function maybe_create_secure_log_directory() {
+
+		// Initialize WordPress file system.
+		global $wp_filesystem;
+
+		// Create directory.
+		wp_mkdir_p( $this->path );
+
+		// Define files to protect the directory.
+		$wp_filesystem->put_contents( $this->path . '.htaccess', 'deny from all' );
+		$wp_filesystem->put_contents( $this->path . 'index.html', '' );
 
 	}
 
@@ -83,6 +138,15 @@ class ConvertKit_Log {
 
 		// Get any existing log file contents.
 		$contents = $wp_filesystem->get_contents( $this->get_filename() );
+
+		// Mask email addresses that may be contained within the entry.
+		$entry = preg_replace_callback(
+			'^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})^',
+			function ( $matches ) {
+				return preg_replace( '/\B[^@.]/', '*', $matches[0] );
+			},
+			$entry
+		);
 
 		// Append entry.
 		$contents .= $entry;
