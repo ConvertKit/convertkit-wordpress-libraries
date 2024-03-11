@@ -33,10 +33,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 	/**
 	 * Holds the expected API error messages by HTTP code.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @var 	array
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array
 	 */
 	private $errorMessages = [
 		401 => 'The access token is invalid',
@@ -57,7 +57,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
-		$this->api         = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN'], $_ENV['CONVERTKIT_REFRESH_TOKEN'] );
+		$this->api = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN'], $_ENV['CONVERTKIT_REFRESH_TOKEN'] );
 		$this->api->set_client_id( $_ENV['CONVERTKIT_CLIENT_ID'] );
 		$this->api->set_client_secret( $_ENV['CONVERTKIT_CLIENT_SECRET'] );
 		$this->api->set_redirect_uri( $_ENV['TEST_SITE_WP_URL'] . '/wp-admin/options-general.php?page=_wp_convertkit_settings' );
@@ -367,7 +367,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('subscriber', $result);
-		
 	}
 
 	/**
@@ -829,11 +828,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetSubscriberByEmailWhenNotSubscribed()
 	{
-		$email = $this->generateEmailAddress();
+		$email  = $this->generateEmailAddress();
 		$result = $this->api->get_subscriber_by_email($email);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address '.$email.'.', $result->get_error_message());
+		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address ' . $email . '.', $result->get_error_message());
 	}
 
 	/**
@@ -1020,7 +1019,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscribe()
 	{
-		$email = $this->generateEmailAddress();
+		$email  = $this->generateEmailAddress();
 		$result = $this->api->subscribe(
 			$email,
 			'First',
@@ -1084,7 +1083,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscribeWithValidStateParameter()
 	{
-		$email = $this->generateEmailAddress();
+		$email  = $this->generateEmailAddress();
 		$result = $this->api->subscribe(
 			$email,
 			'First',
@@ -1108,7 +1107,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscribeWithInvalidStateParameter()
 	{
-		$email = $this->generateEmailAddress();
+		$email  = $this->generateEmailAddress();
 		$result = $this->api->subscribe(
 			$email,
 			'First',

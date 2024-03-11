@@ -913,10 +913,10 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string 		 $email      Email Address.
-	 * @param   string       $first_name First Name.
-	 * @param   bool|array   $fields     Custom Fields.
-	 * @param 	bool|string  $state      Subscriber state (active|bounced|cancelled|complained|inactive).
+	 * @param   string      $email      Email Address.
+	 * @param   string      $first_name First Name.
+	 * @param   bool|array  $fields     Custom Fields.
+	 * @param   bool|string $state      Subscriber state (active|bounced|cancelled|complained|inactive).
 	 * @return  WP_Error|array
 	 */
 	public function subscribe( $email, $first_name = '', $fields = false, $state = false ) {
