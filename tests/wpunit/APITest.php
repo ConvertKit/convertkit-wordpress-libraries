@@ -1077,6 +1077,53 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `subscribe()` function returns expected data
+	 * when a valid subscriber state parameter is provided.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testSubscribeWithValidStateParameter()
+	{
+		$email = $this->generateEmailAddress();
+		$result = $this->api->subscribe(
+			$email,
+			'First',
+			array(
+				'last_name'    => 'Last',
+				'phone_number' => '123-456-7890',
+			),
+			'active'
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertEquals('active', $result['subscriber']['state']);
+	}
+
+	/**
+	 * Test that the `subscribe()` function returns a WP_Error
+	 * when an invalid subscriber state parameter is provided.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testSubscribeWithInvalidStateParameter()
+	{
+		$email = $this->generateEmailAddress();
+		$result = $this->api->subscribe(
+			$email,
+			'First',
+			array(
+				'last_name'    => 'Last',
+				'phone_number' => '123-456-7890',
+			),
+			'not-a-valid-state'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('`not-a-valid-state` is not a valid state param', $result->get_error_message());
+	}
+
+	/**
 	 * Test that the `unsubscribe()` function returns expected data
 	 * when valid parameters are provided.
 	 *
