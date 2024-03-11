@@ -913,12 +913,13 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $email      Email Address.
-	 * @param   string $first_name First Name.
-	 * @param   mixed  $fields     Custom Fields (false|array).
+	 * @param   string 		 $email      Email Address.
+	 * @param   string       $first_name First Name.
+	 * @param   bool|array   $fields     Custom Fields.
+	 * @param 	bool|string  $state      Subscriber state (active|bounced|cancelled|complained|inactive).
 	 * @return  WP_Error|array
 	 */
-	public function subscribe( $email, $first_name = '', $fields = false ) {
+	public function subscribe( $email, $first_name = '', $fields = false, $state = false ) {
 
 		$this->log( 'API: subscribe(): [ email: ' . $email . ', first_name: ' . $first_name . ' ]' );
 
@@ -938,6 +939,9 @@ class ConvertKit_API {
 		);
 		if ( $fields ) {
 			$params['fields'] = $fields;
+		}
+		if ( $state ) {
+			$params['state'] = $state;
 		}
 
 		// Send request.
@@ -2157,6 +2161,11 @@ class ConvertKit_API {
 					break;
 
 				default:
+					// Skip forms with no format specified i.e. Creator Network + Creator Profile.
+					if ( is_null( $form['format'] ) ) {
+						break;
+					}
+
 					$forms[ $form['id'] ] = $form;
 					break;
 			}
