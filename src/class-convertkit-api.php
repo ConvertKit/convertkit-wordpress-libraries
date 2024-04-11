@@ -318,7 +318,7 @@ class ConvertKit_API {
 	 * @param   string $code_verifier  Code Verifier.
 	 * @return  string                  Code Challenge.
 	 */
-	private function generate_code_challenge( $code_verifier ) {
+	public function generate_code_challenge( $code_verifier ) {
 
 		// Hash using S256.
 		$code_challenge = hash( 'sha256', $code_verifier, true );
@@ -344,7 +344,7 @@ class ConvertKit_API {
 	 *
 	 * @return  bool|string
 	 */
-	private function get_code_verifier() {
+	public function get_code_verifier() {
 
 		return get_option( 'ck_code_verifier' );
 
@@ -402,21 +402,23 @@ class ConvertKit_API {
 	 */
 	public function get_access_token( $authorization_code ) {
 
-		$result = wp_remote_post(
-			$this->oauth_token_url,
-			array(
-				'headers'    => array(
-					'Content-Type' => 'application/x-www-form-urlencoded',
-				),
-				'body'       => array(
-					'client_id'     => $this->client_id,
-					'grant_type'    => 'authorization_code',
-					'code'          => $authorization_code,
-					'redirect_uri'  => $this->redirect_uri,
-					'code_verifier' => $this->get_code_verifier(),
-				),
-				'timeout'    => $this->get_timeout(),
-				'user-agent' => $this->get_user_agent(),
+		$result = $this->response(
+			wp_remote_post(
+				$this->oauth_token_url,
+				array(
+					'headers'    => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+					),
+					'body'       => array(
+						'client_id'     => $this->client_id,
+						'grant_type'    => 'authorization_code',
+						'code'          => $authorization_code,
+						'redirect_uri'  => $this->redirect_uri,
+						'code_verifier' => $this->get_code_verifier(),
+					),
+					'timeout'    => $this->get_timeout(),
+					'user-agent' => $this->get_user_agent(),
+				)
 			)
 		);
 
@@ -432,33 +434,18 @@ class ConvertKit_API {
 			return $result;
 		}
 
-		// Fetch HTTP response code and body.
-		$body     = wp_remote_retrieve_body( $result );
-		$response = json_decode( $body, true );
-
-		// Check for errors.
-		if ( array_key_exists( 'error', $response ) ) {
-			$error = new WP_Error(
-				'convertkit_api_get_access_token_' . $response['error'],
-				$response['error_description']
-			);
-
-			$this->log( 'API: Error: ' . $error->get_error_message() );
-			return $error;
-		}
-
 		/**
 		 * Perform any actions with the new access token, such as saving it.
 		 *
 		 * @since   2.0.0
 		 *
-		 * @param   array   $response   Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
 		 * @param   string  $client_id  OAUth Client ID.
 		 */
-		do_action( 'convertkit_api_get_access_token', $response, $this->client_id );
+		do_action( 'convertkit_api_get_access_token', $result, $this->client_id );
 
 		// Return.
-		return $response;
+		return $result;
 
 	}
 
@@ -469,19 +456,21 @@ class ConvertKit_API {
 	 */
 	public function refresh_token() {
 
-		$result = wp_remote_post(
-			$this->oauth_token_url,
-			array(
-				'headers'    => array(
-					'Content-Type' => 'application/x-www-form-urlencoded',
-				),
-				'body'       => array(
-					'client_id'     => $this->client_id,
-					'grant_type'    => 'refresh_token',
-					'refresh_token' => $this->refresh_token,
-				),
-				'timeout'    => $this->get_timeout(),
-				'user-agent' => $this->get_user_agent(),
+		$result = $this->response(
+			wp_remote_post(
+				$this->oauth_token_url,
+				array(
+					'headers'    => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+					),
+					'body'       => array(
+						'client_id'     => $this->client_id,
+						'grant_type'    => 'refresh_token',
+						'refresh_token' => $this->refresh_token,
+					),
+					'timeout'    => $this->get_timeout(),
+					'user-agent' => $this->get_user_agent(),
+				)
 			)
 		);
 
@@ -491,37 +480,22 @@ class ConvertKit_API {
 			return $result;
 		}
 
-		// Fetch HTTP response code and body.
-		$body     = wp_remote_retrieve_body( $result );
-		$response = json_decode( $body, true );
-
-		// Check for errors.
-		if ( array_key_exists( 'error', $response ) ) {
-			$error = new WP_Error(
-				'convertkit_api_refresh_token_' . $response['error'],
-				$response['error_description']
-			);
-
-			$this->log( 'API: Error: ' . $error->get_error_message() );
-			return $error;
-		}
-
 		// Update the access and refresh tokens in this class.
-		$this->access_token  = $response['access_token'];
-		$this->refresh_token = $response['refresh_token'];
+		$this->access_token  = $result['access_token'];
+		$this->refresh_token = $result['refresh_token'];
 
 		/**
 		 * Perform any actions with the new access token, such as saving it.
 		 *
 		 * @since   2.0.0
 		 *
-		 * @param   array   $response   Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
 		 * @param   string  $client_id  OAUth Client ID.
 		 */
-		do_action( 'convertkit_api_refresh_token', $response, $this->client_id );
+		do_action( 'convertkit_api_refresh_token', $result, $this->client_id );
 
 		// Return.
-		return $response;
+		return $result;
 
 	}
 
@@ -2324,6 +2298,21 @@ class ConvertKit_API {
 				break;
 		}
 
+		// Return the processed response.
+		return $this->response( $result );
+
+	}
+
+	/**
+	 * Main function which handles processing responses from the API.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   WP_Error|array 	$result 	API Result.
+	 * @return  WP_Error|array
+	 */
+	private function response( $result ) {
+
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $result ) ) {
 			$this->log( 'API: Error: ' . $result->get_error_message() );
@@ -2380,14 +2369,13 @@ class ConvertKit_API {
 
 		// Return the API error message as a WP_Error if the HTTP response code is a 4xx code.
 		if ( $http_response_code >= 400 ) {
-			$this->log( 'API: Error: ' . implode( "\n", $response['errors'] ) );
+			$this->log( 'API: Error: ' . $response['error'] . ': ' . $response['error_description'] );
 
 			switch ( $http_response_code ) {
 				// If the HTTP response code is 401, and the error matches 'The access token expired', refresh the access token now
 				// and re-attempt the request.
 				case 401:
-					$error = implode( "\n", $response['errors'] );
-					if ( $error !== 'The access token expired' ) {
+					if ( $response['error_description'] !== 'The access token expired' ) {
 						break;
 					}
 
@@ -2417,13 +2405,11 @@ class ConvertKit_API {
 					sleep( 2 );
 					return $this->request( $endpoint, $method, $params, false );
 
-				default:
-					$error = implode( "\n", $response['errors'] );
 			}
 
 			return new WP_Error(
 				'convertkit_api_error',
-				$error,
+				$response['error'] . ': ' . $response['error_description'],
 				$http_response_code
 			);
 		}

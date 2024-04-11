@@ -266,6 +266,161 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+     * Test that get_oauth_url() returns the correct URL to begin the OAuth process.
+     *
+     * @since   2.0.0
+     *
+     * @return  void
+     */
+    public function testGetOAuthURL()
+    {
+        // Confirm the OAuth URL returned is correct.
+        $this->assertEquals(
+            $this->api->get_oauth_url(),
+            'https://app.convertkit.com/oauth/authorize?' . http_build_query([
+                'client_id' 			=> $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+                'response_type' 		=> 'code',
+                'redirect_uri' 			=> $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+                'code_challenge' 		=> $this->api->generate_code_challenge( $this->api->get_code_verifier() ),
+                'code_challenge_method' => 'S256',
+            ])
+        );
+    }
+
+    /**
+     * Test that get_access_token() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccessToken()
+    {
+    	// Define response parameters.
+    	$params = array(
+            'access_token'  => 'example-access-token',
+            'refresh_token' => 'example-refresh-token',
+            'token_type'    => 'Bearer',
+            'created_at'    => strtotime('now'),
+            'expires_in'    => strtotime('+3 days'),
+            'scope'         => 'public',
+    	);
+
+    	// Mock the API response.
+    	$this->mockResponses( 200, 'OK', json_encode( $params ) );
+
+        // Send request.
+        $result = $this->api->get_access_token( 'auth-code' );
+
+        // Inspect response.
+        $this->assertNotInstanceOf(WP_Error::class, $result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('access_token', $result);
+        $this->assertArrayHasKey('refresh_token', $result);
+        $this->assertArrayHasKey('token_type', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('expires_in', $result);
+        $this->assertArrayHasKey('scope', $result);
+        $this->assertEquals($result['access_token'], $params['access_token']);
+        $this->assertEquals($result['refresh_token'], $params['refresh_token']);
+        $this->assertEquals($result['created_at'], $params['created_at']);
+        $this->assertEquals($result['expires_in'], $params['expires_in']);
+    }
+
+    /**
+     * Test that supplying an invalid auth code when fetching an access token returns a WP_Error.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetAccessTokenWithInvalidAuthCode()
+    {
+        $result = $this->api->get_access_token( 'not-a-real-auth-code' );
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), 'convertkit_api_error');
+    }
+
+    /**
+     * Test that refresh_token() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRefreshToken()
+    {
+        // Send request.
+        $result = $this->api->refresh_token();
+
+        // Inspect response.
+        $this->assertNotInstanceOf(WP_Error::class, $result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('access_token', $result);
+        $this->assertArrayHasKey('refresh_token', $result);
+        $this->assertArrayHasKey('token_type', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('expires_in', $result);
+        $this->assertArrayHasKey('scope', $result);
+        $this->assertEquals($result['access_token'], $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']);
+        $this->assertEquals($result['refresh_token'], $_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']);
+    }
+
+    /**
+     * Test that supplying an invalid refresh token when refreshing an access token returns a WP_Error.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testRefreshTokenWithInvalidToken()
+    {
+    	// Setup API.
+    	$api = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			'not-a-real-refresh-token'
+		);
+
+    	$result = $api->refresh_token();
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), 'convertkit_api_error');
+    }
+
+    /**
+     * Test that a ClientException is thrown when an invalid access token is supplied.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testInvalidAPICredentials()
+    {
+        $this->expectException(ClientException::class);
+        $api = new ConvertKit_API(
+            clientID: 'fakeClientID',
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
+            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
+        );
+        $result = $api->get_account();
+
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: 'fakeClientSecret',
+            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
+        );
+        $result = $api->get_account();
+
+        $api = new ConvertKit_API(
+            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
+            accessToken: 'fakeAccessToken'
+        );
+        $result = $api->get_account();
+    }
+
+	/**
 	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
 	 *
 	 * @since   1.0.0
