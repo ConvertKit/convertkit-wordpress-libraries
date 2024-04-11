@@ -2341,6 +2341,7 @@ class ConvertKit_API {
 			switch ( $http_response_code ) {
 				// Internal server error.
 				case 500:
+				default:
 					$error = $this->get_error_message( 'request_internal_server_error' );
 					break;
 
