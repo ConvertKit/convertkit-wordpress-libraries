@@ -2181,7 +2181,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function get( $endpoint, $params ) {
+	private function get( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'get', $params, true );
 
@@ -2196,7 +2196,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function post( $endpoint, $params ) {
+	private function post( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'post', $params, true );
 
@@ -2211,7 +2211,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function put( $endpoint, $params ) {
+	private function put( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'put', $params, true );
 
@@ -2226,7 +2226,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|null
 	 */
-	private function delete( $endpoint, $params ) {
+	private function delete( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'delete', $params, true );
 
