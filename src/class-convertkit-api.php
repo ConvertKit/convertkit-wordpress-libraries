@@ -2278,7 +2278,7 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'method'     => 'PUT',
-						'headers'    => $this->get_headers(),
+						'headers'    => $this->get_request_headers(),
 						'body'       => wp_json_encode( $params ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
@@ -2385,6 +2385,21 @@ class ConvertKit_API {
 					}
 
 					// Attempt the request again, now we have a new access token.
+					return $this->request( $endpoint, $method, $params, false );
+
+				// If a rate limit was hit, maybe try again.
+				case 429:
+					// If retry on rate limit hit is disabled, return a WP_Error.
+					if ( ! $retry_if_rate_limit_hit ) {
+						return new WP_Error(
+							'convertkit_api_error',
+							$this->get_error_message( 'request_rate_limit_exceeded' ),
+							$http_response_code
+						);
+					}
+
+					// Retry the request a final time, waiting 2 seconds before.
+					sleep( 2 );
 					return $this->request( $endpoint, $method, $params, false );
 
 				default:
