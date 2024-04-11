@@ -15,6 +15,20 @@
 class ConvertKit_API {
 
 	/**
+	 * ConvertKit API Key
+	 *
+	 * @var bool|string
+	 */
+	protected $api_key = false;
+
+	/**
+	 * ConvertKit API Secret
+	 *
+	 * @var bool|string
+	 */
+	protected $api_secret = false;
+
+	/**
 	 * ConvertKit OAuth Application Client ID
 	 *
 	 * @since   2.0.0
