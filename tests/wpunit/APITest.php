@@ -399,30 +399,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $api->account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-
-		/**
-		 *         $this->expectException(ClientException::class);
-        $api = new ConvertKit_API(
-            clientID: 'fakeClientID',
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
-        );
-        $result = $api->get_account();
-
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: 'fakeClientSecret',
-            accessToken: $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN']
-        );
-        $result = $api->get_account();
-
-        $api = new ConvertKit_API(
-            clientID: $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
-            clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
-            accessToken: 'fakeAccessToken'
-        );
-        $result = $api->get_account();
-        */
+		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
 	}
 
 	/**

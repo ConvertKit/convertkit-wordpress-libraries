@@ -2299,7 +2299,7 @@ class ConvertKit_API {
 		}
 
 		// Return the processed response.
-		return $this->response( $result );
+		return $this->response( $result, $retry_if_rate_limit_hit );
 
 	}
 
@@ -2308,10 +2308,11 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   WP_Error|array 	$result 	API Result.
+	 * @param   WP_Error|array 	$result 					API Result.
+	 * @param   bool   			$retry_if_rate_limit_hit 	Retry request if rate limit hit.
 	 * @return  WP_Error|array
 	 */
-	private function response( $result ) {
+	private function response( $result, $retry_if_rate_limit_hit ) {
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $result ) ) {
@@ -2369,13 +2370,21 @@ class ConvertKit_API {
 
 		// Return the API error message as a WP_Error if the HTTP response code is a 4xx code.
 		if ( $http_response_code >= 400 ) {
-			$this->log( 'API: Error: ' . $response['error'] . ': ' . $response['error_description'] );
+			// Define the error description.
+			$error = '';
+			if ( array_key_exists( 'errors', $response ) ) {
+				$error = implode( "\n", $response['errors'] );
+			} elseif ( array_key_exists( 'error_description', $response ) ) {
+				$error = $response['error_description'];
+			}
+
+			$this->log( 'API: Error: ' . $error );
 
 			switch ( $http_response_code ) {
 				// If the HTTP response code is 401, and the error matches 'The access token expired', refresh the access token now
 				// and re-attempt the request.
 				case 401:
-					if ( $response['error_description'] !== 'The access token expired' ) {
+					if ( $error !== 'The access token expired' ) {
 						break;
 					}
 
@@ -2389,27 +2398,11 @@ class ConvertKit_API {
 
 					// Attempt the request again, now we have a new access token.
 					return $this->request( $endpoint, $method, $params, false );
-
-				// If a rate limit was hit, maybe try again.
-				case 429:
-					// If retry on rate limit hit is disabled, return a WP_Error.
-					if ( ! $retry_if_rate_limit_hit ) {
-						return new WP_Error(
-							'convertkit_api_error',
-							$this->get_error_message( 'request_rate_limit_exceeded' ),
-							$http_response_code
-						);
-					}
-
-					// Retry the request a final time, waiting 2 seconds before.
-					sleep( 2 );
-					return $this->request( $endpoint, $method, $params, false );
-
 			}
 
 			return new WP_Error(
 				'convertkit_api_error',
-				$response['error'] . ': ' . $response['error_description'],
+				$error,
 				$http_response_code
 			);
 		}
