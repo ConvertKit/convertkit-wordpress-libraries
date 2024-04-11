@@ -45,14 +45,18 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
-		// @TODO.
-		$this->api = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN'], $_ENV['CONVERTKIT_REFRESH_TOKEN'] );
-		$this->api->set_client_id( $_ENV['CONVERTKIT_CLIENT_ID'] );
-		$this->api->set_client_secret( $_ENV['CONVERTKIT_CLIENT_SECRET'] );
-		$this->api->set_redirect_uri( $_ENV['TEST_SITE_WP_URL'] . '/wp-admin/options-general.php?page=_wp_convertkit_settings' );
-
-		$this->api_no_data = new ConvertKit_API( $_ENV['CONVERTKIT_ACCESS_TOKEN_NO_DATA'], $_ENV['CONVERTKIT_REFRESH_TOKEN_NO_DATA'] );
-		$this->api_no_data->set_redirect_uri( $_ENV['TEST_SITE_WP_URL'] . '/wp-admin/options-general.php?page=_wp_convertkit_settings' );
+		$this->api = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+		$this->api_no_data = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN_NO_DATA'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN_NO_DATA']
+		);
 	}
 
 	/**
@@ -2088,7 +2092,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testBackwardCompatFormUnsubscribeWithEmptyEmail()
 	{
 		$this->markTestIncomplete();
-		
+
 		$result = $this->api->form_unsubscribe(
 			[
 				'email' => '',
