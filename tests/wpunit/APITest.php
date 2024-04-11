@@ -388,16 +388,20 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals($result->get_error_code(), 'convertkit_api_error');
     }
 
-    /**
-     * Test that a ClientException is thrown when an invalid access token is supplied.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testInvalidAPICredentials()
-    {
-        $this->expectException(ClientException::class);
+	/**
+	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
+	 *
+	 * @since   1.0.0
+	 */
+	public function testInvalidAPICredentials()
+	{
+		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->account();
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+
+		/**
+		 *         $this->expectException(ClientException::class);
         $api = new ConvertKit_API(
             clientID: 'fakeClientID',
             clientSecret: $_ENV['CONVERTKIT_OAUTH_CLIENT_SECRET'],
@@ -418,21 +422,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
             accessToken: 'fakeAccessToken'
         );
         $result = $api->get_account();
-    }
-
-	/**
-	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testNoAPICredentials()
-	{
-		$this->markTestIncomplete();
-
-		$api    = new ConvertKit_API();
-		$result = $api->account();
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
+        */
 	}
 
 	/**
