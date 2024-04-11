@@ -522,7 +522,7 @@ class ConvertKit_API {
 
 		$this->log( 'API: account()' );
 
-		return $this->get('account');
+		return $this->get( 'account' );
 
 	}
 
@@ -2254,9 +2254,9 @@ class ConvertKit_API {
 						$params
 					),
 					array(
-						'headers'		  => $this->get_request_headers(),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'headers'    => $this->get_request_headers(),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2265,10 +2265,10 @@ class ConvertKit_API {
 				$result = wp_remote_post(
 					$this->get_api_url( $endpoint ),
 					array(
-						'headers'		  => $this->get_request_headers(),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'headers'    => $this->get_request_headers(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2277,11 +2277,11 @@ class ConvertKit_API {
 				$result = wp_remote_request(
 					$this->get_api_url( $endpoint ),
 					array(
-						'method'          => 'PUT',
-						'headers'		  => $this->get_headers(),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'method'     => 'PUT',
+						'headers'    => $this->get_headers(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2290,11 +2290,11 @@ class ConvertKit_API {
 				$result = wp_remote_request(
 					$this->get_api_url( $endpoint ),
 					array(
-						'method'          => 'DELETE',
-						'headers'		  => $this->get_request_headers(),
-						'body'            => wp_json_encode( $params ),
-						'timeout'         => $this->get_timeout(),
-						'user-agent'      => $this->get_user_agent(),
+						'method'     => 'DELETE',
+						'headers'    => $this->get_request_headers(),
+						'body'       => wp_json_encode( $params ),
+						'timeout'    => $this->get_timeout(),
+						'user-agent' => $this->get_user_agent(),
 					)
 				);
 				break;
@@ -2427,32 +2427,31 @@ class ConvertKit_API {
 
 	}
 
-    /**
-     * Returns the headers to use in an API request.
-     *
-     * @param string  $type Accept and Content-Type Headers.
-     * @param boolean $auth Include authorization header.
-     *
-     * @since 2.0.0
-     *
-     * @return array
-     */
-    private function get_request_headers($type = 'application/json', $auth = true)
-    {
-        $headers = [
-            'Accept'       => $type,
-            'Content-Type' => $type . '; charset=utf-8',
-        ];
+	/**
+	 * Returns the headers to use in an API request.
+	 *
+	 * @param string  $type Accept and Content-Type Headers.
+	 * @param boolean $auth Include authorization header.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array
+	 */
+	private function get_request_headers( $type = 'application/json', $auth = true ) {
+		$headers = array(
+			'Accept'       => $type,
+			'Content-Type' => $type . '; charset=utf-8',
+		);
 
-        // If no authorization header required, return now.
-        if ( ! $auth ) {
-            return $headers;
-        }
+		// If no authorization header required, return now.
+		if ( ! $auth ) {
+			return $headers;
+		}
 
-        // Add authorization header and return.
-        $headers['Authorization'] = 'Bearer ' . $this->access_token;
-        return $headers;
-    }
+		// Add authorization header and return.
+		$headers['Authorization'] = 'Bearer ' . $this->access_token;
+		return $headers;
+	}
 
 	/**
 	 * Gets a customized version of the WordPress default user agent; includes WP Version, PHP version, and ConvertKit plugin version.
