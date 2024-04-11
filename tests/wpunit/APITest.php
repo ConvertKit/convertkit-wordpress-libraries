@@ -290,10 +290,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->account();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('name', $result);
-		$this->assertArrayHasKey('plan_type', $result);
-		$this->assertArrayHasKey('primary_email_address', $result);
-		$this->assertEquals('wordpress@convertkit.com', $result['primary_email_address']);
+		$this->assertArrayHasKey('user', $result);
+		$this->assertArrayHasKey('account', $result);
+		$this->assertArrayHasKey('name', $result['account']);
+		$this->assertArrayHasKey('plan_type', $result['account']);
+		$this->assertArrayHasKey('primary_email_address', $result['account']);
+		$this->assertEquals('wordpress@convertkit.com', $result['account']['primary_email_address']);
 	}
 
 	/**
