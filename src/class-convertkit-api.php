@@ -2292,7 +2292,7 @@ class ConvertKit_API {
 		$body               = wp_remote_retrieve_body( $result );
 
 		// If the body is null i.e. a 204 No Content, don't attempt to JSON decode it.
-		$response = ( ! empty( $body ) ? json_decode( $body ) : null );
+		$response = ( ! empty( $body ) ? json_decode( $body, true ) : null );
 
 		// Return a WP_Error if the HTTP response code is a 5xx code.
 		// The API respose won't contain an error message, so we use this class' error messages.
