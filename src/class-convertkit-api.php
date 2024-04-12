@@ -1420,7 +1420,7 @@ class ConvertKit_API {
 	 * @param string               $subject           The broadcast email's subject.
 	 * @param string               $content           The broadcast's email HTML content.
 	 * @param string               $description       An internal description of this broadcast.
-	 * @param boolean              $public            Specifies whether or not this is a public post.
+	 * @param boolean              $is_public         Specifies whether or not this is a public post.
 	 * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
 	 *                                                only to public posts).
 	 * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
@@ -1445,7 +1445,7 @@ class ConvertKit_API {
 		string $subject = '',
 		string $content = '',
 		string $description = '',
-		bool $public = false,
+		bool $is_public = false,
 		\DateTime $published_at = null,
 		\DateTime $send_at = null,
 		string $email_address = '',
@@ -1460,7 +1460,7 @@ class ConvertKit_API {
 			'email_address'     => $email_address,
 			'content'           => $content,
 			'description'       => $description,
-			'public'            => $public,
+			'public'            => $is_public,
 			'published_at'      => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
 			'send_at'           => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
 			'thumbnail_alt'     => $thumbnail_alt,
@@ -1525,7 +1525,7 @@ class ConvertKit_API {
 	 * @param string               $subject           The broadcast email's subject.
 	 * @param string               $content           The broadcast's email HTML content.
 	 * @param string               $description       An internal description of this broadcast.
-	 * @param boolean              $public            Specifies whether or not this is a public post.
+	 * @param boolean              $is_public         Specifies whether or not this is a public post.
 	 * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
 	 *                                                only to public posts).
 	 * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
@@ -1551,7 +1551,7 @@ class ConvertKit_API {
 		string $subject = '',
 		string $content = '',
 		string $description = '',
-		bool $public = false,
+		bool $is_public = false,
 		\DateTime $published_at = null,
 		\DateTime $send_at = null,
 		string $email_address = '',
@@ -1566,7 +1566,7 @@ class ConvertKit_API {
 			'email_address'     => $email_address,
 			'content'           => $content,
 			'description'       => $description,
-			'public'            => $public,
+			'public'            => $is_public,
 			'published_at'      => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
 			'send_at'           => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
 			'thumbnail_alt'     => $thumbnail_alt,
@@ -1667,11 +1667,11 @@ class ConvertKit_API {
 			case 'subscriber.subscriber_bounce':
 			case 'subscriber.subscriber_complain':
 			case 'purchase.purchase_create':
-				$eventData = array( 'name' => $event );
+				$event_data = array( 'name' => $event );
 				break;
 
 			case 'subscriber.form_subscribe':
-				$eventData = array(
+				$event_data = array(
 					'name'    => $event,
 					'form_id' => $parameter,
 				);
@@ -1679,21 +1679,21 @@ class ConvertKit_API {
 
 			case 'subscriber.course_subscribe':
 			case 'subscriber.course_complete':
-				$eventData = array(
+				$event_data = array(
 					'name'      => $event,
 					'course_id' => $parameter,
 				);
 				break;
 
 			case 'subscriber.link_click':
-				$eventData = array(
+				$event_data = array(
 					'name'            => $event,
 					'initiator_value' => $parameter,
 				);
 				break;
 
 			case 'subscriber.product_purchase':
-				$eventData = array(
+				$event_data = array(
 					'name'       => $event,
 					'product_id' => $parameter,
 				);
@@ -1701,14 +1701,14 @@ class ConvertKit_API {
 
 			case 'subscriber.tag_add':
 			case 'subscriber.tag_remove':
-				$eventData = array(
+				$event_data = array(
 					'name'   => $event,
 					'tag_id' => $parameter,
 				);
 				break;
 
 			default:
-				throw new \InvalidArgumentException( sprintf( 'The event %s is not supported', $event ) );
+				throw new \InvalidArgumentException( sprintf( 'The event %s is not supported', esc_html( $event ) ) );
 		}//end switch
 
 		// Send request.
@@ -1716,7 +1716,7 @@ class ConvertKit_API {
 			'webhooks',
 			array(
 				'target_url' => $url,
-				'event'      => $eventData,
+				'event'      => $event_data,
 			)
 		);
 	}
