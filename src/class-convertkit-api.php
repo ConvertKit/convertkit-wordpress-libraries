@@ -483,835 +483,1693 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Gets account information from the API.
+	 * Gets the current account
 	 *
-	 * @since   1.0.0
+	 * @see https://developers.convertkit.com/v4.html#get-current-account
 	 *
-	 * @return  WP_Error|array
+	 * @return false|mixed
 	 */
-	public function account() {
-
-		$this->log( 'API: account()' );
-
+	public function get_account() {
 		return $this->get( 'account' );
-
 	}
 
 	/**
-	 * Gets all subscription forms from the API.
+	 * Gets the account's colors
 	 *
-	 * @since   1.0.0
+	 * @see https://developers.convertkit.com/v4.html#list-colors
 	 *
-	 * @return  WP_Error|array
+	 * @return false|mixed
 	 */
-	public function get_subscription_forms() {
+	public function get_account_colors() {
+		return $this->get( 'account/colors' );
+	}
 
-		$this->log( 'API: get_subscription_forms()' );
+	/**
+	 * Gets the account's colors
+	 *
+	 * @param array<string, string> $colors Hex colors.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-colors
+	 *
+	 * @return false|mixed
+	 */
+	public function update_account_colors( array $colors ) {
+		return $this->put(
+			endpoint: 'account/colors',
+			args: array( 'colors' => $colors )
+		);
+	}
+
+	/**
+	 * Gets the Creator Profile
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-creator-profile
+	 *
+	 * @return false|mixed
+	 */
+	public function get_creator_profile() {
+		return $this->get( 'account/creator_profile' );
+	}
+
+	/**
+	 * Gets email stats
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-email-stats
+	 *
+	 * @return false|mixed
+	 */
+	public function get_email_stats() {
+		return $this->get( 'account/email_stats' );
+	}
+
+	/**
+	 * Gets growth stats
+	 *
+	 * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
+	 * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-growth-stats
+	 *
+	 * @return false|mixed
+	 */
+	public function get_growth_stats( \DateTime $starting = null, \DateTime $ending = null ) {
+		return $this->get(
+			'account/growth_stats',
+			array(
+				'starting' => ( ! is_null( $starting ) ? $starting->format( 'Y-m-d' ) : '' ),
+				'ending'   => ( ! is_null( $ending ) ? $ending->format( 'Y-m-d' ) : '' ),
+			)
+		);
+	}
+
+	/**
+	 * Get forms.
+	 *
+	 * @param string  $status              Form status (active|archived|trashed|all).
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
+	 *
+	 * @return false|array<int,\stdClass>
+	 */
+	public function get_forms(
+		string $status = 'active',
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			endpoint: 'forms',
+			args: $this->build_total_count_and_pagination_params(
+				params: array(
+					'type'   => 'embed',
+					'status' => $status,
+				),
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * Get landing pages.
+	 *
+	 * @param string  $status              Form status (active|archived|trashed|all).
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
+	 *
+	 * @return false|array<int,\stdClass>
+	 */
+	public function get_landing_pages(
+		string $status = 'active',
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			endpoint: 'forms',
+			args: $this->build_total_count_and_pagination_params(
+				params: array(
+					'type'   => 'hosted',
+					'status' => $status,
+				),
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * Adds a subscriber to a form by email address
+	 *
+	 * @param integer $form_id       Form ID.
+	 * @param string  $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
+	 *
+	 * @return false|mixed
+	 */
+	public function add_subscriber_to_form_by_email( int $form_id, string $email_address ) {
+		return $this->post(
+			endpoint: sprintf( 'forms/%s/subscribers', $form_id ),
+			args: array( 'email_address' => $email_address )
+		);
+	}
+
+	/**
+	 * Adds a subscriber to a form by subscriber ID
+	 *
+	 * @param integer $form_id       Form ID.
+	 * @param integer $subscriber_id Subscriber ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return false|mixed
+	 */
+	public function add_subscriber_to_form( int $form_id, int $subscriber_id ) {
+		return $this->post( sprintf( 'forms/%s/subscribers/%s', $form_id, $subscriber_id ) );
+	}
+
+	/**
+	 * List subscribers for a form
+	 *
+	 * @param integer   $form_id             Form ID.
+	 * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+	 * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+	 * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+	 * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+	 * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+	 * @param boolean   $include_total_count To include the total count of records in the response, use true.
+	 * @param string    $after_cursor        Return results after the given pagination cursor.
+	 * @param string    $before_cursor       Return results before the given pagination cursor.
+	 * @param integer   $per_page            Number of results to return.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
+	 *
+	 * @return false|mixed
+	 */
+	public function get_form_subscriptions(
+		int $form_id,
+		string $subscriber_state = 'active',
+		\DateTime $created_after = null,
+		\DateTime $created_before = null,
+		\DateTime $added_after = null,
+		\DateTime $added_before = null,
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Build parameters.
+		$options = array();
+
+		if ( ! empty( $subscriber_state ) ) {
+			$options['status'] = $subscriber_state;
+		}
+		if ( ! is_null( $created_after ) ) {
+			$options['created_after'] = $created_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $created_before ) ) {
+			$options['created_before'] = $created_before->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $added_after ) ) {
+			$options['added_after'] = $added_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $added_before ) ) {
+			$options['added_before'] = $added_before->format( 'Y-m-d' );
+		}
 
 		// Send request.
 		return $this->get(
-			'subscription_forms',
-			array(
-				'api_key' => $this->api_key,
+			endpoint: sprintf( 'forms/%s/subscribers', $form_id ),
+			args: $this->build_total_count_and_pagination_params(
+				params: $options,
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
-
 	}
 
 	/**
-	 * Gets all forms from the API.
+	 * Gets sequences
 	 *
-	 * @since   1.0.0
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
 	 *
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#list-sequences
+	 *
+	 * @return false|mixed
 	 */
-	public function get_forms() {
-
-		$this->log( 'API: get_forms()' );
-
-		// Get all forms and landing pages from the API.
-		$forms = $this->get_forms_landing_pages();
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $forms ) ) {
-			$this->log( 'API: get_forms(): Error: ' . $forms->get_error_message() );
-			return $forms;
-		}
-
-		return $forms['forms'];
-
-	}
-
-	/**
-	 * Subscribes an email address to a form.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int    $form_id       Form ID.
-	 * @param   string $email      Email Address.
-	 * @param   string $first_name First Name.
-	 * @param   mixed  $fields     Custom Fields (false|array).
-	 * @param   mixed  $tag_ids    Tags (false|array).
-	 * @return  WP_Error|array
-	 */
-	public function form_subscribe( $form_id, $email, $first_name = '', $fields = false, $tag_ids = false ) {
-
-		// Backward compat. if $email is an array comprising of email and name keys.
-		if ( is_array( $email ) ) { // @phpstan-ignore-line.
-			_deprecated_function( __FUNCTION__, '1.2.1', 'form_subscribe( $form_id, $email, $first_name )' );
-			$first_name = $email['name'];
-			$email      = $email['email'];
-		}
-
-		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $this->mask_string( $first_name ) . ' ]' );
-
-		// Sanitize some parameters.
-		$form_id    = absint( $form_id );
-		$email      = trim( $email );
-		$first_name = trim( $first_name );
-
-		// Return error if no Form ID or email address is specified.
-		if ( empty( $form_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'form_subscribe_form_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'form_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
-		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-		if ( $tag_ids ) {
-			$params['tags'] = $tag_ids;
-		}
-
-		// Send request.
-		$response = $this->post( 'forms/' . $form_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: form_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the form.
-		 *
-		 * @since   1.2.1
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $form_id    Form ID
-		 * @param   string  $email      Email Address
-		 * @param   string  $first_name First Name
-		 * @param   mixed   $fields     Custom Fields (false|array)
-		 * @param   mixed   $tag_ids    Tags (false|array)
-		 */
-		do_action( 'convertkit_api_form_subscribe_success', $response, $form_id, $email, $first_name, $fields, $tag_ids );
-
-		return $response;
-
-	}
-
-	/**
-	 * Gets all landing pages from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_landing_pages() {
-
-		$this->log( 'API: get_landing_pages()' );
-
-		// Get all forms and landing pages from the API.
-		$forms = $this->get_forms_landing_pages();
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $forms ) ) {
-			$this->log( 'API: get_landing_pages(): Error: ' . $forms->get_error_message() );
-			return $forms;
-		}
-
-		return $forms['landing_pages'];
-
-	}
-
-	/**
-	 * Fetches all sequences from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_sequences() {
-
-		$this->log( 'API: get_sequences()' );
-
-		$sequences = array();
-
-		// Send request.
-		$response = $this->get(
-			'sequences',
-			array(
-				'api_key' => $this->api_key,
+	public function get_sequences(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			endpoint: 'sequences',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_sequences(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no sequences exist and return a blank array.
-		if ( ! is_array( $response['courses'] ) ) {
-			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no sequences exist, log that no sequences exist and return a blank array.
-		if ( ! count( $response['courses'] ) ) {
-			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
-			return $sequences;
-		}
-
-		foreach ( $response['courses'] as $sequence ) {
-			$sequences[ $sequence['id'] ] = $sequence;
-		}
-
-		return $sequences;
-
 	}
 
 	/**
-	 * Subscribes an email address to a sequence.
+	 * Adds a subscriber to a sequence by email address
 	 *
-	 * @since   1.0.0
+	 * @param integer $sequence_id   Sequence ID.
+	 * @param string  $email_address Email Address.
 	 *
-	 * @param   int    $sequence_id Sequence ID.
-	 * @param   string $email       Email Address.
-	 * @param   string $first_name  First Name.
-	 * @param   mixed  $fields      Custom Fields (false|array).
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
+	 *
+	 * @return false|mixed
 	 */
-	public function sequence_subscribe( $sequence_id, $email, $first_name = '', $fields = false ) {
-
-		$this->log( 'API: sequence_subscribe(): [ sequence_id: ' . $sequence_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$sequence_id = absint( $sequence_id );
-		$email       = trim( $email );
-		$first_name  = trim( $first_name );
-
-		// Return error if no Sequence ID or email address is specified.
-		if ( empty( $sequence_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'sequence_subscribe_sequence_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'sequence_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
+	public function add_subscriber_to_sequence_by_email( int $sequence_id, string $email_address ) {
+		return $this->post(
+			endpoint: sprintf( 'sequences/%s/subscribers', $sequence_id ),
+			args: array( 'email_address' => $email_address )
 		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-
-		// Send request.
-		$response = $this->post( 'sequences/' . $sequence_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: sequence_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the sequence.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response       API Response
-		 * @param   int     $sequence_id    Sequence ID
-		 * @param   string  $email          Email Address
-		 * @param   mixed   $fields         Custom Fields (false|array)
-		 */
-		do_action( 'convertkit_api_sequence_subscribe_success', $response, $sequence_id, $email, $fields );
-
-		return $response;
-
 	}
 
 	/**
-	 * Fetches all tags from the API.
+	 * Adds a subscriber to a sequence by subscriber ID
 	 *
-	 * @since   1.0.0
+	 * @param integer $sequence_id   Sequence ID.
+	 * @param integer $subscriber_id Subscriber ID.
 	 *
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return false|mixed
 	 */
-	public function get_tags() {
+	public function add_subscriber_to_sequence( int $sequence_id, int $subscriber_id ) {
+		return $this->post( sprintf( 'sequences/%s/subscribers/%s', $sequence_id, $subscriber_id ) );
+	}
 
-		$this->log( 'API: get_tags()' );
+	/**
+	 * List subscribers for a sequence
+	 *
+	 * @param integer   $sequence_id         Sequence ID.
+	 * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+	 * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+	 * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+	 * @param \DateTime $added_after         Filter subscribers who have been added to the form after this date.
+	 * @param \DateTime $added_before        Filter subscribers who have been added to the form before this date.
+	 * @param boolean   $include_total_count To include the total count of records in the response, use true.
+	 * @param string    $after_cursor        Return results after the given pagination cursor.
+	 * @param string    $before_cursor       Return results before the given pagination cursor.
+	 * @param integer   $per_page            Number of results to return.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
+	 *
+	 * @return false|mixed
+	 */
+	public function get_sequence_subscriptions(
+		int $sequence_id,
+		string $subscriber_state = 'active',
+		\DateTime $created_after = null,
+		\DateTime $created_before = null,
+		\DateTime $added_after = null,
+		\DateTime $added_before = null,
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Build parameters.
+		$options = array();
 
-		$tags = array();
+		if ( ! empty( $subscriber_state ) ) {
+			$options['status'] = $subscriber_state;
+		}
+		if ( ! is_null( $created_after ) ) {
+			$options['created_after'] = $created_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $created_before ) ) {
+			$options['created_before'] = $created_before->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $added_after ) ) {
+			$options['added_after'] = $added_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $added_before ) ) {
+			$options['added_before'] = $added_before->format( 'Y-m-d' );
+		}
 
 		// Send request.
-		$response = $this->get(
-			'tags',
-			array(
-				'api_key' => $this->api_key,
+		return $this->get(
+			endpoint: sprintf( 'sequences/%s/subscribers', $sequence_id ),
+			args: $this->build_total_count_and_pagination_params(
+				params: $options,
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_tags(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no tags exist and return a blank array.
-		if ( ! is_array( $response['tags'] ) ) {
-			$this->log( 'API: get_tags(): Error: No tags exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no tags exist, log that no tags exist and return a blank array.
-		if ( ! count( $response['tags'] ) ) {
-			$this->log( 'API: get_tags(): Error: No tags exist in ConvertKit.' );
-			return $tags;
-		}
-
-		foreach ( $response['tags'] as $tag ) {
-			$tags[ $tag['id'] ] = $tag;
-		}
-
-		return $tags;
-
 	}
 
 	/**
-	 * Subscribes an email address to a tag.
+	 * List tags.
 	 *
-	 * @since   1.0.0
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
 	 *
-	 * @param   int    $tag_id     Tag ID.
-	 * @param   string $email      Email Address.
-	 * @param   string $first_name First Name.
-	 * @param   mixed  $fields     Custom Fields (false|array).
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#list-tags
+	 *
+	 * @return false|array<int,\stdClass>
 	 */
-	public function tag_subscribe( $tag_id, $email, $first_name = '', $fields = false ) {
-
-		$this->log( 'API: tag_subscribe(): [ tag_id: ' . $tag_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$tag_id     = absint( $tag_id );
-		$email      = trim( $email );
-		$first_name = trim( $first_name );
-
-		// Return error if no Tag ID or email address is specified.
-		if ( empty( $tag_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_subscribe_tag_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
-		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-
-		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: tag_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the tag.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $tag_id     Tag ID
-		 * @param   string  $email      Email Address
-		 * @param   mixed   $fields     Custom Fields (false|array).
-		 */
-		do_action( 'convertkit_api_tag_subscribe_success', $response, $tag_id, $email, $fields );
-
-		return $response;
-
-	}
-
-	/**
-	 * Removes a tag from the subscriber by their email address.
-	 *
-	 * @since   1.4.0
-	 *
-	 * @param   int    $tag_id     Tag ID.
-	 * @param   string $email      Email Address.
-	 * @return  WP_Error|array
-	 */
-	public function tag_unsubscribe( $tag_id, $email ) {
-
-		$this->log( 'API: tag_unsubscribe(): [ tag_id: ' . $tag_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$tag_id = absint( $tag_id );
-		$email  = trim( $email );
-
-		// Return error if no Tag ID or email address is specified.
-		if ( empty( $tag_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_tag_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_email_empty' ) );
-		}
-
-		// Return error if an invalid email is specified.
-		// Passing an invalid email to the API doesn't return an error, so we need to check here.
-		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_email_invalid' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_secret' => $this->api_secret,
-			'email'      => $email,
-		);
-
-		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/unsubscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: tag_unsubscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully unsubscribed from the tag.
-		 *
-		 * @since   1.4.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $tag_id     Tag ID
-		 * @param   string  $email      Email Address
-		 */
-		do_action( 'convertkit_api_tag_unsubscribe_success', $response, $tag_id, $email );
-
-		return $response;
-
-	}
-
-	/**
-	 * Gets a subscriber by their email address.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $email  Email Address.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber_by_email( $email ) {
-
-		$this->log( 'API: get_subscriber_by_email(): [ email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$email = trim( $email );
-
-		// Return error if email address is specified.
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_by_email_email_empty' ) );
-		}
-
-		// Send request.
-		$response = $this->get(
-			'subscribers',
-			array(
-				'api_secret'    => $this->api_secret,
-				'email_address' => $email,
+	public function get_tags(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			endpoint: 'tags',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
+	}
 
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_by_email(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
+	/**
+	 * Creates a tag.
+	 *
+	 * @param string $tag Tag Name.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#create-a-tag
+	 *
+	 * @return false|mixed
+	 */
+	public function create_tag( string $tag ) {
+		return $this->post(
+			endpoint: 'tags',
+			args: array( 'name' => $tag )
+		);
+	}
 
-		// If no matching subscribers exist, log that no matching subscribers exist and return a blank array.
-		if ( (int) $response['total_subscribers'] === 0 ) {
-			$error = new WP_Error(
-				'convertkit_api_error',
-				sprintf(
-					$this->get_error_message( 'get_subscriber_by_email_none' ),
-					$email
-				)
+	/**
+	 * Creates multiple tags.
+	 *
+	 * @param array<int,string> $tags         Tag Names.
+	 * @param string            $callback_url URL to notify for large batch size when async processing complete.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#bulk-create-tags
+	 *
+	 * @return false|mixed
+	 */
+	public function create_tags( array $tags, string $callback_url = '' ) {
+		// Build parameters.
+		$options = array(
+			'tags' => array(),
+		);
+		foreach ( $tags as $i => $tag ) {
+			$options['tags'][] = array(
+				'name' => (string) $tag,
 			);
-
-			$this->log( 'API: get_subscriber_by_email(): Error: ' . $error->get_error_message() );
-			return $error;
 		}
 
-		// Return subscriber.
-		return $response['subscribers'][0];
-
-	}
-
-	/**
-	 * Gets a subscriber by their ConvertKit subscriber ID.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int $subscriber_id  Subscriber ID.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber_by_id( $subscriber_id ) {
-
-		$this->log( 'API: get_subscriber_by_id(): [ subscriber_id: ' . $subscriber_id . ']' );
-
-		// Sanitize some parameters.
-		$subscriber_id = absint( $subscriber_id );
-
-		// Return error if no Subscriber ID is specified.
-		if ( empty( $subscriber_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_by_id_subscriber_id_empty' ) );
+		if ( ! empty( $callback_url ) ) {
+			$options['callback_url'] = $callback_url;
 		}
 
 		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id,
-			array(
-				'api_secret' => $this->api_secret,
-			)
+		return $this->post(
+			endpoint: 'bulk/tags',
+			args: $options
 		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_by_id(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		return $response['subscriber'];
-
 	}
 
 	/**
-	 * Gets a list of tags for the given ConvertKit subscriber ID.
+	 * Tags a subscriber with the given existing Tag.
 	 *
-	 * @since   1.0.0
+	 * @param integer $tag_id        Tag ID.
+	 * @param string  $email_address Email Address.
 	 *
-	 * @param   int $subscriber_id  Subscriber ID.
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address
+	 *
+	 * @return false|mixed
 	 */
-	public function get_subscriber_tags( $subscriber_id ) {
+	public function tag_subscriber_by_email( int $tag_id, string $email_address ) {
+		return $this->post(
+			endpoint: sprintf( 'tags/%s/subscribers', $tag_id ),
+			args: array( 'email_address' => $email_address )
+		);
+	}
 
-		$this->log( 'API: get_subscriber_tags(): [ subscriber_id: ' . $subscriber_id . ']' );
+	/**
+	 * Tags a subscriber by subscriber ID with the given existing Tag.
+	 *
+	 * @param integer $tag_id        Tag ID.
+	 * @param integer $subscriber_id Subscriber ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#tag-a-subscriber
+	 *
+	 * @return false|mixed
+	 */
+	public function tag_subscriber( int $tag_id, int $subscriber_id ) {
+		return $this->post( sprintf( 'tags/%s/subscribers/%s', $tag_id, $subscriber_id ) );
+	}
 
-		// Sanitize some parameters.
-		$subscriber_id = absint( $subscriber_id );
+	/**
+	 * Removes a tag from a subscriber.
+	 *
+	 * @param integer $tag_id        Tag ID.
+	 * @param integer $subscriber_id Subscriber ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber
+	 *
+	 * @return false|mixed
+	 */
+	public function remove_tag_from_subscriber( int $tag_id, int $subscriber_id ) {
+		return $this->delete( sprintf( 'tags/%s/subscribers/%s', $tag_id, $subscriber_id ) );
+	}
 
-		// Return error if no Subscriber ID is specified.
-		if ( empty( $subscriber_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_tags_subscriber_id_empty' ) );
+	/**
+	 * Removes a tag from a subscriber by email address.
+	 *
+	 * @param integer $tag_id        Tag ID.
+	 * @param string  $email_address Subscriber email address.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber-by-email-address
+	 *
+	 * @return false|mixed
+	 */
+	public function remove_tag_from_subscriber_by_email( int $tag_id, string $email_address ) {
+		return $this->delete(
+			sprintf( 'tags/%s/subscribers', $tag_id ),
+			array( 'email_address' => $email_address )
+		);
+	}
+
+	/**
+	 * List subscribers for a tag
+	 *
+	 * @param integer   $tag_id              Tag ID.
+	 * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+	 * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+	 * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+	 * @param \DateTime $tagged_after        Filter subscribers who have been tagged after this date.
+	 * @param \DateTime $tagged_before       Filter subscribers who have been tagged before this date.
+	 * @param boolean   $include_total_count To include the total count of records in the response, use true.
+	 * @param string    $after_cursor        Return results after the given pagination cursor.
+	 * @param string    $before_cursor       Return results before the given pagination cursor.
+	 * @param integer   $per_page            Number of results to return.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag
+	 *
+	 * @return false|mixed
+	 */
+	public function get_tag_subscriptions(
+		int $tag_id,
+		string $subscriber_state = 'active',
+		\DateTime $created_after = null,
+		\DateTime $created_before = null,
+		\DateTime $tagged_after = null,
+		\DateTime $tagged_before = null,
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Build parameters.
+		$options = array();
+
+		if ( ! empty( $subscriber_state ) ) {
+			$options['status'] = $subscriber_state;
+		}
+		if ( ! is_null( $created_after ) ) {
+			$options['created_after'] = $created_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $created_before ) ) {
+			$options['created_before'] = $created_before->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $tagged_after ) ) {
+			$options['tagged_after'] = $tagged_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $tagged_before ) ) {
+			$options['tagged_before'] = $tagged_before->format( 'Y-m-d' );
 		}
 
 		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id . '/tags',
-			array(
-				'api_key' => $this->api_key,
+		return $this->get(
+			endpoint: sprintf( 'tags/%s/subscribers', $tag_id ),
+			args: $this->build_total_count_and_pagination_params(
+				params: $options,
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_tags(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		return $response['tags'];
-
 	}
 
 	/**
-	 * Returns the subscriber's ID by their email address.
+	 * List email templates.
 	 *
-	 * @since   1.0.0
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
 	 *
-	 * @param   string $email_address  Email Address.
-	 * @return  WP_Error|int
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#convertkit-api-email-templates
+	 *
+	 * @return false|mixed
 	 */
-	public function get_subscriber_id( $email_address ) {
-
-		// Get subscriber.
-		$subscriber = $this->get_subscriber_by_email( $email_address );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $subscriber ) ) {
-			return $subscriber;
-		}
-
-		// Return ID.
-		return $subscriber['id'];
-
+	public function get_email_templates(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'email_templates',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
 	}
 
 	/**
-	 * Unsubscribes an email address.
+	 * List subscribers.
 	 *
-	 * @since   1.0.0
+	 * @param string    $subscriber_state    Subscriber State (active|bounced|cancelled|complained|inactive).
+	 * @param string    $email_address       Search susbcribers by email address. This is an exact match search.
+	 * @param \DateTime $created_after       Filter subscribers who have been created after this date.
+	 * @param \DateTime $created_before      Filter subscribers who have been created before this date.
+	 * @param \DateTime $updated_after       Filter subscribers who have been updated after this date.
+	 * @param \DateTime $updated_before      Filter subscribers who have been updated before this date.
+	 * @param string    $sort_field          Sort Field (id|updated_at|cancelled_at).
+	 * @param string    $sort_order          Sort Order (asc|desc).
+	 * @param boolean   $include_total_count To include the total count of records in the response, use true.
+	 * @param string    $after_cursor        Return results after the given pagination cursor.
+	 * @param string    $before_cursor       Return results before the given pagination cursor.
+	 * @param integer   $per_page            Number of results to return.
 	 *
-	 * @param   string $email      Email Address.
-	 * @return  WP_Error|array
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-subscribers
+	 *
+	 * @return false|mixed
 	 */
-	public function unsubscribe( $email ) {
+	public function get_subscribers(
+		string $subscriber_state = 'active',
+		string $email_address = '',
+		\DateTime $created_after = null,
+		\DateTime $created_before = null,
+		\DateTime $updated_after = null,
+		\DateTime $updated_before = null,
+		string $sort_field = 'id',
+		string $sort_order = 'desc',
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Build parameters.
+		$options = array();
 
-		$this->log( 'API: unsubscribe(): [ email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$email = trim( $email );
-
-		// Return error if no email address is specified.
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'unsubscribe_email_empty' ) );
+		if ( ! empty( $subscriber_state ) ) {
+			$options['status'] = $subscriber_state;
+		}
+		if ( ! empty( $email_address ) ) {
+			$options['email_address'] = $email_address;
+		}
+		if ( ! is_null( $created_after ) ) {
+			$options['created_after'] = $created_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $created_before ) ) {
+			$options['created_before'] = $created_before->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $updated_after ) ) {
+			$options['updated_after'] = $updated_after->format( 'Y-m-d' );
+		}
+		if ( ! is_null( $updated_before ) ) {
+			$options['updated_before'] = $updated_before->format( 'Y-m-d' );
+		}
+		if ( ! empty( $sort_field ) ) {
+			$options['sort_field'] = $sort_field;
+		}
+		if ( ! empty( $sort_order ) ) {
+			$options['sort_order'] = $sort_order;
 		}
 
 		// Send request.
-		$response = $this->put(
-			'unsubscribe',
-			array(
-				'api_secret' => $this->api_secret,
-				'email'      => $email,
+		return $this->get(
+			endpoint: 'subscribers',
+			args: $this->build_total_count_and_pagination_params(
+				params: $options,
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
+	}
 
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: unsubscribe(): Error: ' . $response->get_error_message() );
-			return $response;
+	/**
+	 * Create a subscriber.
+	 *
+	 * Behaves as an upsert. If a subscriber with the provided email address does not exist,
+	 * it creates one with the specified first name and state. If a subscriber with the provided
+	 * email address already exists, it updates the first name.
+	 *
+	 * @param string                $email_address    Email Address.
+	 * @param string                $first_name       First Name.
+	 * @param string                $subscriber_state Subscriber State (active|bounced|cancelled|complained|inactive).
+	 * @param array<string, string> $fields           Custom Fields.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#create-a-subscriber
+	 *
+	 * @return mixed
+	 */
+	public function create_subscriber(
+		string $email_address,
+		string $first_name = '',
+		string $subscriber_state = '',
+		array $fields = array()
+	) {
+		// Build parameters.
+		$options = array( 'email_address' => $email_address );
+
+		if ( ! empty( $first_name ) ) {
+			$options['first_name'] = $first_name;
+		}
+		if ( ! empty( $subscriber_state ) ) {
+			$options['state'] = $subscriber_state;
+		}
+		if ( count( $fields ) ) {
+			$options['fields'] = $fields;
 		}
 
-		/**
-		 * Runs actions immediately after the email address was successfully unsubscribed.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   string  $email      Email Address
-		 */
-		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email );
+		// Send request.
+		return $this->post(
+			endpoint: 'subscribers',
+			args: $options
+		);
+	}
 
-		return $response;
+	/**
+	 * Create multiple subscribers.
+	 *
+	 * @param array<int,array<string,string>> $subscribers  Subscribers.
+	 * @param string                          $callback_url URL to notify for large batch size when async processing complete.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#bulk-create-subscribers
+	 *
+	 * @return mixed
+	 */
+	public function create_subscribers( array $subscribers, string $callback_url = '' ) {
+		// Build parameters.
+		$options = array( 'subscribers' => $subscribers );
 
+		if ( ! empty( $callback_url ) ) {
+			$options['callback_url'] = $callback_url;
+		}
+
+		// Send request.
+		return $this->post(
+			endpoint: 'bulk/subscribers',
+			args: $options
+		);
+	}
+
+	/**
+	 * Get the ConvertKit subscriber ID associated with email address if it exists.
+	 * Return false if subscriber not found.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @throws \InvalidArgumentException If the email address is not a valid email format.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+	 *
+	 * @return false|integer
+	 */
+	public function get_subscriber_id( string $email_address ) {
+		$subscribers = $this->get(
+			'subscribers',
+			array( 'email_address' => $email_address )
+		);
+
+		if ( ! count( $subscribers->subscribers ) ) {
+			$this->create_log( 'No subscribers' );
+			return false;
+		}
+
+		// Return the subscriber's ID.
+		return $subscribers->subscribers[0]->id;
+	}
+
+	/**
+	 * Get subscriber by id
+	 *
+	 * @param integer $subscriber_id Subscriber ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+	 *
+	 * @return false|integer
+	 */
+	public function get_subscriber( int $subscriber_id ) {
+		return $this->get( sprintf( 'subscribers/%s', $subscriber_id ) );
+	}
+
+	/**
+	 * Updates the information for a single subscriber.
+	 *
+	 * @param integer               $subscriber_id Existing Subscriber ID.
+	 * @param string                $first_name    New First Name.
+	 * @param string                $email_address New Email Address.
+	 * @param array<string, string> $fields        Updated Custom Fields.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#update-a-subscriber
+	 *
+	 * @return false|mixed
+	 */
+	public function update_subscriber(
+		int $subscriber_id,
+		string $first_name = '',
+		string $email_address = '',
+		array $fields = array()
+	) {
+		// Build parameters.
+		$options = array();
+
+		if ( ! empty( $first_name ) ) {
+			$options['first_name'] = $first_name;
+		}
+		if ( ! empty( $email_address ) ) {
+			$options['email_address'] = $email_address;
+		}
+		if ( ! empty( $fields ) ) {
+			$options['fields'] = $fields;
+		}
+
+		// Send request.
+		return $this->put(
+			sprintf( 'subscribers/%s', $subscriber_id ),
+			$options
+		);
+	}
+
+	/**
+	 * Unsubscribe an email address.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+	 *
+	 * @return false|object
+	 */
+	public function unsubscribe_by_email( string $email_address ) {
+		return $this->post(
+			sprintf(
+				'subscribers/%s/unsubscribe',
+				$this->get_subscriber_id( $email_address )
+			)
+		);
+	}
+
+	/**
+	 * Unsubscribe the given subscriber ID.
+	 *
+	 * @param integer $subscriber_id Subscriber ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+	 *
+	 * @return false|object
+	 */
+	public function unsubscribe( int $subscriber_id ) {
+		return $this->post( sprintf( 'subscribers/%s/unsubscribe', $subscriber_id ) );
+	}
+
+	/**
+	 * Get a list of the tags for a subscriber.
+	 *
+	 * @param integer $subscriber_id       Subscriber ID.
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
+	 *
+	 * @return false|array<int,\stdClass>
+	 */
+	public function get_subscriber_tags(
+		int $subscriber_id,
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			endpoint: sprintf( 'subscribers/%s/tags', $subscriber_id ),
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * List broadcasts.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-broadcasts
+	 *
+	 * @return false|mixed
+	 */
+	public function get_broadcasts(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'broadcasts',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
 	}
 
 	/**
 	 * Creates a broadcast.
 	 *
-	 * @since   1.3.9
+	 * @param string               $subject           The broadcast email's subject.
+	 * @param string               $content           The broadcast's email HTML content.
+	 * @param string               $description       An internal description of this broadcast.
+	 * @param boolean              $public            Specifies whether or not this is a public post.
+	 * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+	 *                                                only to public posts).
+	 * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+	 *                                                a draft broadcast. If set to a future time, this is the time that
+	 *                                                the broadcast will be scheduled to send.
+	 * @param string               $email_address     Sending email address; leave blank to use your account's
+	 *                                                default sending email address.
+	 * @param string               $email_template_id ID of the email template to use; leave blank to use your
+	 *                                                account's default email template.
+	 * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+	 *                                                (applicable only to public posts).
+	 * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+	 *                                                post (applicable only to public posts).
+	 * @param string               $preview_text      Specify the preview text of the email.
+	 * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
 	 *
-	 * @param string    $subject               The broadcast email's subject.
-	 * @param string    $content               The broadcast's email HTML content.
-	 * @param string    $description           An internal description of this broadcast.
-	 * @param boolean   $is_public             Specifies whether or not this is a public post.
-	 * @param \DateTime $published_at          Specifies the time that this post was published (applicable
-	 *                                         only to public posts).
-	 * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
-	 *                                         a draft broadcast. If set to a future time, this is the time that
-	 *                                         the broadcast will be scheduled to send.
-	 * @param string    $email_address         Sending email address; leave blank to use your account's
-	 *                                         default sending email address.
-	 * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-	 *                                         account's default email template.
-	 * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
-	 *                                         (applicable only to public posts).
-	 * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
-	 *                                         post (applicable only to public posts).
+	 * @see https://developers.convertkit.com/v4.html#create-a-broadcast
 	 *
-	 * @see https://developers.convertkit.com/#create-a-broadcast
-	 *
-	 * @return WP_Error|array
+	 * @return false|object
 	 */
-	public function broadcast_create(
+	public function create_broadcast(
 		string $subject = '',
 		string $content = '',
 		string $description = '',
-		bool $is_public = false,
+		bool $public = false,
 		\DateTime $published_at = null,
 		\DateTime $send_at = null,
 		string $email_address = '',
-		string $email_layout_template = '',
+		string $email_template_id = '',
 		string $thumbnail_alt = '',
-		string $thumbnail_url = ''
+		string $thumbnail_url = '',
+		string $preview_text = '',
+		array $subscriber_filter = array()
 	) {
-
-		$this->log( 'API: broadcast_create(): [ subject: ' . $subject . ']' );
-
-		// Build request parameters.
-		$params = array(
-			'api_secret'            => $this->api_secret,
-			'content'               => $content,
-			'description'           => $description,
-			'email_address'         => $email_address,
-			'email_layout_template' => $email_layout_template,
-			'public'                => $is_public,
-			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'subject'               => $subject,
-			'thumbnail_alt'         => $thumbnail_alt,
-			'thumbnail_url'         => $thumbnail_url,
+		$options = array(
+			'email_template_id' => $email_template_id,
+			'email_address'     => $email_address,
+			'content'           => $content,
+			'description'       => $description,
+			'public'            => $public,
+			'published_at'      => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'send_at'           => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'thumbnail_alt'     => $thumbnail_alt,
+			'thumbnail_url'     => $thumbnail_url,
+			'preview_text'      => $preview_text,
+			'subject'           => $subject,
 		);
+		if ( count( $subscriber_filter ) ) {
+			$options['subscriber_filter'] = $subscriber_filter;
+		}
 
-		// Iterate through parameters, removing blank entries.
-		foreach ( $params as $key => $value ) {
+		// Iterate through options, removing blank entries.
+		foreach ( $options as $key => $value ) {
 			if ( is_string( $value ) && strlen( $value ) === 0 ) {
-				unset( $params[ $key ] );
+				unset( $options[ $key ] );
 			}
 		}
 
-		// If the post isn't public, remove some params that don't apply.
-		if ( ! $is_public ) {
-			unset( $params['published_at'], $params['thumbnail_alt'], $params['thumbnail_url'] );
+		// If the post isn't public, remove some options that don't apply.
+		if ( ! $public ) {
+			unset( $options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url'] );
 		}
 
 		// Send request.
-		$response = $this->post( 'broadcasts', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: broadcast_create(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the tag.
-		 *
-		 * @since   1.3.9
-		 *
-		 * @param   array   $response   API Response.
-		 * @param   array   $params     Request parameters.
-		 */
-		do_action( 'convertkit_api_broadcast_create_success', $response, $params );
-
-		// Return broadcast.
-		return $response['broadcast'];
-
-	}
-
-	/**
-	 * Deletes a Broadcast.
-	 *
-	 * @since   1.3.9
-	 *
-	 * @param   int $broadcast_id   Broadcast ID.
-	 * @return  WP_Error|null
-	 */
-	public function broadcast_delete( $broadcast_id ) {
-
-		$this->log( 'API: broadcast_delete(): [ broadcast_id: ' . $broadcast_id . ']' );
-
-		// Sanitize some parameters.
-		$broadcast_id = absint( $broadcast_id );
-
-		// Return error if no Broadcast ID is specified.
-		if ( empty( $broadcast_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'broadcast_delete_broadcast_id_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_secret' => $this->api_secret,
+		return $this->post(
+			endpoint: 'broadcasts',
+			args: $options
 		);
-
-		// Send request.
-		$response = $this->delete( 'broadcasts/' . $broadcast_id, $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: broadcast_delete(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the broadcast was deleted.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   null|array   $response       API Response
-		 * @param   int          $broadcast_id   Broadcast ID
-		 */
-		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
-
-		// Response will be null if successful.
-		return $response;
-
 	}
 
 	/**
-	 * Gets all custom fields from the API.
+	 * Retrieve a specific broadcast.
 	 *
-	 * @since   1.0.0
+	 * @param integer $id Broadcast ID.
 	 *
-	 * @return  WP_Error|array
+	 * @see https://developers.convertkit.com/v4.html#get-a-broadcast
+	 *
+	 * @return false|object
 	 */
-	public function get_custom_fields() {
+	public function get_broadcast( int $id ) {
+		return $this->get( sprintf( 'broadcasts/%s', $id ) );
+	}
 
-		$this->log( 'API: get_custom_fields()' );
+	/**
+	 * Get the statistics (recipient count, open rate, click rate, unsubscribe count,
+	 * total clicks, status, and send progress) for a specific broadcast.
+	 *
+	 * @param integer $id Broadcast ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-stats
+	 *
+	 * @return false|object
+	 */
+	public function get_broadcast_stats( int $id ) {
+		return $this->get( sprintf( 'broadcasts/%s/stats', $id ) );
+	}
 
-		$custom_fields = array();
+	/**
+	 * Updates a broadcast.
+	 *
+	 * @param integer              $id                Broadcast ID.
+	 * @param string               $subject           The broadcast email's subject.
+	 * @param string               $content           The broadcast's email HTML content.
+	 * @param string               $description       An internal description of this broadcast.
+	 * @param boolean              $public            Specifies whether or not this is a public post.
+	 * @param \DateTime            $published_at      Specifies the time that this post was published (applicable
+	 *                                                only to public posts).
+	 * @param \DateTime            $send_at           Time that this broadcast should be sent; leave blank to create
+	 *                                                a draft broadcast. If set to a future time, this is the time that
+	 *                                                the broadcast will be scheduled to send.
+	 * @param string               $email_address     Sending email address; leave blank to use your account's
+	 *                                                default sending email address.
+	 * @param string               $email_template_id ID of the email template to use; leave blank to use your
+	 *                                                account's default email template.
+	 * @param string               $thumbnail_alt     Specify the ALT attribute of the public thumbnail image
+	 *                                                (applicable only to public posts).
+	 * @param string               $thumbnail_url     Specify the URL of the thumbnail image to accompany the broadcast
+	 *                                                post (applicable only to public posts).
+	 * @param string               $preview_text      Specify the preview text of the email.
+	 * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
+	 *
+	 * @see https://developers.convertkit.com/#create-a-broadcast
+	 *
+	 * @return false|object
+	 */
+	public function update_broadcast(
+		int $id,
+		string $subject = '',
+		string $content = '',
+		string $description = '',
+		bool $public = false,
+		\DateTime $published_at = null,
+		\DateTime $send_at = null,
+		string $email_address = '',
+		string $email_template_id = '',
+		string $thumbnail_alt = '',
+		string $thumbnail_url = '',
+		string $preview_text = '',
+		array $subscriber_filter = array()
+	) {
+		$options = array(
+			'email_template_id' => $email_template_id,
+			'email_address'     => $email_address,
+			'content'           => $content,
+			'description'       => $description,
+			'public'            => $public,
+			'published_at'      => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'send_at'           => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
+			'thumbnail_alt'     => $thumbnail_alt,
+			'thumbnail_url'     => $thumbnail_url,
+			'preview_text'      => $preview_text,
+			'subject'           => $subject,
+		);
+		if ( count( $subscriber_filter ) ) {
+			$options['subscriber_filter'] = $subscriber_filter;
+		}
+
+		// Iterate through options, removing blank entries.
+		foreach ( $options as $key => $value ) {
+			if ( is_string( $value ) && strlen( $value ) === 0 ) {
+				unset( $options[ $key ] );
+			}
+		}
+
+		// If the post isn't public, remove some options that don't apply.
+		if ( ! $public ) {
+			unset( $options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url'] );
+		}
 
 		// Send request.
-		$response = $this->get(
-			'custom_fields',
-			array(
-				'api_key' => $this->api_key,
+		return $this->put(
+			endpoint: sprintf( 'broadcasts/%s', $id ),
+			args: $options
+		);
+	}
+
+	/**
+	 * Deletes an existing broadcast.
+	 *
+	 * @param integer $id Broadcast ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#delete-a-broadcast
+	 *
+	 * @return false|object
+	 */
+	public function delete_broadcast( int $id ) {
+		return $this->delete( sprintf( 'broadcasts/%s', $id ) );
+	}
+
+	/**
+	 * List webhooks.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-webhooks
+	 *
+	 * @return false|mixed
+	 */
+	public function get_webhooks(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'webhooks',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
 			)
 		);
+	}
 
-		// If an error occured, return WP_Error.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_custom_fields(): Error: ' . $response->get_error_message() );
-			return $response;
+	/**
+	 * Creates a webhook that will be called based on the chosen event types.
+	 *
+	 * @param string $url       URL to receive event.
+	 * @param string $event     Event to subscribe to.
+	 * @param string $parameter Optional parameter depending on the event.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#create-a-webhook
+	 *
+	 * @throws \InvalidArgumentException If the event is not supported.
+	 *
+	 * @return false|object
+	 */
+	public function create_webhook( string $url, string $event, string $parameter = '' ) {
+		// Depending on the event, build the required event array structure.
+		switch ( $event ) {
+			case 'subscriber.subscriber_activate':
+			case 'subscriber.subscriber_unsubscribe':
+			case 'subscriber.subscriber_bounce':
+			case 'subscriber.subscriber_complain':
+			case 'purchase.purchase_create':
+				$eventData = array( 'name' => $event );
+				break;
+
+			case 'subscriber.form_subscribe':
+				$eventData = array(
+					'name'    => $event,
+					'form_id' => $parameter,
+				);
+				break;
+
+			case 'subscriber.course_subscribe':
+			case 'subscriber.course_complete':
+				$eventData = array(
+					'name'      => $event,
+					'course_id' => $parameter,
+				);
+				break;
+
+			case 'subscriber.link_click':
+				$eventData = array(
+					'name'            => $event,
+					'initiator_value' => $parameter,
+				);
+				break;
+
+			case 'subscriber.product_purchase':
+				$eventData = array(
+					'name'       => $event,
+					'product_id' => $parameter,
+				);
+				break;
+
+			case 'subscriber.tag_add':
+			case 'subscriber.tag_remove':
+				$eventData = array(
+					'name'   => $event,
+					'tag_id' => $parameter,
+				);
+				break;
+
+			default:
+				throw new \InvalidArgumentException( sprintf( 'The event %s is not supported', $event ) );
+		}//end switch
+
+		// Send request.
+		return $this->post(
+			'webhooks',
+			array(
+				'target_url' => $url,
+				'event'      => $eventData,
+			)
+		);
+	}
+
+	/**
+	 * Deletes an existing webhook.
+	 *
+	 * @param integer $id Webhook ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#delete-a-webhook
+	 *
+	 * @return false|object
+	 */
+	public function delete_webhook( int $id ) {
+		return $this->delete( sprintf( 'webhooks/%s', $id ) );
+	}
+
+	/**
+	 * List custom fields.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-custom-fields
+	 *
+	 * @return false|mixed
+	 */
+	public function get_custom_fields(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'custom_fields',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * Creates a custom field.
+	 *
+	 * @param string $label Custom Field label.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#create-a-custom-field
+	 *
+	 * @return false|object
+	 */
+	public function create_custom_field( string $label ) {
+		return $this->post(
+			endpoint: 'custom_fields',
+			args: array( 'label' => $label )
+		);
+	}
+
+	/**
+	 * Creates multiple custom fields.
+	 *
+	 * @param array<string> $labels       Custom Fields labels.
+	 * @param string        $callback_url URL to notify for large batch size when async processing complete.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#bulk-create-custom-fields
+	 *
+	 * @return false|object
+	 */
+	public function create_custom_fields( array $labels, string $callback_url = '' ) {
+		// Build parameters.
+		$options = array(
+			'custom_fields' => array(),
+		);
+		foreach ( $labels as $i => $label ) {
+			$options['custom_fields'][] = array(
+				'label' => (string) $label,
+			);
 		}
 
-		// If the response isn't an array as we expect, log that no tags exist and return a blank array.
-		if ( ! is_array( $response['custom_fields'] ) ) {
-			$this->log( 'API: get_custom_fields(): Error: No custom fields exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		if ( ! empty( $callback_url ) ) {
+			$options['callback_url'] = $callback_url;
 		}
 
-		// If no custom fields exist, log that no custom fields exist and return a blank array.
-		if ( ! count( $response['custom_fields'] ) ) {
-			$this->log( 'API: get_custom_fields(): Error: No custom fields exist in ConvertKit.' );
-			return $custom_fields;
+		// Send request.
+		return $this->post(
+			endpoint: 'bulk/custom_fields',
+			args: $options
+		);
+	}
+
+	/**
+	 * Updates an existing custom field.
+	 *
+	 * @param integer $id    Custom Field ID.
+	 * @param string  $label Updated Custom Field label.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#update-a-custom-field
+	 *
+	 * @return false|object
+	 */
+	public function update_custom_field( int $id, string $label ) {
+		return $this->put(
+			endpoint: sprintf( 'custom_fields/%s', $id ),
+			args: array( 'label' => $label )
+		);
+	}
+
+	/**
+	 * Deletes an existing custom field.
+	 *
+	 * @param integer $id Custom Field ID.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/#destroy-field
+	 *
+	 * @return false|object
+	 */
+	public function delete_custom_field( int $id ) {
+		return $this->delete( sprintf( 'custom_fields/%s', $id ) );
+	}
+
+	/**
+	 * List purchases.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#list-purchases
+	 *
+	 * @return false|mixed
+	 */
+	public function get_purchases(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'purchases',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * Retuns a specific purchase.
+	 *
+	 * @param integer $purchase_id Purchase ID.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-a-purchase
+	 *
+	 * @return false|object
+	 */
+	public function get_purchase( int $purchase_id ) {
+		return $this->get( sprintf( 'purchases/%s', $purchase_id ) );
+	}
+
+	/**
+	 * Creates a purchase.
+	 *
+	 * @param string                         $email_address    Email Address.
+	 * @param string                         $transaction_id   Transaction ID.
+	 * @param array<string,int|float|string> $products         Products.
+	 * @param string                         $currency         ISO Currency Code.
+	 * @param string                         $first_name       First Name.
+	 * @param string                         $status           Order Status.
+	 * @param float                          $subtotal         Subtotal.
+	 * @param float                          $tax              Tax.
+	 * @param float                          $shipping         Shipping.
+	 * @param float                          $discount         Discount.
+	 * @param float                          $total            Total.
+	 * @param \DateTime                      $transaction_time Transaction date and time.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#create-a-purchase
+	 *
+	 * @return false|object
+	 */
+	public function create_purchase(
+		string $email_address,
+		string $transaction_id,
+		array $products,
+		string $currency = 'USD',
+		string $first_name = null,
+		string $status = null,
+		float $subtotal = 0,
+		float $tax = 0,
+		float $shipping = 0,
+		float $discount = 0,
+		float $total = 0,
+		\DateTime $transaction_time = null
+	) {
+		// Build parameters.
+		$options = array(
+			// Required fields.
+			'email_address'    => $email_address,
+			'transaction_id'   => $transaction_id,
+			'products'         => $products,
+			'currency'         => $currency, // Required, but if not provided, API will default to USD.
+
+			// Optional fields.
+			'first_name'       => $first_name,
+			'status'           => $status,
+			'subtotal'         => $subtotal,
+			'tax'              => $tax,
+			'shipping'         => $shipping,
+			'discount'         => $discount,
+			'total'            => $total,
+			'transaction_time' => ( ! is_null( $transaction_time ) ? $transaction_time->format( 'Y-m-d H:i:s' ) : '' ),
+		);
+
+		// Iterate through options, removing blank and null entries.
+		foreach ( $options as $key => $value ) {
+			if ( is_null( $value ) ) {
+				unset( $options[ $key ] );
+				continue;
+			}
+
+			if ( is_string( $value ) && strlen( $value ) === 0 ) {
+				unset( $options[ $key ] );
+			}
 		}
 
-		foreach ( $response['custom_fields'] as $custom_field ) {
-			$custom_fields[ $custom_field['id'] ] = $custom_field;
+		return $this->post( 'purchases', $options );
+	}
+
+	/**
+	 * List segments.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @see https://developers.convertkit.com/v4.html#convertkit-api-segments
+	 *
+	 * @return false|mixed
+	 */
+	public function get_segments(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		// Send request.
+		return $this->get(
+			endpoint: 'segments',
+			args: $this->build_total_count_and_pagination_params(
+				include_total_count: $include_total_count,
+				after_cursor: $after_cursor,
+				before_cursor: $before_cursor,
+				per_page: $per_page
+			)
+		);
+	}
+
+	/**
+	 * Get markup from ConvertKit for the provided $url.
+	 *
+	 * Supports legacy forms and legacy landing pages.
+	 *
+	 * Forms and Landing Pages should be embedded using the supplied JS embed script in
+	 * the API response when using get_forms() or get_landing_pages().
+	 *
+	 * @param string $url URL of HTML page.
+	 *
+	 * @throws \InvalidArgumentException If the URL is not a valid URL format.
+	 * @throws \Exception If parsing the legacy form or landing page failed.
+	 *
+	 * @return false|string
+	 */
+	public function get_resource( string $url ) {
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			throw new \InvalidArgumentException();
 		}
 
-		return $custom_fields;
+		$resource = '';
 
+		$this->create_log( sprintf( 'Getting resource %s', $url ) );
+
+		// Fetch the resource.
+		$request  = new Request(
+			method: 'GET',
+			uri: $url,
+			headers: $this->request_headers(
+				type: 'text/html',
+				auth: false
+			),
+		);
+		$response = $this->client->send( $request );
+
+		// Fetch HTML.
+		$body = $response->getBody()->getContents();
+
+		// Forcibly tell DOMDocument that this HTML uses the UTF-8 charset.
+		// <meta charset="utf-8"> isn't enough, as DOMDocument still interprets the HTML as ISO-8859,
+		// which breaks character encoding.
+		// Use of mb_convert_encoding() with HTML-ENTITIES is deprecated in PHP 8.2, so we have to use this method.
+		// If we don't, special characters render incorrectly.
+		$body = str_replace(
+			'<head>',
+			'<head>' . "\n" . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
+			$body
+		);
+
+		// Get just the scheme and host from the URL.
+		$url_scheme_host_only = parse_url( $url, PHP_URL_SCHEME ) . '://' . parse_url( $url, PHP_URL_HOST );
+
+		// Load the HTML into a DOMDocument.
+		libxml_use_internal_errors( true );
+		$html = new \DOMDocument();
+		$html->loadHTML( $body );
+
+		// Convert any relative URLs to absolute URLs in the HTML DOM.
+		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'a' ), 'href', $url_scheme_host_only );
+		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'link' ), 'href', $url_scheme_host_only );
+		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'img' ), 'src', $url_scheme_host_only );
+		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'script' ), 'src', $url_scheme_host_only );
+		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'form' ), 'action', $url_scheme_host_only );
+
+		// Save HTML.
+		$resource = $html->saveHTML();
+
+		// If the result is false, return a blank string.
+		if ( ! $resource ) {
+			throw new \Exception( sprintf( 'Could not parse %s', $url ) );
+		}
+
+		// Remove some HTML tags that DOMDocument adds, returning the output.
+		// We do this instead of using LIBXML_HTML_NOIMPLIED in loadHTML(), because Legacy Forms
+		// are not always contained in a single root / outer element, which is required for
+		// LIBXML_HTML_NOIMPLIED to correctly work.
+		$resource = $this->strip_html_head_body_tags( $resource );
+
+		return $resource;
+	}
+
+	/**
+	 * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
+	 * DOM Elements.
+	 *
+	 * @param \DOMNodeList<\DOMElement> $elements  Elements.
+	 * @param string                    $attribute HTML Attribute.
+	 * @param string                    $url       Absolute URL to prepend to relative URLs.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return void
+	 */
+	private function convert_relative_to_absolute_urls( \DOMNodeList $elements, string $attribute, string $url ) { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint, Generic.Files.LineLength.TooLong
+		// Anchor hrefs.
+		foreach ( $elements as $element ) {
+			// Skip if the attribute's value is empty.
+			if ( empty( $element->getAttribute( $attribute ) ) ) {
+				continue;
+			}
+
+			// Skip if the attribute's value is a fully qualified URL.
+			if ( filter_var( $element->getAttribute( $attribute ), FILTER_VALIDATE_URL ) ) {
+				continue;
+			}
+
+			// Skip if this is a Google Font CSS URL.
+			if ( strpos( $element->getAttribute( $attribute ), '//fonts.googleapis.com' ) !== false ) {
+				continue;
+			}
+
+			// If here, the attribute's value is a relative URL, missing the http(s) and domain.
+			// Prepend the URL to the attribute's value.
+			$element->setAttribute( $attribute, $url . $element->getAttribute( $attribute ) );
+		}
+	}
+
+	/**
+	 * Strips <html>, <head> and <body> opening and closing tags from the given markup,
+	 * as well as the Content-Type meta tag we might have added in get_html().
+	 *
+	 * @param string $markup HTML Markup.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string              HTML Markup
+	 */
+	private function strip_html_head_body_tags( string $markup ) {
+		$markup = str_replace( '<html>', '', $markup );
+		$markup = str_replace( '</html>', '', $markup );
+		$markup = str_replace( '<head>', '', $markup );
+		$markup = str_replace( '</head>', '', $markup );
+		$markup = str_replace( '<body>', '', $markup );
+		$markup = str_replace( '</body>', '', $markup );
+		$markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
+
+		return $markup;
+	}
+
+	/**
+	 * Adds total count and pagination parameters to the given array of existing API parameters.
+	 *
+	 * @param array<string, string|integer|bool> $params              API parameters.
+	 * @param boolean                            $include_total_count Return total count of records.
+	 * @param string                             $after_cursor        Return results after the given pagination cursor.
+	 * @param string                             $before_cursor       Return results before the given pagination cursor.
+	 * @param integer                            $per_page            Number of results to return.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array<string, string|integer|bool>
+	 */
+	private function build_total_count_and_pagination_params(
+		array $params = array(),
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		$params['include_total_count'] = $include_total_count;
+		if ( ! empty( $after_cursor ) ) {
+			$params['after'] = $after_cursor;
+		}
+		if ( ! empty( $before_cursor ) ) {
+			$params['before'] = $before_cursor;
+		}
+		if ( ! empty( $per_page ) ) {
+			$params['per_page'] = $per_page;
+		}
+
+		return $params;
 	}
 
 	/**
@@ -1776,44 +2634,6 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Create a Purchase.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   array $purchase   Purchase Data.
-	 * @return  WP_Error|array
-	 */
-	public function purchase_create( $purchase ) {
-
-		$this->log( 'API: purchase_create(): [ purchase: ' . print_r( $purchase, true ) . ']' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
-
-		$response = $this->post(
-			'purchases',
-			array(
-				'api_secret' => $this->api_secret,
-				'purchase'   => $purchase,
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: purchase_create(): Error: ' . $response->get_error_message() );
-		}
-
-		/**
-		 * Runs actions immediately after the purchase data address was successfully created.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   array   $purchase   Purchase Data
-		 */
-		do_action( 'convertkit_api_purchase_create_success', $response, $purchase );
-
-		return $response;
-
-	}
-
-	/**
 	 * Returns the recommendations script URL for this account from the API,
 	 * used to display the Creator Network modal when a form is submitted.
 	 *
@@ -1831,79 +2651,6 @@ class ConvertKit_API {
 				'api_secret' => $this->api_secret,
 			)
 		);
-
-	}
-
-	/**
-	 * Backward compat. function for getting a ConvertKit subscriber by their ID.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int $id     Subscriber ID.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber( $id ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'get_subscriber_by_id()' );
-
-		// Pass request to new function.
-		return $this->get_subscriber_by_id( $id );
-
-	}
-
-	/**
-	 * Backward compat. function for subscribing a ConvertKit subscriber to the given Tag.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int   $tag    Tag ID.
-	 * @param   array $args   Arguments.
-	 * @return  WP_Error|array
-	 */
-	public function add_tag( $tag, $args ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'tag_subscribe( $tag_id, $email_address )' );
-
-		// Pass request to new function.
-		return $this->tag_subscribe( $tag, $args['email'] );
-
-	}
-
-	/**
-	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $url    URL.
-	 * @return  WP_Error|string
-	 */
-	public function get_resource( $url ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'get_form_html( $form_id ) or get_landing_page_html( $url )' );
-
-		// Pass request to new function.
-		return $this->get_landing_page_html( $url );
-
-	}
-
-	/**
-	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   array $args   Arguments (single email key).
-	 * @return  WP_Error|array
-	 */
-	public function form_unsubscribe( $args ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'unsubscribe( $email_address )' );
-
-		// Pass request to new function.
-		return $this->unsubscribe( $args['email'] );
 
 	}
 
