@@ -132,7 +132,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test401Unauthorized()
 	{
-		$api = new ConvertKit_API(
+		$api    = new ConvertKit_API(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			'not-a-real-access-token',
@@ -153,11 +153,17 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function test429RateLimitHit()
 	{
 		// Force WordPress HTTP classes and functions to return a 429 error.
-		$this->mockResponses( 429, 'Rate limit hit', wp_json_encode( array(
-			'errors' => array(
-				'Rate limit hit.'
+		$this->mockResponses(
+			429,
+			'Rate limit hit',
+			wp_json_encode(
+				array(
+					'errors' => array(
+						'Rate limit hit.',
+					),
+				)
 			)
-		) ) );
+		);
 		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -234,7 +240,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform a request.
-		$api = new ConvertKit_API(
+		$api    = new ConvertKit_API(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
