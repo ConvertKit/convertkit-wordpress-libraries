@@ -116,15 +116,6 @@ class ConvertKit_API {
 	protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
 
 	/**
-	 * OAuth Token URL
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var string
-	 */
-	protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
-
-	/**
 	 * Version of ConvertKit API
 	 *
 	 * @var string
@@ -137,6 +128,18 @@ class ConvertKit_API {
 	 * @var string
 	 */
 	protected $api_url_base = 'https://api.convertkit.com/';
+
+	/**
+	 * ConvertKit API endpoints that use the /oauth/ namespace
+	 * i.e. https://api.convertkit.com/oauth/endpoint
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array
+	 */
+	protected $api_endpoints_oauth = array(
+		'token',
+	);
 
 	/**
 	 * ConvertKit API endpoints that use the /wordpress/ namespace
@@ -401,7 +404,7 @@ class ConvertKit_API {
 	public function get_access_token( $authorization_code ) {
 
 		$result = $this->post(
-			$this->oauth_token_url,
+			'token',
 			array(
 				'client_id'     => $this->client_id,
 				'grant_type'    => 'authorization_code',
@@ -446,13 +449,12 @@ class ConvertKit_API {
 	public function refresh_token() {
 
 		$result = $this->post(
-			$this->oauth_token_url,
+			'token',
 			array(
 				'client_id'     => $this->client_id,
 				'grant_type'    => 'refresh_token',
 				'refresh_token' => $this->refresh_token,
-			),
-			'application/x-www-form-urlencoded'
+			)
 		);
 
 		// If an error occured, log and return it now.
@@ -2150,7 +2152,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function get( $endpoint, $params = array(), $content_type = 'application/json' ) {
+	private function get( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'get', $params, true );
 
@@ -2165,7 +2167,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function post( $endpoint, $params = array(), $content_type = 'application/json' ) {
+	private function post( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'post', $params, true );
 
@@ -2180,7 +2182,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function put( $endpoint, $params = array(), $content_type = 'application/json' ) {
+	private function put( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'put', $params, true );
 
@@ -2195,7 +2197,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|null
 	 */
-	private function delete( $endpoint, $params = array(), $content_type = 'application/json' ) {
+	private function delete( $endpoint, $params = array() ) {
 
 		return $this->request( $endpoint, 'delete', $params, true );
 
@@ -2212,7 +2214,7 @@ class ConvertKit_API {
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
 	 * @return  WP_Error|array
 	 */
-	private function request( $endpoint, $method = 'get', $params = array(), $content_type = 'application/json', $retry_if_rate_limit_hit = true ) {
+	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
 		// Send request.
 		switch ( $method ) {
@@ -2235,7 +2237,7 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'headers'    => $this->get_request_headers(),
-						'body'       => $this->get_request_body( $params, $content_type ),
+						'body'       => wp_json_encode( $params ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2248,7 +2250,7 @@ class ConvertKit_API {
 					array(
 						'method'     => 'PUT',
 						'headers'    => $this->get_request_headers(),
-						'body'       => $this->get_request_body( $params, $content_type ),
+						'body'       => wp_json_encode( $params ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2261,7 +2263,7 @@ class ConvertKit_API {
 					array(
 						'method'     => 'DELETE',
 						'headers'    => $this->get_request_headers(),
-						'body'       => $this->get_request_body( $params, $content_type ),
+						'body'       => wp_json_encode( $params ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2387,7 +2389,7 @@ class ConvertKit_API {
 			);
 		}
 
-		return $result;
+		return $response;
 
 	}
 
@@ -2416,29 +2418,6 @@ class ConvertKit_API {
 		// Add authorization header and return.
 		$headers['Authorization'] = 'Bearer ' . $this->access_token;
 		return $headers;
-
-	}
-
-	/**
-	 * Returns the body for an API request, depending on the supplied
-	 * Content Type.
-	 *
-	 * @param mixed  $params    Params (array|boolean|string).
-	 * @param string $type 		Content Type.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @return array
-	 */
-	private function get_request_body( $params = array(), $type = 'application/json' ) {
-
-		switch ( $type ) {
-			case 'application/json':
-				return wp_json_encode( $params );
-
-			default:
-				return $params;
-		}
 
 	}
 
@@ -2522,6 +2501,13 @@ class ConvertKit_API {
 		foreach ( $this->api_endpoints_wordpress as $wordpress_endpoint ) {
 			if ( strpos( $endpoint, $wordpress_endpoint ) !== false ) {
 				return path_join( $this->api_url_base . 'wordpress', $endpoint ); // phpcs:ignore WordPress.WP.CapitalPDangit
+			}
+		}
+
+		// For oAuth API endpoints, the API base is https://api.convertkit.com/oauth/$endpoint.
+		foreach ( $this->api_endpoints_oauth as $oauth_endpoint ) {
+			if ( strpos( $endpoint, $oauth_endpoint ) !== false ) {
+				return path_join( $this->api_url_base . 'oauth', $endpoint );
 			}
 		}
 

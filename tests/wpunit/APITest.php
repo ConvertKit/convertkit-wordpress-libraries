@@ -316,8 +316,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Send request.
 		$result = $this->api->get_access_token( 'auth-code' );
-		var_dump($result);
-		die();
 
 		// Inspect response.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
