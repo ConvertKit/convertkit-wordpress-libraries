@@ -12,43 +12,16 @@
  * @package ConvertKit
  * @author ConvertKit
  */
-class ConvertKit_API extends ConvertKit_API_Methods {
+class ConvertKit_API {
 
-	/**
-	 * ConvertKit OAuth Application Client ID
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string.
-	 */
-	protected $client_id = false;
+	use ConvertKit_API_Traits;
 
-	/**
-	 * ConvertKit OAuth Redirect URI
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string.
-	 */
-	protected $redirect_uri = false;
-
-	/**
-	 * Access Token
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string
-	 */
-	protected $access_token = '';
-
-	/**
-	 * Refresh Token
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string
-	 */
-	protected $refresh_token = '';
+    /**
+     * The SDK version.
+     *
+     * @var string
+     */
+    public const VERSION = '2.0.0';
 
 	/**
 	 * Optional context of the request.
@@ -91,29 +64,6 @@ class ConvertKit_API extends ConvertKit_API_Methods {
 	 * @var bool|string
 	 */
 	protected $plugin_version;
-
-	/**
-	 * OAuth Authorization URL
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var string
-	 */
-	protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
-
-	/**
-	 * Version of ConvertKit API
-	 *
-	 * @var string
-	 */
-	protected $api_version = 'v4';
-
-	/**
-	 * ConvertKit API URL
-	 *
-	 * @var string
-	 */
-	protected $api_url_base = 'https://api.convertkit.com/';
 
 	/**
 	 * ConvertKit API endpoints that use the /oauth/ namespace

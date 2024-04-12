@@ -1,9 +1,65 @@
 <?php
 /**
- * ConvertKit API Methods Class
+ * ConvertKit API Traits
+ *
+ * @author ConvertKit
  */
-class ConvertKit_API_Methods
+
+/**
+ * ConvertKit API Traits
+ */
+trait ConvertKit_API_Traits
 {
+    /**
+     * ConvertKit OAuth Application Client ID
+     *
+     * @var string
+     */
+    protected $client_id = '';
+
+    /**
+     * ConvertKit OAuth Application Client Secret
+     *
+     * @var string
+     */
+    protected $client_secret = '';
+
+    /**
+     * Access Token
+     *
+     * @var string
+     */
+    protected $access_token = '';
+
+    /**
+     * OAuth Authorization URL
+     *
+     * @var string
+     */
+    protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
+
+    /**
+     * OAuth Token URL
+     *
+     * @var string
+     */
+    protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
+
+    /**
+     * Version of ConvertKit API
+     *
+     * @var string
+     */
+    protected $api_version = 'v4';
+
+    /**
+     * ConvertKit API URL
+     *
+     * @var string
+     */
+    protected $api_url_base = 'https://api.convertkit.com/';
+
+
     /**
      * Gets the current account
      *
@@ -40,8 +96,8 @@ class ConvertKit_API_Methods
     public function update_account_colors(array $colors)
     {
         return $this->put(
-            endpoint: 'account/colors',
-            args: ['colors' => $colors]
+            'account/colors',
+            ['colors' => $colors]
         );
     }
 
@@ -113,16 +169,16 @@ class ConvertKit_API_Methods
         int $per_page = 100
     ) {
         return $this->get(
-            endpoint: 'forms',
-            args: $this->build_total_count_and_pagination_params(
-                params: [
+            'forms',
+            $this->build_total_count_and_pagination_params(
+                [
                     'type'   => 'embed',
                     'status' => $status,
                 ],
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -150,16 +206,16 @@ class ConvertKit_API_Methods
         int $per_page = 100
     ) {
         return $this->get(
-            endpoint: 'forms',
-            args: $this->build_total_count_and_pagination_params(
-                params: [
+            'forms',
+            $this->build_total_count_and_pagination_params(
+                [
                     'type'   => 'hosted',
                     'status' => $status,
                 ],
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -177,8 +233,8 @@ class ConvertKit_API_Methods
     public function add_subscriber_to_form_by_email(int $form_id, string $email_address)
     {
         return $this->post(
-            endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: ['email_address' => $email_address]
+            sprintf('forms/%s/subscribers', $form_id),
+            ['email_address' => $email_address]
         );
     }
 
@@ -250,13 +306,13 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->get(
-            endpoint: sprintf('forms/%s/subscribers', $form_id),
-            args: $this->build_total_count_and_pagination_params(
-                params: $options,
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            sprintf('forms/%s/subscribers', $form_id),
+            $this->build_total_count_and_pagination_params(
+                $options,
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -280,12 +336,13 @@ class ConvertKit_API_Methods
         int $per_page = 100
     ) {
         return $this->get(
-            endpoint: 'sequences',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'sequences',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -303,8 +360,8 @@ class ConvertKit_API_Methods
     public function add_subscriber_to_sequence_by_email(int $sequence_id, string $email_address)
     {
         return $this->post(
-            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: ['email_address' => $email_address]
+            sprintf('sequences/%s/subscribers', $sequence_id),
+            ['email_address' => $email_address]
         );
     }
 
@@ -376,13 +433,13 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->get(
-            endpoint: sprintf('sequences/%s/subscribers', $sequence_id),
-            args: $this->build_total_count_and_pagination_params(
-                params: $options,
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            sprintf('sequences/%s/subscribers', $sequence_id),
+            $this->build_total_count_and_pagination_params(
+                $options,
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -406,12 +463,13 @@ class ConvertKit_API_Methods
         int $per_page = 100
     ) {
         return $this->get(
-            endpoint: 'tags',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'tags',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -430,8 +488,8 @@ class ConvertKit_API_Methods
     public function create_tag(string $tag)
     {
         return $this->post(
-            endpoint: 'tags',
-            args: ['name' => $tag]
+            'tags',
+            ['name' => $tag]
         );
     }
 
@@ -465,8 +523,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->post(
-            endpoint: 'bulk/tags',
-            args: $options
+            'bulk/tags',
+            $options
         );
     }
 
@@ -483,8 +541,8 @@ class ConvertKit_API_Methods
     public function tag_subscriber_by_email(int $tag_id, string $email_address)
     {
         return $this->post(
-            endpoint: sprintf('tags/%s/subscribers', $tag_id),
-            args: ['email_address' => $email_address]
+            sprintf('tags/%s/subscribers', $tag_id),
+            ['email_address' => $email_address]
         );
     }
 
@@ -591,13 +649,13 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->get(
-            endpoint: sprintf('tags/%s/subscribers', $tag_id),
-            args: $this->build_total_count_and_pagination_params(
-                params: $options,
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            sprintf('tags/%s/subscribers', $tag_id),
+            $this->build_total_count_and_pagination_params(
+                $options,
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -624,12 +682,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'email_templates',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'email_templates',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -700,13 +759,13 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->get(
-            endpoint: 'subscribers',
-            args: $this->build_total_count_and_pagination_params(
-                params: $options,
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'subscribers',
+            $this->build_total_count_and_pagination_params(
+                $options,
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -750,8 +809,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->post(
-            endpoint: 'subscribers',
-            args: $options
+            'subscribers',
+            $options
         );
     }
 
@@ -778,8 +837,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->post(
-            endpoint: 'bulk/subscribers',
-            args: $options
+            'bulk/subscribers',
+            $options
         );
     }
 
@@ -803,7 +862,6 @@ class ConvertKit_API_Methods
         );
 
         if (!count($subscribers->subscribers)) {
-            $this->create_log('No subscribers');
             return false;
         }
 
@@ -917,12 +975,13 @@ class ConvertKit_API_Methods
         int $per_page = 100
     ) {
         return $this->get(
-            endpoint: sprintf('subscribers/%s/tags', $subscriber_id),
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            sprintf('subscribers/%s/tags', $subscriber_id),
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -947,12 +1006,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'broadcasts',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'broadcasts',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -1029,8 +1089,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->post(
-            endpoint: 'broadcasts',
-            args: $options
+            'broadcasts',
+            $options
         );
     }
 
@@ -1137,8 +1197,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->put(
-            endpoint: sprintf('broadcasts/%s', $id),
-            args: $options
+            sprintf('broadcasts/%s', $id),
+            $options
         );
     }
 
@@ -1180,12 +1240,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'webhooks',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'webhooks',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -1306,12 +1367,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'custom_fields',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'custom_fields',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -1330,8 +1392,8 @@ class ConvertKit_API_Methods
     public function create_custom_field(string $label)
     {
         return $this->post(
-            endpoint: 'custom_fields',
-            args: ['label' => $label]
+            'custom_fields',
+            ['label' => $label]
         );
     }
 
@@ -1365,8 +1427,8 @@ class ConvertKit_API_Methods
 
         // Send request.
         return $this->post(
-            endpoint: 'bulk/custom_fields',
-            args: $options
+            'bulk/custom_fields',
+            $options
         );
     }
 
@@ -1385,8 +1447,8 @@ class ConvertKit_API_Methods
     public function update_custom_field(int $id, string $label)
     {
         return $this->put(
-            endpoint: sprintf('custom_fields/%s', $id),
-            args: ['label' => $label]
+            sprintf('custom_fields/%s', $id),
+            ['label' => $label]
         );
     }
 
@@ -1428,12 +1490,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'purchases',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'purchases',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -1542,12 +1605,13 @@ class ConvertKit_API_Methods
     ) {
         // Send request.
         return $this->get(
-            endpoint: 'segments',
-            args: $this->build_total_count_and_pagination_params(
-                include_total_count: $include_total_count,
-                after_cursor: $after_cursor,
-                before_cursor: $before_cursor,
-                per_page: $per_page
+            'segments',
+            $this->build_total_count_and_pagination_params(
+                [],
+                $include_total_count,
+                $after_cursor,
+                $before_cursor,
+                $per_page
             )
         );
     }
@@ -1564,7 +1628,7 @@ class ConvertKit_API_Methods
      *
      * @return void
      */
-    private function convert_relative_to_absolute_urls(\DOMNodeList $elements, string $attribute, string $url) // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint, Generic.Files.LineLength.TooLong
+    public function convert_relative_to_absolute_urls(\DOMNodeList $elements, string $attribute, string $url) // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint, Generic.Files.LineLength.TooLong
     {
         // Anchor hrefs.
         foreach ($elements as $element) {
@@ -1599,7 +1663,7 @@ class ConvertKit_API_Methods
      *
      * @return string              HTML Markup
      */
-    private function strip_html_head_body_tags(string $markup)
+    public function strip_html_head_body_tags(string $markup)
     {
         $markup = str_replace('<html>', '', $markup);
         $markup = str_replace('</html>', '', $markup);
@@ -1697,4 +1761,48 @@ class ConvertKit_API_Methods
     {
         return $this->request($endpoint, 'DELETE', $args);
     }
+
+    /**
+     * Performs an API request.
+     *
+     * @param string                                                                                                     $endpoint API Endpoint.
+     * @param string                                                                                                     $method   Request method.
+     * @param array<string, bool|integer|float|string|null|array<int|string, float|integer|string|array<string|string>>> $args     Request arguments.
+     *
+     * @throws \Exception If JSON encoding arguments failed.
+     *
+     * @return false|mixed
+     */
+    abstract public function request(string $endpoint, string $method, array $args = []);
+
+    /**
+     * Returns the headers to use in an API request.
+     *
+     * @param string  $type Accept and Content-Type Headers.
+     * @param boolean $auth Include authorization header.
+     *
+     * @since 2.0.0
+     *
+     * @return array<string,string>
+     */
+    abstract public function get_request_headers(string $type = 'application/json', bool $auth = true);
+
+    /**
+     * Returns the maximum amount of time to wait for
+     * a response to the request before exiting.
+     *
+     * @since 2.0.0
+     *
+     * @return integer     Timeout, in seconds.
+     */
+    abstract public function get_timeout();
+
+    /**
+     * Returns the user agent string to use in all HTTP requests.
+     *
+     * @since 2.0.0
+     *
+     * @return string
+     */
+    abstract public function get_user_agent();
 }
