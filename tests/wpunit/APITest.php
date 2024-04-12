@@ -41,6 +41,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		parent::setUp();
 
 		// Include class from /src to test.
+		require_once 'src/class-convertkit-api-methods.php';
 		require_once 'src/class-convertkit-api.php';
 		require_once 'src/class-convertkit-log.php';
 
@@ -51,6 +52,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
 			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
 		);
+
 		$this->api_no_data = new ConvertKit_API(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
@@ -403,7 +405,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testAccount()
 	{
-		$result = $this->api->account();
+		$result = $this->api->get_account();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('user', $result);
