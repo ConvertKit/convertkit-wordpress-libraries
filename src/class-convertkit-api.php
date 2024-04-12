@@ -515,8 +515,8 @@ class ConvertKit_API {
 	 */
 	public function update_account_colors( array $colors ) {
 		return $this->put(
-			endpoint: 'account/colors',
-			args: array( 'colors' => $colors )
+			'account/colors',
+			array( 'colors' => $colors )
 		);
 	}
 
@@ -585,8 +585,8 @@ class ConvertKit_API {
 		int $per_page = 100
 	) {
 		return $this->get(
-			endpoint: 'forms',
-			args: $this->build_total_count_and_pagination_params(
+			'forms',
+			$this->build_total_count_and_pagination_params(
 				params: array(
 					'type'   => 'embed',
 					'status' => $status,
@@ -622,8 +622,8 @@ class ConvertKit_API {
 		int $per_page = 100
 	) {
 		return $this->get(
-			endpoint: 'forms',
-			args: $this->build_total_count_and_pagination_params(
+			'forms',
+			$this->build_total_count_and_pagination_params(
 				params: array(
 					'type'   => 'hosted',
 					'status' => $status,
@@ -648,8 +648,8 @@ class ConvertKit_API {
 	 */
 	public function add_subscriber_to_form_by_email( int $form_id, string $email_address ) {
 		return $this->post(
-			endpoint: sprintf( 'forms/%s/subscribers', $form_id ),
-			args: array( 'email_address' => $email_address )
+			sprintf( 'forms/%s/subscribers', $form_id ),
+			array( 'email_address' => $email_address )
 		);
 	}
 
@@ -720,8 +720,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->get(
-			endpoint: sprintf( 'forms/%s/subscribers', $form_id ),
-			args: $this->build_total_count_and_pagination_params(
+			sprintf( 'forms/%s/subscribers', $form_id ),
+			$this->build_total_count_and_pagination_params(
 				params: $options,
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
@@ -750,8 +750,8 @@ class ConvertKit_API {
 		int $per_page = 100
 	) {
 		return $this->get(
-			endpoint: 'sequences',
-			args: $this->build_total_count_and_pagination_params(
+			'sequences',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -772,8 +772,8 @@ class ConvertKit_API {
 	 */
 	public function add_subscriber_to_sequence_by_email( int $sequence_id, string $email_address ) {
 		return $this->post(
-			endpoint: sprintf( 'sequences/%s/subscribers', $sequence_id ),
-			args: array( 'email_address' => $email_address )
+			sprintf( 'sequences/%s/subscribers', $sequence_id ),
+			array( 'email_address' => $email_address )
 		);
 	}
 
@@ -844,8 +844,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->get(
-			endpoint: sprintf( 'sequences/%s/subscribers', $sequence_id ),
-			args: $this->build_total_count_and_pagination_params(
+			sprintf( 'sequences/%s/subscribers', $sequence_id ),
+			$this->build_total_count_and_pagination_params(
 				params: $options,
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
@@ -874,8 +874,8 @@ class ConvertKit_API {
 		int $per_page = 100
 	) {
 		return $this->get(
-			endpoint: 'tags',
-			args: $this->build_total_count_and_pagination_params(
+			'tags',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -897,8 +897,8 @@ class ConvertKit_API {
 	 */
 	public function create_tag( string $tag ) {
 		return $this->post(
-			endpoint: 'tags',
-			args: array( 'name' => $tag )
+			'tags',
+			array( 'name' => $tag )
 		);
 	}
 
@@ -931,8 +931,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->post(
-			endpoint: 'bulk/tags',
-			args: $options
+			'bulk/tags',
+			$options
 		);
 	}
 
@@ -948,8 +948,8 @@ class ConvertKit_API {
 	 */
 	public function tag_subscriber_by_email( int $tag_id, string $email_address ) {
 		return $this->post(
-			endpoint: sprintf( 'tags/%s/subscribers', $tag_id ),
-			args: array( 'email_address' => $email_address )
+			sprintf( 'tags/%s/subscribers', $tag_id ),
+			array( 'email_address' => $email_address )
 		);
 	}
 
@@ -1053,8 +1053,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->get(
-			endpoint: sprintf( 'tags/%s/subscribers', $tag_id ),
-			args: $this->build_total_count_and_pagination_params(
+			sprintf( 'tags/%s/subscribers', $tag_id ),
+			$this->build_total_count_and_pagination_params(
 				params: $options,
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
@@ -1086,8 +1086,8 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'email_templates',
-			args: $this->build_total_count_and_pagination_params(
+			'email_templates',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1116,7 +1116,7 @@ class ConvertKit_API {
 	 *
 	 * @see https://developers.convertkit.com/v4.html#list-subscribers
 	 *
-	 * @return false|mixed
+	 * @return mixed
 	 */
 	public function get_subscribers(
 		string $subscriber_state = 'active',
@@ -1162,8 +1162,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->get(
-			endpoint: 'subscribers',
-			args: $this->build_total_count_and_pagination_params(
+			'subscribers',
+			$this->build_total_count_and_pagination_params(
 				params: $options,
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
@@ -1212,8 +1212,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->post(
-			endpoint: 'subscribers',
-			args: $options
+			'subscribers',
+			$options
 		);
 	}
 
@@ -1239,8 +1239,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->post(
-			endpoint: 'bulk/subscribers',
-			args: $options
+			'bulk/subscribers',
+			$options
 		);
 	}
 
@@ -1262,13 +1262,13 @@ class ConvertKit_API {
 			array( 'email_address' => $email_address )
 		);
 
-		if ( ! count( $subscribers->subscribers ) ) {
-			$this->create_log( 'No subscribers' );
+		if ( ! count( $subscribers['subscribers'] ) ) {
+			$this->log( 'API: No subscribers' );
 			return false;
 		}
 
 		// Return the subscriber's ID.
-		return $subscribers->subscribers[0]->id;
+		return $subscribers['subscribers'][0]->id;
 	}
 
 	/**
@@ -1278,7 +1278,7 @@ class ConvertKit_API {
 	 *
 	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
 	 *
-	 * @return false|integer
+	 * @return mixed
 	 */
 	public function get_subscriber( int $subscriber_id ) {
 		return $this->get( sprintf( 'subscribers/%s', $subscriber_id ) );
@@ -1374,8 +1374,8 @@ class ConvertKit_API {
 		int $per_page = 100
 	) {
 		return $this->get(
-			endpoint: sprintf( 'subscribers/%s/tags', $subscriber_id ),
-			args: $this->build_total_count_and_pagination_params(
+			sprintf( 'subscribers/%s/tags', $subscriber_id ),
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1404,8 +1404,8 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'broadcasts',
-			args: $this->build_total_count_and_pagination_params(
+			'broadcasts',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1480,14 +1480,14 @@ class ConvertKit_API {
 		}
 
 		// If the post isn't public, remove some options that don't apply.
-		if ( ! $public ) {
+		if ( ! $is_public ) {
 			unset( $options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url'] );
 		}
 
 		// Send request.
 		return $this->post(
-			endpoint: 'broadcasts',
-			args: $options
+			'broadcasts',
+			$options
 		);
 	}
 
@@ -1586,14 +1586,14 @@ class ConvertKit_API {
 		}
 
 		// If the post isn't public, remove some options that don't apply.
-		if ( ! $public ) {
+		if ( ! $is_public ) {
 			unset( $options['published_at'], $options['thumbnail_alt'], $options['thumbnail_url'] );
 		}
 
 		// Send request.
 		return $this->put(
-			endpoint: sprintf( 'broadcasts/%s', $id ),
-			args: $options
+			sprintf( 'broadcasts/%s', $id ),
+			$options
 		);
 	}
 
@@ -1634,8 +1634,8 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'webhooks',
-			args: $this->build_total_count_and_pagination_params(
+			'webhooks',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1758,8 +1758,8 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'custom_fields',
-			args: $this->build_total_count_and_pagination_params(
+			'custom_fields',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1781,8 +1781,8 @@ class ConvertKit_API {
 	 */
 	public function create_custom_field( string $label ) {
 		return $this->post(
-			endpoint: 'custom_fields',
-			args: array( 'label' => $label )
+			'custom_fields',
+			array( 'label' => $label )
 		);
 	}
 
@@ -1815,8 +1815,8 @@ class ConvertKit_API {
 
 		// Send request.
 		return $this->post(
-			endpoint: 'bulk/custom_fields',
-			args: $options
+			'bulk/custom_fields',
+			$options
 		);
 	}
 
@@ -1834,8 +1834,8 @@ class ConvertKit_API {
 	 */
 	public function update_custom_field( int $id, string $label ) {
 		return $this->put(
-			endpoint: sprintf( 'custom_fields/%s', $id ),
-			args: array( 'label' => $label )
+			sprintf( 'custom_fields/%s', $id ),
+			array( 'label' => $label )
 		);
 	}
 
@@ -1876,8 +1876,8 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'purchases',
-			args: $this->build_total_count_and_pagination_params(
+			'purchases',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
@@ -1989,153 +1989,14 @@ class ConvertKit_API {
 	) {
 		// Send request.
 		return $this->get(
-			endpoint: 'segments',
-			args: $this->build_total_count_and_pagination_params(
+			'segments',
+			$this->build_total_count_and_pagination_params(
 				include_total_count: $include_total_count,
 				after_cursor: $after_cursor,
 				before_cursor: $before_cursor,
 				per_page: $per_page
 			)
 		);
-	}
-
-	/**
-	 * Get markup from ConvertKit for the provided $url.
-	 *
-	 * Supports legacy forms and legacy landing pages.
-	 *
-	 * Forms and Landing Pages should be embedded using the supplied JS embed script in
-	 * the API response when using get_forms() or get_landing_pages().
-	 *
-	 * @param string $url URL of HTML page.
-	 *
-	 * @throws \InvalidArgumentException If the URL is not a valid URL format.
-	 * @throws \Exception If parsing the legacy form or landing page failed.
-	 *
-	 * @return false|string
-	 */
-	public function get_resource( string $url ) {
-		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
-			throw new \InvalidArgumentException();
-		}
-
-		$resource = '';
-
-		$this->create_log( sprintf( 'Getting resource %s', $url ) );
-
-		// Fetch the resource.
-		$request  = new Request(
-			method: 'GET',
-			uri: $url,
-			headers: $this->request_headers(
-				type: 'text/html',
-				auth: false
-			),
-		);
-		$response = $this->client->send( $request );
-
-		// Fetch HTML.
-		$body = $response->getBody()->getContents();
-
-		// Forcibly tell DOMDocument that this HTML uses the UTF-8 charset.
-		// <meta charset="utf-8"> isn't enough, as DOMDocument still interprets the HTML as ISO-8859,
-		// which breaks character encoding.
-		// Use of mb_convert_encoding() with HTML-ENTITIES is deprecated in PHP 8.2, so we have to use this method.
-		// If we don't, special characters render incorrectly.
-		$body = str_replace(
-			'<head>',
-			'<head>' . "\n" . '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
-			$body
-		);
-
-		// Get just the scheme and host from the URL.
-		$url_scheme_host_only = parse_url( $url, PHP_URL_SCHEME ) . '://' . parse_url( $url, PHP_URL_HOST );
-
-		// Load the HTML into a DOMDocument.
-		libxml_use_internal_errors( true );
-		$html = new \DOMDocument();
-		$html->loadHTML( $body );
-
-		// Convert any relative URLs to absolute URLs in the HTML DOM.
-		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'a' ), 'href', $url_scheme_host_only );
-		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'link' ), 'href', $url_scheme_host_only );
-		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'img' ), 'src', $url_scheme_host_only );
-		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'script' ), 'src', $url_scheme_host_only );
-		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'form' ), 'action', $url_scheme_host_only );
-
-		// Save HTML.
-		$resource = $html->saveHTML();
-
-		// If the result is false, return a blank string.
-		if ( ! $resource ) {
-			throw new \Exception( sprintf( 'Could not parse %s', $url ) );
-		}
-
-		// Remove some HTML tags that DOMDocument adds, returning the output.
-		// We do this instead of using LIBXML_HTML_NOIMPLIED in loadHTML(), because Legacy Forms
-		// are not always contained in a single root / outer element, which is required for
-		// LIBXML_HTML_NOIMPLIED to correctly work.
-		$resource = $this->strip_html_head_body_tags( $resource );
-
-		return $resource;
-	}
-
-	/**
-	 * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
-	 * DOM Elements.
-	 *
-	 * @param \DOMNodeList<\DOMElement> $elements  Elements.
-	 * @param string                    $attribute HTML Attribute.
-	 * @param string                    $url       Absolute URL to prepend to relative URLs.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return void
-	 */
-	private function convert_relative_to_absolute_urls( \DOMNodeList $elements, string $attribute, string $url ) { // phpcs:ignore Squiz.Commenting.FunctionComment.IncorrectTypeHint, Generic.Files.LineLength.TooLong
-		// Anchor hrefs.
-		foreach ( $elements as $element ) {
-			// Skip if the attribute's value is empty.
-			if ( empty( $element->getAttribute( $attribute ) ) ) {
-				continue;
-			}
-
-			// Skip if the attribute's value is a fully qualified URL.
-			if ( filter_var( $element->getAttribute( $attribute ), FILTER_VALIDATE_URL ) ) {
-				continue;
-			}
-
-			// Skip if this is a Google Font CSS URL.
-			if ( strpos( $element->getAttribute( $attribute ), '//fonts.googleapis.com' ) !== false ) {
-				continue;
-			}
-
-			// If here, the attribute's value is a relative URL, missing the http(s) and domain.
-			// Prepend the URL to the attribute's value.
-			$element->setAttribute( $attribute, $url . $element->getAttribute( $attribute ) );
-		}
-	}
-
-	/**
-	 * Strips <html>, <head> and <body> opening and closing tags from the given markup,
-	 * as well as the Content-Type meta tag we might have added in get_html().
-	 *
-	 * @param string $markup HTML Markup.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return string              HTML Markup
-	 */
-	private function strip_html_head_body_tags( string $markup ) {
-		$markup = str_replace( '<html>', '', $markup );
-		$markup = str_replace( '</html>', '', $markup );
-		$markup = str_replace( '<head>', '', $markup );
-		$markup = str_replace( '</head>', '', $markup );
-		$markup = str_replace( '<body>', '', $markup );
-		$markup = str_replace( '</body>', '', $markup );
-		$markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
-
-		return $markup;
 	}
 
 	/**
@@ -2838,55 +2699,6 @@ class ConvertKit_API {
 		$markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
 
 		return $markup;
-
-	}
-
-	/**
-	 * Gets all forms and landing pages from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	private function get_forms_landing_pages() {
-
-		// Send request.
-		$response = $this->get(
-			'forms',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		// Iterate through forms, determining if each form is a form or landing page.
-		$forms         = array();
-		$landing_pages = array();
-		foreach ( $response['forms'] as $form ) {
-			// Skip archived forms.
-			if ( isset( $form['archived'] ) && $form['archived'] ) {
-				continue;
-			}
-
-			switch ( $form['type'] ) {
-				case 'hosted':
-					$landing_pages[ $form['id'] ] = $form;
-					break;
-
-				default:
-					$forms[ $form['id'] ] = $form;
-					break;
-			}
-		}
-
-		return array(
-			'forms'         => $forms,
-			'landing_pages' => $landing_pages,
-		);
 
 	}
 
