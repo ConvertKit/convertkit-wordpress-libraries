@@ -702,10 +702,7 @@ class ConvertKit_API extends ConvertKit_API_Methods {
 		switch ( strtolower( $method ) ) {
 			case 'get':
 				$result = wp_remote_get(
-					$this->add_params_to_url(
-						$this->get_api_url( $endpoint ),
-						$params
-					),
+					add_query_arg( $params, $this->get_api_url( $endpoint ) ),
 					array(
 						'headers'    => $this->get_request_headers(),
 						'timeout'    => $this->get_timeout(),
@@ -997,21 +994,6 @@ class ConvertKit_API extends ConvertKit_API_Methods {
 
 		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
 		return path_join( $this->api_url_base . $this->api_version, $endpoint );
-
-	}
-
-	/**
-	 * Adds the supplied array of parameters as query arguments to the URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $url        URL.
-	 * @param   array  $params     Parameters for request.
-	 * @return  string              URL with API Key or API Secret
-	 */
-	private function add_params_to_url( $url, $params ) {
-
-		return add_query_arg( $params, $url );
 
 	}
 
