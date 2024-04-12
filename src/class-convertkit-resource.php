@@ -363,12 +363,17 @@ class ConvertKit_Resource {
 				$results = $this->get_all_resources( $this->type );
 				break;
 
-			case 'posts':
+			case 'postsXXX@TODO':
 				$results = $this->api->get_all_posts();
 				break;
 
 			case 'products':
 				$results = $this->api->get_products();
+				if ( is_wp_error( $results ) ) {
+					return $results;
+				}
+
+				$results = $this->map( $results, array(), 'products' );
 				break;
 
 			default:

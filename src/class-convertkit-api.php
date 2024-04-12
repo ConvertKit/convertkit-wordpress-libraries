@@ -15,20 +15,6 @@
 class ConvertKit_API extends ConvertKit_API_Methods {
 
 	/**
-	 * ConvertKit API Key
-	 *
-	 * @var bool|string
-	 */
-	protected $api_key = false;
-
-	/**
-	 * ConvertKit API Secret
-	 *
-	 * @var bool|string
-	 */
-	protected $api_secret = false;
-
-	/**
 	 * ConvertKit OAuth Application Client ID
 	 *
 	 * @since   2.0.0
@@ -479,6 +465,344 @@ class ConvertKit_API extends ConvertKit_API_Methods {
 
 		// Return.
 		return $result;
+
+	}
+
+	/**
+	 * Gets all posts from the API.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param   int $posts_per_request   Number of Posts to fetch in each request.
+	 * @return  WP_Error|array
+	 */
+	public function get_all_posts( $posts_per_request = 50 ) {
+
+		$this->log( 'API: get_all_posts()' );
+
+		// Sanitize some parameters.
+		$posts_per_request = absint( $posts_per_request );
+
+		// Sanity check that parameters aren't outside of the bounds as defined by the API.
+		if ( $posts_per_request < 1 ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_all_posts_posts_per_request_bound_too_low' ) );
+		}
+		if ( $posts_per_request > 50 ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_all_posts_posts_per_request_bound_too_high' ) );
+		}
+
+		// Define an array to store the posts in.
+		$posts = array();
+
+		// Mock the response to start the while loop.
+		$response = array(
+			'page'        => 0, // Start on page zero, as the below loop will add 1 to this.
+			'total_pages' => 1, // We always know there will be one page of posts.
+		);
+
+		// Iterate through each page of posts.
+		while ( absint( $response['total_pages'] ) >= absint( $response['page'] ) + 1 ) {
+			// Fetch posts.
+			$response = $this->get_posts( absint( $response['page'] ) + 1, $posts_per_request );
+
+			// Bail if an error occured.
+			if ( is_wp_error( $response ) ) {
+				return $response;
+			}
+
+			// Exit loop if no posts exist.
+			if ( ! count( $response ) ) {
+				break;
+			}
+
+			// Append posts to array.
+			foreach ( $response['posts'] as $post ) {
+				$posts[ $post['id'] ] = $post;
+			}
+		}
+
+		// If no posts exist, log an error.
+		if ( ! count( $posts ) ) {
+			$this->log( 'API: get_posts(): Error: No broadcasts exist in ConvertKit.' );
+		}
+
+		// Return posts.
+		return $posts;
+
+	}
+
+	/**
+	 * Gets posts from the API.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param   int $page       Page number.
+	 * @param   int $per_page   Number of Posts to return.
+	 * @return  WP_Error|array
+	 */
+	public function get_posts( $page = 1, $per_page = 10 ) {
+
+		$this->log( 'API: get_posts()' );
+
+		// Sanitize some parameters.
+		$page     = absint( $page );
+		$per_page = absint( $per_page );
+
+		// Sanity check that parameters aren't outside of the bounds as defined by the API.
+		if ( $page < 1 ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_posts_page_parameter_bound_too_low' ) );
+		}
+		if ( $per_page < 1 ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_posts_per_page_parameter_bound_too_low' ) );
+		}
+		if ( $per_page > 50 ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_posts_per_page_parameter_bound_too_high' ) );
+		}
+
+		$posts = array();
+
+		// Send request.
+		$response = $this->get(
+			'posts',
+			array(
+				'page'       => $page,
+				'per_page'   => $per_page,
+			)
+		);
+
+		// If an error occured, return WP_Error.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_posts(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response isn't an array as we expect, log that no posts exist and return a blank array.
+		if ( ! is_array( $response['posts'] ) ) {
+			$this->log( 'API: get_posts(): Error: No broadcasts exist in ConvertKit.' );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		}
+
+		// If no posts exist, log that no posts exist and return a blank array.
+		if ( ! count( $response['posts'] ) ) {
+			$this->log( 'API: get_posts(): Error: No broadcasts exist in ConvertKit.' );
+			return $posts;
+		}
+
+		return $response;
+
+	}
+
+	/**
+	 * Gets a specific post.
+	 *
+	 * @since   1.3.8
+	 *
+	 * @param   int $post_id   Post ID.
+	 * @return  WP_Error|array
+	 */
+	public function get_post( $post_id ) {
+
+		$this->log( 'API: get_post(): [ post_id: ' . $post_id . ']' );
+
+		// Send request.
+		$response = $this->get(
+			sprintf( 'posts/%s', $post_id ),
+		);
+
+		// If an error occured, return WP_Error.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_posts(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response contains a message, an error occured.
+		// Log and return it now.
+		if ( array_key_exists( 'message', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_error',
+				$response['message']
+			);
+
+			$this->log( 'API: get_post(): Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		return $response['post'];
+
+	}
+
+	/**
+	 * Fetches all products from the API.
+	 *
+	 * @since   1.1.0
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function get_products() {
+
+		return $this->get( 'products' );
+
+	}
+
+	/**
+	 * Sends an email to the given email address, which will contain a ConvertKit link
+	 * which the subscriber can click to authenticate themselves.
+	 *
+	 * Upon successful authentication, the subscriber will be redirected from the ConvertKit
+	 * link to the given redirect URL.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $email          Email Address.
+	 * @param   string $redirect_url   Redirect URL.
+	 * @return  WP_Error|string
+	 */
+	public function subscriber_authentication_send_code( $email, $redirect_url ) {
+
+		$this->log( 'API: subscriber_authentication_send_code(): [ email: ' . $email . ', redirect_url: ' . $redirect_url . ']' );
+
+		// Sanitize some parameters.
+		$email        = trim( $email );
+		$redirect_url = trim( $redirect_url );
+
+		// Return error if no email address or redirect URL is specified.
+		if ( empty( $email ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_email_empty' ) );
+		}
+		if ( empty( $redirect_url ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_redirect_url_empty' ) );
+		}
+
+		// Return error if an invalid redirect URL is specified.
+		if ( ! filter_var( $redirect_url, FILTER_VALIDATE_URL ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_redirect_url_invalid' ) );
+		}
+
+		// Send request.
+		$response = $this->post(
+			'subscriber_authentication/send_code',
+			array(
+				'email_address' => $email,
+				'redirect_url'  => $redirect_url,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: subscriber_authentication_send_code(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// Confirm that a token was supplied in the response.
+		if ( ! isset( $response['token'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_send_code_response_token_missing' ) );
+		}
+
+		// Return token, which is used with the subscriber code (sent by email) when subsequently calling subscriber_authentication_verify().
+		return $response['token'];
+
+	}
+
+	/**
+	 * Verifies the given token and subscriber code, which are included in the link
+	 * sent by email in the subscriber_authentication_send_code() step.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $token              Token.
+	 * @param   string $subscriber_code    Subscriber Code.
+	 * @return  WP_Error|string
+	 */
+	public function subscriber_authentication_verify( $token, $subscriber_code ) {
+
+		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $this->mask_string( $token ) . ', subscriber_code: ' . $this->mask_string( $subscriber_code ) . ']' );
+
+		// Sanitize some parameters.
+		$token           = trim( $token );
+		$subscriber_code = trim( $subscriber_code );
+
+		// Return error if no email address or redirect URL is specified.
+		if ( empty( $token ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_token_empty' ) );
+		}
+		if ( empty( $subscriber_code ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_subscriber_code_empty' ) );
+		}
+
+		// Send request.
+		$response = $this->post(
+			'subscriber_authentication/verify',
+			array(
+				'token'           => $token,
+				'subscriber_code' => $subscriber_code,
+			)
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: subscriber_authentication_verify(): Error: ' . $response->get_error_message() );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+		}
+
+		// Confirm that a subscriber ID was supplied in the response.
+		if ( ! isset( $response['subscriber_id'] ) ) {
+			$this->log( 'API: ' . $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'subscriber_authentication_verify_response_error' ) );
+		}
+
+		// Return subscriber ID.  This is a signed ID valid for 90 days, instead of the subscriber ID integer.
+		// This can be used when calling profile().
+		return $response['subscriber_id'];
+
+	}
+
+	/**
+	 * Returns the subscriber's ID and products they are subscribed to for the given
+	 * signed subscriber ID.
+	 *
+	 * @since   1.3.0
+	 *
+	 * @param   string $signed_subscriber_id   Signed Subscriber ID (i.e. from subscriber_authentication_verify()).
+	 * @return  WP_Error|array
+	 */
+	public function profile( $signed_subscriber_id ) {
+
+		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $this->mask_string( $signed_subscriber_id ) . ' ]' );
+
+		// Trim some parameters.
+		$signed_subscriber_id = trim( $signed_subscriber_id );
+
+		// Return error if no signed subscribed id is specified.
+		if ( empty( $signed_subscriber_id ) ) {
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'profiles_signed_subscriber_id_empty' ) );
+		}
+
+		// Send request.
+		$response = $this->get(
+			'profile/' . $signed_subscriber_id
+		);
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: profile(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response contains a message, an error occured.
+		// Log and return it now.
+		if ( array_key_exists( 'message', $response ) ) {
+			$error = new WP_Error(
+				'convertkit_api_error',
+				$response['message']
+			);
+
+			$this->log( 'API: profile(): Error: ' . $error->get_error_message() );
+			return $error;
+		}
+
+		// Return profile data (subscriber ID, subscribed products).
+		return $response;
 
 	}
 
