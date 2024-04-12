@@ -382,8 +382,6 @@ class ConvertKit_API {
 				'client_id'             => $this->client_id,
 				'response_type'         => 'code',
 				'redirect_uri'          => rawurlencode( $this->redirect_uri ),
-
-				// Use PKCE with a new code verifier.
 				'code_challenge'        => $code_challenge,
 				'code_challenge_method' => 'S256',
 			),
@@ -393,32 +391,23 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Exchanges the given code for an access token.
+	 * Exchanges the given code for an access token, refresh token and other data.
 	 *
 	 * @since   2.0.0
 	 *
 	 * @param   string $authorization_code     Authorization Code, returned from get_oauth_url() flow.
-	 * @return  WP_Error|string                Error or Access Token
+	 * @return  WP_Error|array
 	 */
 	public function get_access_token( $authorization_code ) {
 
-		$result = $this->response(
-			wp_remote_post(
-				$this->oauth_token_url,
-				array(
-					'headers'    => array(
-						'Content-Type' => 'application/x-www-form-urlencoded',
-					),
-					'body'       => array(
-						'client_id'     => $this->client_id,
-						'grant_type'    => 'authorization_code',
-						'code'          => $authorization_code,
-						'redirect_uri'  => $this->redirect_uri,
-						'code_verifier' => $this->get_code_verifier(),
-					),
-					'timeout'    => $this->get_timeout(),
-					'user-agent' => $this->get_user_agent(),
-				)
+		$result = $this->post(
+			$this->oauth_token_url,
+			array(
+				'client_id'     => $this->client_id,
+				'grant_type'    => 'authorization_code',
+				'code'          => $authorization_code,
+				'redirect_uri'  => $this->redirect_uri,
+				'code_verifier' => $this->get_code_verifier(),
 			)
 		);
 
@@ -456,22 +445,14 @@ class ConvertKit_API {
 	 */
 	public function refresh_token() {
 
-		$result = $this->response(
-			wp_remote_post(
-				$this->oauth_token_url,
-				array(
-					'headers'    => array(
-						'Content-Type' => 'application/x-www-form-urlencoded',
-					),
-					'body'       => array(
-						'client_id'     => $this->client_id,
-						'grant_type'    => 'refresh_token',
-						'refresh_token' => $this->refresh_token,
-					),
-					'timeout'    => $this->get_timeout(),
-					'user-agent' => $this->get_user_agent(),
-				)
-			)
+		$result = $this->post(
+			$this->oauth_token_url,
+			array(
+				'client_id'     => $this->client_id,
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $this->refresh_token,
+			),
+			'application/x-www-form-urlencoded'
 		);
 
 		// If an error occured, log and return it now.
@@ -2169,7 +2150,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function get( $endpoint, $params = array() ) {
+	private function get( $endpoint, $params = array(), $content_type = 'application/json' ) {
 
 		return $this->request( $endpoint, 'get', $params, true );
 
@@ -2184,7 +2165,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function post( $endpoint, $params = array() ) {
+	private function post( $endpoint, $params = array(), $content_type = 'application/json' ) {
 
 		return $this->request( $endpoint, 'post', $params, true );
 
@@ -2199,7 +2180,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|array
 	 */
-	private function put( $endpoint, $params = array() ) {
+	private function put( $endpoint, $params = array(), $content_type = 'application/json' ) {
 
 		return $this->request( $endpoint, 'put', $params, true );
 
@@ -2214,7 +2195,7 @@ class ConvertKit_API {
 	 * @param   array  $params         Params.
 	 * @return  WP_Error|null
 	 */
-	private function delete( $endpoint, $params = array() ) {
+	private function delete( $endpoint, $params = array(), $content_type = 'application/json' ) {
 
 		return $this->request( $endpoint, 'delete', $params, true );
 
@@ -2229,9 +2210,9 @@ class ConvertKit_API {
 	 * @param   string $method                  HTTP Method (optional).
 	 * @param   mixed  $params                  Params (array|boolean|string).
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
-	 * @return  WP_Error|array|null
+	 * @return  WP_Error|array
 	 */
-	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
+	private function request( $endpoint, $method = 'get', $params = array(), $content_type = 'application/json', $retry_if_rate_limit_hit = true ) {
 
 		// Send request.
 		switch ( $method ) {
@@ -2254,7 +2235,7 @@ class ConvertKit_API {
 					$this->get_api_url( $endpoint ),
 					array(
 						'headers'    => $this->get_request_headers(),
-						'body'       => wp_json_encode( $params ),
+						'body'       => $this->get_request_body( $params, $content_type ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2267,7 +2248,7 @@ class ConvertKit_API {
 					array(
 						'method'     => 'PUT',
 						'headers'    => $this->get_request_headers(),
-						'body'       => wp_json_encode( $params ),
+						'body'       => $this->get_request_body( $params, $content_type ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2280,7 +2261,7 @@ class ConvertKit_API {
 					array(
 						'method'     => 'DELETE',
 						'headers'    => $this->get_request_headers(),
-						'body'       => wp_json_encode( $params ),
+						'body'       => $this->get_request_body( $params, $content_type ),
 						'timeout'    => $this->get_timeout(),
 						'user-agent' => $this->get_user_agent(),
 					)
@@ -2297,22 +2278,6 @@ class ConvertKit_API {
 				);
 				break;
 		}
-
-		// Return the processed response.
-		return $this->response( $result, $retry_if_rate_limit_hit );
-
-	}
-
-	/**
-	 * Main function which handles processing responses from the API.
-	 *
-	 * @since   2.0.0
-	 *
-	 * @param   WP_Error|array $result                     API Result.
-	 * @param   bool           $retry_if_rate_limit_hit    Retry request if rate limit hit.
-	 * @return  WP_Error|array
-	 */
-	private function response( $result, $retry_if_rate_limit_hit = false ) {
 
 		// If an error occured, log and return it now.
 		if ( is_wp_error( $result ) ) {
@@ -2412,7 +2377,7 @@ class ConvertKit_API {
 
 					// Retry the request a final time, waiting 2 seconds before.
 					sleep( 2 );
-					return $this->request( $endpoint, $method, $params, false );
+					return $this->request( $endpoint, $method, $params, $content_type, false );
 			}
 
 			return new WP_Error(
@@ -2422,7 +2387,58 @@ class ConvertKit_API {
 			);
 		}
 
-		return $response;
+		return $result;
+
+	}
+
+	/**
+	 * Returns the headers to use in an API request.
+	 *
+	 * @param string  $type Accept and Content-Type Headers.
+	 * @param boolean $auth Include authorization header.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array
+	 */
+	private function get_request_headers( $type = 'application/json', $auth = true ) {
+
+		$headers = array(
+			'Accept'       => $type,
+			'Content-Type' => $type . '; charset=utf-8',
+		);
+
+		// If no authorization header required, return now.
+		if ( ! $auth ) {
+			return $headers;
+		}
+
+		// Add authorization header and return.
+		$headers['Authorization'] = 'Bearer ' . $this->access_token;
+		return $headers;
+
+	}
+
+	/**
+	 * Returns the body for an API request, depending on the supplied
+	 * Content Type.
+	 *
+	 * @param mixed  $params    Params (array|boolean|string).
+	 * @param string $type 		Content Type.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array
+	 */
+	private function get_request_body( $params = array(), $type = 'application/json' ) {
+
+		switch ( $type ) {
+			case 'application/json':
+				return wp_json_encode( $params );
+
+			default:
+				return $params;
+		}
 
 	}
 
@@ -2449,32 +2465,6 @@ class ConvertKit_API {
 
 		return $timeout;
 
-	}
-
-	/**
-	 * Returns the headers to use in an API request.
-	 *
-	 * @param string  $type Accept and Content-Type Headers.
-	 * @param boolean $auth Include authorization header.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @return array
-	 */
-	private function get_request_headers( $type = 'application/json', $auth = true ) {
-		$headers = array(
-			'Accept'       => $type,
-			'Content-Type' => $type . '; charset=utf-8',
-		);
-
-		// If no authorization header required, return now.
-		if ( ! $auth ) {
-			return $headers;
-		}
-
-		// Add authorization header and return.
-		$headers['Authorization'] = 'Bearer ' . $this->access_token;
-		return $headers;
 	}
 
 	/**

@@ -132,13 +132,16 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test401Unauthorized()
 	{
-		$this->markTestIncomplete();
-
-		$api    = new ConvertKit_API('fakeApiKey', 'fakeApiSecret');
+		$api = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			'not-a-real-access-token',
+			'not-a-real-refresh-token'
+		);
 		$result = $api->account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Authorization Failed: API Key not valid');
+		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
 		$this->assertEquals($result->get_error_data($result->get_error_code()), 401);
 	}
 
@@ -149,10 +152,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test429RateLimitHit()
 	{
-		$this->markTestIncomplete();
-
 		// Force WordPress HTTP classes and functions to return a 429 error.
-		$this->mockResponses( 429, 'Rate limit hit.' );
+		$this->mockResponses( 429, 'Rate limit hit', wp_json_encode( array(
+			'errors' => array(
+				'Rate limit hit.'
+			)
+		) ) );
 		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -167,8 +172,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test500InternalServerError()
 	{
-		$this->markTestIncomplete();
-
 		// Force WordPress HTTP classes and functions to return a 500 error.
 		$this->mockResponses( 500, 'Internal server error.' );
 		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 500 error.
@@ -185,8 +188,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test502BadGateway()
 	{
-		$this->markTestIncomplete();
-
 		// Force WordPress HTTP classes and functions to return a 502 error.
 		$this->mockResponses( 502, 'Bad gateway.' );
 		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 502 error.
@@ -204,8 +205,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testNullResponse()
 	{
-		$this->markTestIncomplete();
-
+		// @TODO.
 		// Force WordPress HTTP classes and functions to return an invalid JSON response.
 		$this->mockResponses( 200, '', 'invalid JSON string' );
 		$result = $this->api->get_posts(); // The API function we use doesn't matter.
@@ -222,8 +222,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testUserAgentWithContext()
 	{
-		$this->markTestIncomplete();
-
 		// When an API call is made, inspect the user-agent argument.
 		add_filter(
 			'http_request_args',
@@ -236,7 +234,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform a request.
-		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], false, 'TestContext' );
+		$api = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN'],
+			false,
+			'TestContext'
+		);
 		$result = $api->account();
 	}
 
@@ -248,8 +253,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testUserAgentWithoutContext()
 	{
-		$this->markTestIncomplete();
-
 		// When an API call is made, inspect the user-agent argument.
 		add_filter(
 			'http_request_args',
@@ -313,6 +316,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Send request.
 		$result = $this->api->get_access_token( 'auth-code' );
+		var_dump($result);
+		die();
 
 		// Inspect response.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
