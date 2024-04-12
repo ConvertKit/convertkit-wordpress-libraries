@@ -356,23 +356,11 @@ class ConvertKit_Resource {
 		// Fetch resources.
 		switch ( $this->type ) {
 			case 'forms':
-				$results = $this->api->get_forms();
-				break;
-
 			case 'landing_pages':
-				$results = $this->api->get_landing_pages();
-				break;
-
 			case 'tags':
-				$results = $this->api->get_tags();
-				break;
-
 			case 'sequences':
-				$results = $this->api->get_sequences();
-				break;
-
 			case 'custom_fields':
-				$results = $this->api->get_custom_fields();
+				$results = $this->get_all_resources( $this->type );
 				break;
 
 			case 'posts':
@@ -505,6 +493,89 @@ class ConvertKit_Resource {
 	public function delete() {
 
 		delete_option( $this->settings_name );
+
+	}
+
+	/**
+	 * Fetches all resources (forms, landing pages, tags etc) from the API,
+	 * using cursor pagination until all results are returned.
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @param 	string 	$resource 	Resource (forms,landing_pages,tags,sequences,custom_fields)
+	 * @param   int     $per_page   Number of results to return per request
+	 */
+	private function get_all_resources( $resource, $per_page = 100 ) {
+
+		// Fetch resources.
+		$response = call_user_func_array(
+			array( $this->api, 'get_' . $resource ),
+			array(
+				'per_page' => $per_page,
+			)
+		);
+
+		// Bail if an error occured.
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		// Append resources to array.
+		$items = $this->map( $response, array(), $resource );
+
+		// If no further resources to fetch, return.
+		if ( ! $response['pagination']['has_next_page'] ) {
+			return $items;
+		}
+
+		// Further resources need to be fetched.
+		while ( $response['pagination']['has_next_page'] ) {
+			// Fetch next page of resources.
+			$response = call_user_func_array(
+				array(
+					$this->api,
+					'get_' . $resource
+				),
+				array(
+					'after_cursor' 	=> $response['pagination']['end_cursor'],
+					'per_page'  	=> $per_page,
+				)
+			);
+
+			// Bail if an error occured.
+			if ( is_wp_error( $response ) ) {
+				return $response;
+			}
+
+			// Append resources to array.
+			$items = $this->map( $response, $items, $resource );
+		}
+
+		return $items;
+
+	}
+
+	/**
+	 * Helper method to build an array of resources with keys as IDs.
+	 * 
+	 * @since 	2.0.0
+	 * 
+	 * @param 	array 	$response 	API Response.
+	 * @param 	array 	$items 		Key'd resources
+	 * @param   string  $resource   Resource (forms,landing_pages,tags,sequences,custom_fields)
+	 */
+	private function map( $response, $items = array(), $resource = 'forms' ) {
+
+		// If we're building an array of landing pages, use the `form` key.
+		if ( $resource === 'landing_pages' ) {
+			$resource = 'forms';
+		}
+
+		foreach ( $response[ $resource ] as $item ) {
+			$items[ $item['id'] ] = $item;
+		}
+
+		return $items;
 
 	}
 
