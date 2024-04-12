@@ -2150,7 +2150,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function get( $endpoint, $params = array() ) {
 
@@ -2165,7 +2165,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function post( $endpoint, $params = array() ) {
 
@@ -2180,7 +2180,7 @@ class ConvertKit_API {
 	 *
 	 * @param   string $endpoint       API Endpoint.
 	 * @param   array  $params         Params.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function put( $endpoint, $params = array() ) {
 
@@ -2212,7 +2212,7 @@ class ConvertKit_API {
 	 * @param   string $method                  HTTP Method (optional).
 	 * @param   mixed  $params                  Params (array|boolean|string).
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
-	 * @return  WP_Error|array
+	 * @return  WP_Error|array|null
 	 */
 	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
@@ -2290,7 +2290,9 @@ class ConvertKit_API {
 		// Fetch HTTP response code and body.
 		$http_response_code = wp_remote_retrieve_response_code( $result );
 		$body               = wp_remote_retrieve_body( $result );
-		$response           = json_decode( $body, true );
+
+		// If the body is null i.e. a 204 No Content, don't attempt to JSON decode it.
+		$response = ( ! empty( $body ) ? json_decode( $body ) : null );
 
 		// Return a WP_Error if the HTTP response code is a 5xx code.
 		// The API respose won't contain an error message, so we use this class' error messages.
@@ -2379,7 +2381,7 @@ class ConvertKit_API {
 
 					// Retry the request a final time, waiting 2 seconds before.
 					sleep( 2 );
-					return $this->request( $endpoint, $method, $params, $content_type, false );
+					return $this->request( $endpoint, $method, $params, false );
 			}
 
 			return new WP_Error(

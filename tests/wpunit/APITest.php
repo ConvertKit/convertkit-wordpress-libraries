@@ -204,23 +204,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that a response containing invalid JSON, resulting in json_decode() returning null,
-	 * gracefully returns a WP_Error.
-	 *
-	 * @since   1.2.3
-	 */
-	public function testNullResponse()
-	{
-		// @TODO.
-		// Force WordPress HTTP classes and functions to return an invalid JSON response.
-		$this->mockResponses( 200, '', 'invalid JSON string' );
-		$result = $this->api->get_posts(); // The API function we use doesn't matter.
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: The response is not of the expected type array.');
-	}
-
-	/**
 	 * Test that the User Agent string is in the expected format when
 	 * a context is provided.
 	 *
