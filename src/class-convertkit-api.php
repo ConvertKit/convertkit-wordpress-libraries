@@ -1310,4 +1310,23 @@ class ConvertKit_API {
 
 	}
 
+	/**
+	 * Helper method to mask all but the last 4 characters of a string.
+	 *
+	 * @since   1.4.2
+	 *
+	 * @param   string $str    String to mask.
+	 * @return  string          Masked string
+	 */
+	private function mask_string( $str ) {
+
+		// Don't mask if less than 4 characters.
+		if ( strlen( $str ) < 4 ) {
+			return $str;
+		}
+
+		return str_repeat( '*', ( strlen( $str ) - 4 ) ) . substr( $str, -4 );
+
+	}
+
 }
