@@ -16,12 +16,26 @@ class ConvertKit_API {
 
 	use ConvertKit_API_Traits;
 
-    /**
-     * The SDK version.
-     *
-     * @var string
-     */
-    public const VERSION = '2.0.0';
+	/**
+	 * The SDK version.
+	 *
+	 * @var string
+	 */
+	public const VERSION = '2.0.0';
+
+	/**
+	 * Redirect URI.
+	 *
+	 * @var     bool|string
+	 */
+	protected $redirect_uri = false;
+
+	/**
+	 * Refresh token.
+	 *
+	 * @var     bool|string
+	 */
+	protected $refresh_token = false;
 
 	/**
 	 * Optional context of the request.
@@ -515,8 +529,8 @@ class ConvertKit_API {
 		$response = $this->get(
 			'posts',
 			array(
-				'page'       => $page,
-				'per_page'   => $per_page,
+				'page'     => $page,
+				'per_page' => $per_page,
 			)
 		);
 
