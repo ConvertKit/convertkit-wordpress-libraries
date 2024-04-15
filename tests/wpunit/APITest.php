@@ -140,7 +140,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			'not-a-real-access-token',
 			'not-a-real-refresh-token'
 		);
-		$result = $api->account();
+		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
@@ -166,7 +166,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				)
 			)
 		);
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Rate limit hit.');
@@ -182,7 +182,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Force WordPress HTTP classes and functions to return a 500 error.
 		$this->mockResponses( 500, 'Internal server error.' );
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 500 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 500 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Internal server error.');
@@ -198,7 +198,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Force WordPress HTTP classes and functions to return a 502 error.
 		$this->mockResponses( 502, 'Bad gateway.' );
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 502 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 502 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Bad gateway.');
@@ -233,7 +233,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			false,
 			'TestContext'
 		);
-		$result = $api->account();
+		$result = $api->get_account();
 	}
 
 	/**
@@ -256,7 +256,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform a request.
-		$result = $this->api->account();
+		$result = $this->api->get_account();
 	}
 
 	/**
@@ -392,7 +392,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testInvalidAPICredentials()
 	{
 		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
-		$result = $api->account();
+		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
