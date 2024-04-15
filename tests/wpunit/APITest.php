@@ -419,7 +419,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that exchanging a valid API Key and Secret for an Access Token returns the expected data.
+	 * Test that exchanging an invalid API Key and Secret for an Access Token returns a WP_Error.
 	 *
 	 * @since   2.0.0
 	 */
