@@ -24,6 +24,13 @@ class ConvertKit_API {
 	public const VERSION = '2.0.0';
 
 	/**
+	 * ConvertKit API Key
+	 *
+	 * @var bool|string
+	 */
+	protected $api_key = false;
+
+	/**
 	 * Redirect URI.
 	 *
 	 * @var     bool|string
