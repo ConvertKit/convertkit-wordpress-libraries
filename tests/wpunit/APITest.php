@@ -41,7 +41,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		parent::setUp();
 
 		// Include class from /src to test.
-		require_once 'src/class-convertkit-api-methods.php';
+		require_once 'src/class-convertkit-api-traits.php';
 		require_once 'src/class-convertkit-api.php';
 		require_once 'src/class-convertkit-log.php';
 
