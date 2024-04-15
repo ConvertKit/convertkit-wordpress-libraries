@@ -113,6 +113,7 @@ class ConvertKit_API {
 		'recommendations_script',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
+		'accounts/oauth_access_token',
 	);
 
 	/**
@@ -436,6 +437,27 @@ class ConvertKit_API {
 
 		// Return.
 		return $result;
+
+	}
+
+	/**
+	 * Exchanges the given API Key for an Access Token.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $api_key    API Key.
+	 * @param   string $api_secret API Secret.
+	 * @return  WP_Error|array
+	 */
+	public function exchange_api_key_and_secret_for_access_token( $api_key, $api_secret ) {
+
+		return $this->post(
+			'accounts/oauth_access_token',
+			array(
+				'api_key'    => $api_key,
+				'api_secret' => $api_secret,
+			)
+		);
 
 	}
 
@@ -1119,6 +1141,13 @@ class ConvertKit_API {
 				$error = implode( "\n", $response['errors'] );
 			} elseif ( array_key_exists( 'error_description', $response ) ) {
 				$error = $response['error_description'];
+			} elseif ( array_key_exists( 'error', $response ) ) {
+				// The 'error' key is present when exchanging an API Key and Secret for an Access Token
+				// and something went wrong e.g. invalid API credentials.
+				$error = $response['error'];
+				if ( array_key_exists( 'message', $response ) ) {
+					$error .= ': ' . $response['message'];
+				}
 			}
 
 			$this->log( 'API: Error: ' . $error );
