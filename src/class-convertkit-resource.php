@@ -504,17 +504,17 @@ class ConvertKit_Resource {
 	/**
 	 * Fetches all resources (forms, landing pages, tags etc) from the API,
 	 * using cursor pagination until all results are returned.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	string 	$resource 	Resource (forms,landing_pages,tags,sequences,custom_fields)
-	 * @param   int     $per_page   Number of results to return per request
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $resource_type   Resource (forms,landing_pages,tags,sequences,custom_fields).
+	 * @param   int    $per_page        Number of results to return per request.
 	 */
-	private function get_all_resources( $resource, $per_page = 100 ) {
+	private function get_all_resources( $resource_type, $per_page = 100 ) {
 
 		// Fetch resources.
 		$response = call_user_func_array(
-			array( $this->api, 'get_' . $resource ),
+			array( $this->api, 'get_' . $resource_type ),
 			array(
 				'per_page' => $per_page,
 			)
@@ -526,7 +526,7 @@ class ConvertKit_Resource {
 		}
 
 		// Append resources to array.
-		$items = $this->map( $response, array(), $resource );
+		$items = $this->map( $response, array(), $resource_type );
 
 		// If no further resources to fetch, return.
 		if ( ! $response['pagination']['has_next_page'] ) {
@@ -539,11 +539,11 @@ class ConvertKit_Resource {
 			$response = call_user_func_array(
 				array(
 					$this->api,
-					'get_' . $resource
+					'get_' . $resource_type,
 				),
 				array(
-					'after_cursor' 	=> $response['pagination']['end_cursor'],
-					'per_page'  	=> $per_page,
+					'after_cursor' => $response['pagination']['end_cursor'],
+					'per_page'     => $per_page,
 				)
 			);
 
@@ -553,7 +553,7 @@ class ConvertKit_Resource {
 			}
 
 			// Append resources to array.
-			$items = $this->map( $response, $items, $resource );
+			$items = $this->map( $response, $items, $resource_type );
 		}
 
 		return $items;
@@ -562,21 +562,21 @@ class ConvertKit_Resource {
 
 	/**
 	 * Helper method to build an array of resources with keys as IDs.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	array 	$response 	API Response.
-	 * @param 	array 	$items 		Key'd resources
-	 * @param   string  $resource   Resource (forms,landing_pages,tags,sequences,custom_fields)
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array  $response        API Response.
+	 * @param   array  $items           Key'd resources.
+	 * @param   string $resource_type   Resource (forms,landing_pages,tags,sequences,custom_fields).
 	 */
-	private function map( $response, $items = array(), $resource = 'forms' ) {
+	private function map( $response, $items = array(), $resource_type = 'forms' ) {
 
 		// If we're building an array of landing pages, use the `form` key.
-		if ( $resource === 'landing_pages' ) {
-			$resource = 'forms';
+		if ( $resource_type === 'landing_pages' ) {
+			$resource_type = 'forms';
 		}
 
-		foreach ( $response[ $resource ] as $item ) {
+		foreach ( $response[ $resource_type ] as $item ) {
 			$items[ $item['id'] ] = $item;
 		}
 
