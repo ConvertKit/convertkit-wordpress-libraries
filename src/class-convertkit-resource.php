@@ -516,7 +516,11 @@ class ConvertKit_Resource {
 		$response = call_user_func_array(
 			array( $this->api, 'get_' . $resource_type ),
 			array(
-				'per_page' => $per_page,
+				'active',
+				false,
+				'',
+				'',
+				$per_page,
 			)
 		);
 
@@ -542,8 +546,11 @@ class ConvertKit_Resource {
 					'get_' . $resource_type,
 				),
 				array(
-					'after_cursor' => $response['pagination']['end_cursor'],
-					'per_page'     => $per_page,
+					'active',
+					false,
+					$response['pagination']['end_cursor'],
+					'',
+					$per_page,
 				)
 			);
 
