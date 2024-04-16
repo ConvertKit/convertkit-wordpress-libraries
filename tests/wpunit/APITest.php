@@ -399,6 +399,43 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that exchanging a valid API Key and Secret for an Access Token returns the expected data.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testExchangeAPIKeyAndSecretForAccessToken()
+	{
+		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->exchange_api_key_and_secret_for_access_token(
+			$_ENV['CONVERTKIT_API_KEY'],
+			$_ENV['CONVERTKIT_API_SECRET']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('oauth', $result);
+		$this->assertArrayHasKey('access_token', $result['oauth']);
+		$this->assertArrayHasKey('refresh_token', $result['oauth']);
+		$this->assertArrayHasKey('expires_at', $result['oauth']);
+	}
+
+	/**
+	 * Test that exchanging an invalid API Key and Secret for an Access Token returns a WP_Error.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testExchangeInvalidAPIKeyAndSecretForAccessToken()
+	{
+		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->exchange_api_key_and_secret_for_access_token(
+			'invalid-api-key',
+			'invalid-api-secret'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Authorization Failed: API Secret not valid', $result->get_error_message());
+	}
+
+	/**
 	 * Test that supplying valid API credentials to the API class returns the expected account information.
 	 *
 	 * @since   1.0.0
