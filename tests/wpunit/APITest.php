@@ -1339,9 +1339,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetBroadcastsPagination()
 	{
-		$result = $this->api->get_broadcasts(
-			per_page: 1
-		);
+		// Return one broadcast.
+		$result = $this->api->get_broadcasts(false, '', '', 1);
 
 		// Assert broadcasts and pagination exist.
 		$this->assertDataExists($result, 'broadcasts');
@@ -1355,10 +1354,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertTrue($result['pagination']['has_next_page']);
 
 		// Use pagination to fetch next page.
-		$result = $this->api->get_broadcasts(
-			per_page: 1,
-			after_cursor: $result['pagination']['end_cursor']
-		);
+		$result = $this->api->get_broadcasts(false, $result['pagination']['end_cursor'], '', 1);
 
 		// Assert broadcasts and pagination exist.
 		$this->assertDataExists($result, 'broadcasts');
@@ -1372,10 +1368,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertTrue($result['pagination']['has_next_page']);
 
 		// Use pagination to fetch previous page.
-		$result = $this->api->get_broadcasts(
-			per_page: 1,
-			before_cursor: $result['pagination']['start_cursor']
-		);
+		$result = $this->api->get_broadcasts(false, '', $result['pagination']['start_cursor'], 1);
 
 		// Assert broadcasts and pagination exist.
 		$this->assertDataExists($result, 'broadcasts');
@@ -1405,9 +1398,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Create a broadcast first.
 		$result = $this->api->create_broadcast(
-			subject: 'Test Subject',
-			content: 'Test Content',
-			description: 'Test Broadcast from WordPress Libraries',
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -1426,10 +1419,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Update the existing broadcast.
 		$result = $this->api->update_broadcast(
-			id: $broadcastID,
-			subject: 'New Test Subject',
-			content: 'New Test Content',
-			description: 'New Test Broadcast from WordPress Libraries'
+			$broadcastID,
+			'New Test Subject',
+			'New Test Content',
+			'New Test Broadcast from WordPress Libraries'
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -1465,12 +1458,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Create broadcast first.
 		$result = $this->api->create_broadcast(
-			subject: 'Test Subject',
-			content: 'Test Content',
-			description: 'Test Broadcast from WordPress Libraries',
-			public: true,
-			published_at: $publishedAt,
-			send_at: $sendAt
+			'Test Subject',
+			'Test Content',
+			'Test Broadcast from WordPress Libraries',
+			true,
+			$publishedAt,
+			$sendAt
 		);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
