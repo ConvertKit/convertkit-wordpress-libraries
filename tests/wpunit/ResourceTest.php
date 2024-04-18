@@ -288,7 +288,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$resources = get_option($this->resource->settings_name);
 
 		// Assert result is an array.
-		$this->assertIsArray($result);
+		$this->assertIsArray($resources);
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_FORM_ID'], $resources);
