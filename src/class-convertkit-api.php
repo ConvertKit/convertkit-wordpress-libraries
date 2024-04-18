@@ -469,7 +469,7 @@ class ConvertKit_API {
 	 *
 	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
 	 *
-	 * @return false|integer
+	 * @return WP_Error|false|integer
 	 */
 	public function get_subscriber_id( string $email_address ) {
 
