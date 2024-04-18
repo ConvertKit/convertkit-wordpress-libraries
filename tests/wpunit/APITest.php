@@ -32,6 +32,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
+	 * Subscriber IDs to unsubscribe on teardown of a test.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array<int, int>
+	 */
+	protected $subscriber_ids = [];
+
+	/**
 	 * Broadcast IDs to delete on teardown of a test.
 	 *
 	 * @since   2.0.0
@@ -77,6 +86,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function tearDown(): void
 	{
+		// Unsubscribe any Subscribers.
+		foreach ($this->subscriber_ids as $id) {
+			$this->api->unsubscribe($id);
+		}
+
 		// Delete any Broadcasts.
 		foreach ($this->broadcast_ids as $id) {
 			$this->api->delete_broadcast($id);
@@ -1693,6 +1707,259 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that create_subscriber() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriber()
+	{
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+	}
+
+	/**
+	 * Test that create_subscriber() returns the expected data
+	 * when a first name is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithFirstName()
+	{
+		$firstName    = 'FirstName';
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress,
+			$firstName
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+		$this->assertEquals($result['subscriber']['first_name'], $firstName);
+	}
+
+	/**
+	 * Test that create_subscriber() returns the expected data
+	 * when a subscriber state is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithSubscriberState()
+	{
+		$subscriberState = 'cancelled';
+		$emailAddress    = $this->generateEmailAddress();
+		$result          = $this->api->create_subscriber(
+			$emailAddress,
+			'', // First name.
+			$subscriberState
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+		$this->assertEquals($result['subscriber']['state'], $subscriberState);
+	}
+
+	/**
+	 * Test that create_subscriber() returns the expected data
+	 * when custom field data is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithCustomFields()
+	{
+		$lastName     = 'LastName';
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress,
+			'', // First name.
+			'', // Subscriber state.
+			[
+				'last_name' => $lastName,
+			]
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+		$this->assertEquals($result['subscriber']['fields']['last_name'], $lastName);
+	}
+
+	/**
+	 * Test that create_subscriber() throws a ClientException when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithInvalidEmailAddress()
+	{
+		$result = $this->api->create_subscriber(
+			'not-an-email-address'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_subscriber() throws a ClientException when an invalid
+	 * subscriber state is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithInvalidSubscriberState()
+	{
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress,
+			'', // First name.
+			'not-a-valid-state'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_subscriber() returns the expected data
+	 * when an invalid custom field is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscriberWithInvalidCustomFields()
+	{
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress,
+			'', // First name.
+			'', // Subscriber state.
+			fields: [
+				'not_a_custom_field' => 'value',
+			]
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+	}
+
+	/**
+	 * Test that create_subscribers() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscribers()
+	{
+		$subscribers = [
+			[
+				'email_address' => str_replace('@convertkit.com', '-1@convertkit.com', $this->generateEmailAddress()),
+			],
+			[
+				'email_address' => str_replace('@convertkit.com', '-2@convertkit.com', $this->generateEmailAddress()),
+			],
+		];
+		$result      = $this->api->create_subscribers($subscribers);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		foreach ($result['subscribers'] as $i => $subscriber) {
+			$this->subscriber_ids[] = $subscriber['id'];
+		}
+
+		// Assert no failures.
+		$this->assertCount(0, $result['failures']);
+
+		// Assert subscribers exists with correct data.
+		foreach ($result['subscribers'] as $i => $subscriber) {
+			$this->assertEquals($subscriber['email_address'], $subscribers[ $i ]['email_address']);
+		}
+	}
+
+	/**
+	 * Test that create_subscribers() throws a ClientException when no data is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscribersWithBlankData()
+	{
+		$result = $this->api->create_subscribers(
+			[
+				[],
+			]
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_subscribers() returns the expected data when invalid email addresses
+	 * are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateSubscribersWithInvalidEmailAddresses()
+	{
+		$subscribers = [
+			[
+				'email_address' => 'not-an-email-address',
+			],
+			[
+				'email_address' => 'not-an-email-address-again',
+			],
+		];
+		$result      = $this->api->create_subscribers($subscribers);
+
+		// Assert no subscribers were added.
+		$this->assertCount(0, $result['subscribers']);
+		$this->assertCount(2, $result['failures']);
+	}
+
+	/**
 	 * Test that get_broadcasts() returns the expected data
 	 * when pagination parameters and per_page limits are specified.
 	 *
@@ -2845,5 +3112,23 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey('start_cursor', $pagination);
 		$this->assertArrayHasKey('end_cursor', $pagination);
 		$this->assertArrayHasKey('per_page', $pagination);
+	}
+
+	/**
+	 * Generates a unique email address for use in a test, comprising of a prefix,
+	 * date + time and PHP version number.
+	 *
+	 * This ensures that if tests are run in parallel, the same email address
+	 * isn't used for two tests across parallel testing runs.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $domain     Domain (default: convertkit.com).
+	 *
+	 * @return  string
+	 */
+	private function generateEmailAddress($domain = 'convertkit.com')
+	{
+		return 'php-sdk-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
 	}
 }
