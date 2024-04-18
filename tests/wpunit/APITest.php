@@ -1228,278 +1228,469 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_subscriber_by_email()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByEmail()
-	{
-		$this->markTestIncomplete();
+     * Test that get_subscribers() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribers()
+    {
+        $result = $this->api->get_subscribers();
 
-		$result = $this->api->get_subscriber_by_email($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertEquals($result['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-	}
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
 
-	/**
-	 * Test that the `get_subscriber_by_email()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByEmailWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber_by_email('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('get_subscriber_by_email(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `get_subscriber_by_email()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByEmailWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber_by_email('invalid-email-address');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address invalid-email-address.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `get_subscriber_by_id()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber_by_id($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertEquals($result['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-	}
-
-	/**
-	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
-	 * when an empty ID parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByIDWithEmptyID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber_by_id('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('get_subscriber_by_id(): the subscriber_id parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
-	 * when an invalid ID parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberByIDWithInvalidID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber_by_id(12345);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `get_subscriber_tags()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberTags()
-	{
-		$this->markTestIncomplete();
-
-		// Subscribe the email address to the tag.
-		$result = $this->api->tag_subscribe(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithTotalCount()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			true, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			100 // Per page.
 		);
 
-		$result = $this->api->get_subscriber_tags($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-		// Subscriber may have multiple tags due to API tests running across different
-		// Plugins. Check that a matching tag in the array of tags exists.
-		$tagMatches = false;
-		foreach ($result as $tag) {
-			$this->assertArrayHasKey('id', $tag);
-			$this->assertArrayHasKey('name', $tag);
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', $result['pagination']);
+        $this->assertGreaterThan(0, $result['pagination']['total_count']);
+    }
 
-			if ($tag['id'] === (int) $_ENV['CONVERTKIT_API_TAG_ID']) {
-				$tagMatches = true;
-				break;
-			}
-		}
+    /**
+     * Test that get_subscribers() returns the expected data when
+     * searching by an email address.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersByEmailAddress()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			false, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			100 // Per page.
+		);
 
-		$this->assertTrue($tagMatches);
-	}
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-	/**
-	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
-	 * when an empty $id parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberTagsWithEmptyID()
-	{
-		$this->markTestIncomplete();
+        // Assert correct subscriber returned.
+        $this->assertEquals(
+            $result['subscribers'][0]['email_address'],
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+    }
 
-		$result = $this->api->get_subscriber_tags('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('get_subscriber_tags(): the subscriber_id parameter is empty.', $result->get_error_message());
-	}
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the subscription status is bounced.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithBouncedSubscriberState()
+    {
+        $result = $this->api->get_subscribers(
+        	'bounced' // Subscriber state.
+		);
 
-	/**
-	 * Test that the `get_subscriber_by_id()` function returns a WP_Error
-	 * when an invalid $id parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberTagsWithInvalidID()
-	{
-		$this->markTestIncomplete();
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-		$result = $this->api->get_subscriber_tags(12345);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
-	}
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result['subscribers'][0]['state'], 'bounced');
+    }
 
-	/**
-	 * Test that the `get_subscriber_id()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberID()
-	{
-		$this->markTestIncomplete();
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the created_after parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	$date // Created after.
+		);
 
-		$result = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($_ENV['CONVERTKIT_API_SUBSCRIBER_ID'], $result);
-	}
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-	/**
-	 * Test that the `get_subscriber_id()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberIDWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+        );
+    }
 
-		$result = $this->api->get_subscriber_id('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the created_before parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			$date // Created before.
+		);
 
-		// get_subscriber_by_email() is deliberate in this error message, as get_subscriber_id() calls get_subscriber_by_email().
-		$this->assertEquals('get_subscriber_by_email(): the email parameter is empty.', $result->get_error_message());
-	}
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-	/**
-	 * Test that the `get_subscriber_id()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriberIDWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+        );
+    }
 
-		$result = $this->api->get_subscriber_id('invalid-email-address');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('No subscriber(s) exist in ConvertKit matching the email address invalid-email-address.', $result->get_error_message());
-	}
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the updated_after parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithUpdatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			$date // Updated after.
+		);
 
-	/**
-	 * Test that the `unsubscribe()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testUnsubscribe()
-	{
-		$this->markTestIncomplete();
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
 
-		// We don't use $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'] for this test, as that email is relied upon as being a confirmed subscriber
-		// for other tests.
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the updated_before parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithUpdatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			$date // Updated before.
+		);
 
-		// Subscribe an email address.
-		$emailAddress = 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@convertkit.com';
-		$this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], $emailAddress);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
 
-		// Unsubscribe the email address.
-		$result = $this->api->unsubscribe($emailAddress);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscriber', $result);
-		$this->assertArrayHasKey('email_address', $result['subscriber']);
-		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
-	}
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the sort_field parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithSortFieldParam()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id' // Sort field.
+		);
 
-	/**
-	 * Test that the `unsubscribe()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testUnsubscribeWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
-		$result = $this->api->unsubscribe('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('unsubscribe(): the email parameter is empty.', $result->get_error_message());
-	}
+        // Assert sorting is honored by ID in descending (default) order.
+        $this->assertLessThanOrEqual(
+            $result['subscribers'][0]['id'],
+            $result['subscribers'][1]['id']
+        );
+    }
 
-	/**
-	 * Test that the `unsubscribe()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testUnsubscribeWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when the sort_order parameter is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithSortOrderParam()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'asc' // Sort order.
+		);
 
-		$result = $this->api->unsubscribe('invalid-email-address');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
-	}
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
 
+        // Assert sorting is honored by ID (default) in ascending order.
+        $this->assertGreaterThanOrEqual(
+            $result['subscribers'][0]['id'],
+            $result['subscribers'][1]['id']
+        );
+    }
+
+    /**
+     * Test that get_subscribers() returns the expected data
+     * when pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersPagination()
+    {
+    	// Return one broadcast.
+		$result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			false, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			false, // Include total count.
+			$result['pagination']['end_cursor'], // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single broadcast was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			false, // Include total count.
+			'', // After cursor.
+			$result['pagination']['start_cursor'], // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithInvalidEmailAddress()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'not-an-email-address' // Email address.
+		);
+        $this->assertInstanceOf(WP_Error::class, $result);
+    }
+
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithInvalidSubscriberState()
+    {
+        $result = $this->api->get_subscribers(
+        	'not-a-valid-state' // Subscriber state.
+		);
+        $this->assertInstanceOf(WP_Error::class, $result);
+    }
+
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * sort field is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithInvalidSortFieldParam()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'not-a-valid-sort-field' // Sort field.
+		);
+        $this->assertInstanceOf(WP_Error::class, $result);
+    }
+
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * sort order is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithInvalidSortOrderParam()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'not-a-valid-sort-order' // Sort order.
+		);
+        $this->assertInstanceOf(WP_Error::class, $result);
+    }
+
+    /**
+     * Test that get_subscribers() throws a ClientException when an invalid
+     * pagination parameters are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSubscribersWithInvalidPagination()
+    {
+        $result = $this->api->get_subscribers(
+        	'active', // Subscriber state.
+        	'', // Email address.
+        	null, // Created after.
+			null, // Created before.
+			null, // Updated after.
+			null, // Updated before.
+			'id', // Sort field.
+			'desc', // Sort order.
+			false, // Include total count.
+			'not-a-valid-cursor' // After cursor.
+		);
+        $this->assertInstanceOf(WP_Error::class, $result);
+    }
 
 	/**
 	 * Test that get_broadcasts() returns the expected data
