@@ -1867,7 +1867,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			$emailAddress,
 			'', // First name.
 			'', // Subscriber state.
-			fields: [
+			[
 				'not_a_custom_field' => 'value',
 			]
 		);
