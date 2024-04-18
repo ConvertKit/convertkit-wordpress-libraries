@@ -462,6 +462,36 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Get the ConvertKit subscriber ID associated with email address if it exists.
+	 * Return false if subscriber not found.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+	 *
+	 * @return false|integer
+	 */
+	public function get_subscriber_id( string $email_address ) {
+
+		$subscribers = $this->get(
+			'subscribers',
+			array( 'email_address' => $email_address )
+		);
+
+		if ( is_wp_error( $subscribers ) ) {
+			return $subscribers;
+		}
+
+		if ( ! count( $subscribers['subscribers'] ) ) {
+			return false;
+		}
+
+		// Return the subscriber's ID.
+		return $subscribers['subscribers'][0]['id'];
+
+	}
+
+	/**
 	 * Gets all posts from the API.
 	 *
 	 * @since   1.0.0
