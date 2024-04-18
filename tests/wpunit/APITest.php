@@ -1228,35 +1228,35 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-     * Test that get_subscribers() returns the expected data.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribers()
-    {
-        $result = $this->api->get_subscribers();
+	 * Test that get_subscribers() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribers()
+	{
+		$result = $this->api->get_subscribers();
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-    }
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the total count is included.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithTotalCount()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithTotalCount()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1268,29 +1268,29 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			100 // Per page.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Assert total count is included.
-        $this->assertArrayHasKey('total_count', $result['pagination']);
-        $this->assertGreaterThan(0, $result['pagination']['total_count']);
-    }
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data when
-     * searching by an email address.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersByEmailAddress()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data when
+	 * searching by an email address.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersByEmailAddress()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1302,190 +1302,190 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			100 // Per page.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Assert correct subscriber returned.
-        $this->assertEquals(
-            $result['subscribers'][0]['email_address'],
-            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
-        );
-    }
+		// Assert correct subscriber returned.
+		$this->assertEquals(
+			$result['subscribers'][0]['email_address'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the subscription status is bounced.
-     *
-     * @since   1.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithBouncedSubscriberState()
-    {
-        $result = $this->api->get_subscribers(
-        	'bounced' // Subscriber state.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the subscription status is bounced.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithBouncedSubscriberState()
+	{
+		$result = $this->api->get_subscribers(
+			'bounced' // Subscriber state.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Check the correct subscribers were returned.
-        $this->assertEquals($result['subscribers'][0]['state'], 'bounced');
-    }
+		// Check the correct subscribers were returned.
+		$this->assertEquals($result['subscribers'][0]['state'], 'bounced');
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the created_after parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithCreatedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	$date // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the created_after parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithCreatedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			$date // Created after.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Check the correct subscribers were returned.
-        $this->assertGreaterThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
-        );
-    }
+		// Check the correct subscribers were returned.
+		$this->assertGreaterThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the created_before parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithCreatedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the created_before parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithCreatedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			$date // Created before.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Check the correct subscribers were returned.
-        $this->assertLessThanOrEqual(
-            $date->format('Y-m-d'),
-            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
-        );
-    }
+		// Check the correct subscribers were returned.
+		$this->assertLessThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the updated_after parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithUpdatedAfterParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the updated_after parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithUpdatedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			$date // Updated after.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-    }
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the updated_before parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithUpdatedBeforeParam()
-    {
-        $date = new \DateTime('2024-01-01');
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the updated_before parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithUpdatedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			$date // Updated before.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
-    }
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the sort_field parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithSortFieldParam()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the sort_field parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithSortFieldParam()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
 			'id' // Sort field.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Assert sorting is honored by ID in descending (default) order.
-        $this->assertLessThanOrEqual(
-            $result['subscribers'][0]['id'],
-            $result['subscribers'][1]['id']
-        );
-    }
+		// Assert sorting is honored by ID in descending (default) order.
+		$this->assertLessThanOrEqual(
+			$result['subscribers'][0]['id'],
+			$result['subscribers'][1]['id']
+		);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when the sort_order parameter is used.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithSortOrderParam()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when the sort_order parameter is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithSortOrderParam()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1493,32 +1493,32 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			'asc' // Sort order.
 		);
 
-        // Assert subscribers and pagination exist.
-        $this->assertDataExists($result, 'subscribers');
-        $this->assertPaginationExists($result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
 
-        // Assert sorting is honored by ID (default) in ascending order.
-        $this->assertGreaterThanOrEqual(
-            $result['subscribers'][0]['id'],
-            $result['subscribers'][1]['id']
-        );
-    }
+		// Assert sorting is honored by ID (default) in ascending order.
+		$this->assertGreaterThanOrEqual(
+			$result['subscribers'][0]['id'],
+			$result['subscribers'][1]['id']
+		);
+	}
 
-    /**
-     * Test that get_subscribers() returns the expected data
-     * when pagination parameters and per_page limits are specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersPagination()
-    {
-    	// Return one broadcast.
+	/**
+	 * Test that get_subscribers() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersPagination()
+	{
+		// Return one broadcast.
 		$result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1543,9 +1543,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Use pagination to fetch next page.
 		$result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1570,9 +1570,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Use pagination to fetch previous page.
 		$result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1587,100 +1587,100 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Assert subscribers and pagination exist.
 		$this->assertDataExists($result, 'subscribers');
 		$this->assertPaginationExists($result);
-    }
+	}
 
-    /**
-     * Test that get_subscribers() throws a ClientException when an invalid
-     * email address is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithInvalidEmailAddress()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'not-an-email-address' // Email address.
+	/**
+	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithInvalidEmailAddress()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'not-an-email-address' // Email address.
 		);
-        $this->assertInstanceOf(WP_Error::class, $result);
-    }
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
 
-    /**
-     * Test that get_subscribers() throws a ClientException when an invalid
-     * subscriber state is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithInvalidSubscriberState()
-    {
-        $result = $this->api->get_subscribers(
-        	'not-a-valid-state' // Subscriber state.
+	/**
+	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * subscriber state is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithInvalidSubscriberState()
+	{
+		$result = $this->api->get_subscribers(
+			'not-a-valid-state' // Subscriber state.
 		);
-        $this->assertInstanceOf(WP_Error::class, $result);
-    }
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
 
-    /**
-     * Test that get_subscribers() throws a ClientException when an invalid
-     * sort field is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithInvalidSortFieldParam()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * sort field is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithInvalidSortFieldParam()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
 			'not-a-valid-sort-field' // Sort field.
 		);
-        $this->assertInstanceOf(WP_Error::class, $result);
-    }
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
 
-    /**
-     * Test that get_subscribers() throws a ClientException when an invalid
-     * sort order is specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithInvalidSortOrderParam()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * sort order is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithInvalidSortOrderParam()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
 			'id', // Sort field.
 			'not-a-valid-sort-order' // Sort order.
 		);
-        $this->assertInstanceOf(WP_Error::class, $result);
-    }
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
 
-    /**
-     * Test that get_subscribers() throws a ClientException when an invalid
-     * pagination parameters are specified.
-     *
-     * @since   2.0.0
-     *
-     * @return void
-     */
-    public function testGetSubscribersWithInvalidPagination()
-    {
-        $result = $this->api->get_subscribers(
-        	'active', // Subscriber state.
-        	'', // Email address.
-        	null, // Created after.
+	/**
+	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * pagination parameters are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscribersWithInvalidPagination()
+	{
+		$result = $this->api->get_subscribers(
+			'active', // Subscriber state.
+			'', // Email address.
+			null, // Created after.
 			null, // Created before.
 			null, // Updated after.
 			null, // Updated before.
@@ -1689,8 +1689,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			false, // Include total count.
 			'not-a-valid-cursor' // After cursor.
 		);
-        $this->assertInstanceOf(WP_Error::class, $result);
-    }
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
 
 	/**
 	 * Test that get_broadcasts() returns the expected data
