@@ -492,6 +492,33 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Unsubscribe an email address.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+	 *
+	 * @return WP_Error|false|object
+	 */
+	public function unsubscribe_by_email( string $email_address ) {
+
+		// Get subscriber ID.
+		$subscriber_id = $this->get_subscriber_id( $email_address );
+
+		if ( is_wp_error( $subscriber_id ) ) {
+			return $subscriber_id;
+		}
+
+		return $this->post(
+			sprintf(
+				'subscribers/%s/unsubscribe',
+				(int) $subscriber_id
+			)
+		);
+
+	}
+
+	/**
 	 * Gets all posts from the API.
 	 *
 	 * @since   1.0.0

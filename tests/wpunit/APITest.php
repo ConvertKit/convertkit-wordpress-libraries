@@ -2245,7 +2245,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Unsubscribe.
-		$this->assertNull($this->api->unsubscribe($result->subscriber->id));
+		$this->assertNull($this->api->unsubscribe($result['subscriber']['id']));
 	}
 
 	/**
