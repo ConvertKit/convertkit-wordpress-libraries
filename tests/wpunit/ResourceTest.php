@@ -32,27 +32,12 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		parent::setUp();
 
 		// Include class from /src to test.
+		require_once 'src/class-convertkit-api-traits.php';
+		require_once 'src/class-convertkit-api.php';
 		require_once 'src/class-convertkit-resource.php';
 
 		// Initialize the classes we want to test.
 		$this->resource = new ConvertKit_Resource();
-
-		// Mock the data that the resource class would receive from the WordPress options table
-		// (and therefore the ConvertKit APIs) to perform tests on.
-		$this->resource->resources = [
-			2780977 => [
-				'id'           => 2780977,
-				'name'         => 'Z Name', // 'name' used by forms, landing pages, products, tags.
-				'title'        => 'Z Name', // 'title' used by posts.
-				'published_at' => '2022-01-24T00:00:00.000Z', // used by posts.
-			],
-			2765139 => [
-				'id'           => 2765139,
-				'name'         => 'A Name', // 'name' used by forms, landing pages, products, tags.
-				'title'        => 'A Name', // 'title' used by posts.
-				'published_at' => '2022-05-03T14:51:50.000Z', // used by posts.
-			],
-		];
 	}
 
 	/**
@@ -76,6 +61,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGet()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Call resource class' get() function.
 		$result = $this->resource->get();
 
@@ -99,6 +87,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetWithValidOrderBy()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Define order_by = title.
 		$this->resource->order_by = 'title';
 
@@ -125,6 +116,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetWithInvalidOrderBy()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Define order_by with an invalid value (i.e. an array key that does not exist).
 		$this->resource->order_by = 'invalid_key';
 
@@ -151,6 +145,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetWithValidOrder()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Define order to be descending.
 		$this->resource->order_by = 'name';
 		$this->resource->order    = 'desc';
@@ -178,6 +175,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetWithValidOrderByAndOrder()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Define order to be descending.
 		$this->resource->order_by = 'published_at';
 		$this->resource->order    = 'desc';
@@ -205,6 +205,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetBy()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Call resource class' get_by() function.
 		$result = $this->resource->get_by('name', 'Z Name');
 
@@ -229,6 +232,9 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetByMultipleValues()
 	{
+		// Mock data from get().
+		$this->mockData();
+
 		// Call resource class' get_by() function.
 		$result = $this->resource->get_by('name', [ 'A Name', 'Z Name' ]);
 
@@ -245,5 +251,97 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assert order of data is in ascending alphabetical order.
 		$this->assertEquals('A Name', reset($result)[ $this->resource->order_by ]);
 		$this->assertEquals('Z Name', end($result)[ $this->resource->order_by ]);
+	}
+
+	/**
+	 * Tests that the refresh() function returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefresh()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_forms';
+		$this->resource->type          = 'forms';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_FORM_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('AAA Test', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('WooCommerce Product Form', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_FORM_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshWithInvalidType()
+	{
+		// Assign resource type and API.
+		$this->resource->type = 'not-a-valid-resource-type';
+		$this->resource->api  = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is a WP_Error.
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), 'convertkit_resource_refresh_error');
+		$this->assertEquals($result->get_error_message(), 'Resource type ' . $this->resource->type . ' is not supported in ConvertKit_Resource class.');
+	}
+
+	/**
+	 * Defines an array of resources when mocking get() requests in tests.
+	 *
+	 * @since   2.0.0
+	 */
+	private function mockData()
+	{
+		// Mock the data that the resource class would receive from the WordPress options table
+		// (and therefore the ConvertKit APIs) to perform tests on.
+		$this->resource->resources = [
+			2780977 => [
+				'id'           => 2780977,
+				'name'         => 'Z Name', // 'name' used by forms, landing pages, products, tags.
+				'title'        => 'Z Name', // 'title' used by posts.
+				'published_at' => '2022-01-24T00:00:00.000Z', // used by posts.
+			],
+			2765139 => [
+				'id'           => 2765139,
+				'name'         => 'A Name', // 'name' used by forms, landing pages, products, tags.
+				'title'        => 'A Name', // 'title' used by posts.
+				'published_at' => '2022-05-03T14:51:50.000Z', // used by posts.
+			],
+		];
 	}
 }

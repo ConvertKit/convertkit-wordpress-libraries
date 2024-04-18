@@ -32,6 +32,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
+	 * Broadcast IDs to delete on teardown of a test.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array<int, int>
+	 */
+	protected $broadcast_ids = [];
+
+	/**
 	 * Performs actions before each test.
 	 *
 	 * @since   1.0.0
@@ -41,16 +50,18 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		parent::setUp();
 
 		// Include class from /src to test.
+		require_once 'src/class-convertkit-api-traits.php';
 		require_once 'src/class-convertkit-api.php';
 		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
-		$this->api         = new ConvertKit_API(
+		$this->api = new ConvertKit_API(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
 			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
 		);
+
 		$this->api_no_data = new ConvertKit_API(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
@@ -66,6 +77,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function tearDown(): void
 	{
+		// Delete any Broadcasts.
+		foreach ($this->broadcast_ids as $id) {
+			$this->api->delete_broadcast($id);
+		}
+
 		// Destroy the classes we tested.
 		unset($this->api);
 		unset($this->api_no_data);
@@ -138,7 +154,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			'not-a-real-access-token',
 			'not-a-real-refresh-token'
 		);
-		$result = $api->account();
+		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
@@ -164,7 +180,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				)
 			)
 		);
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Rate limit hit.');
@@ -180,7 +196,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Force WordPress HTTP classes and functions to return a 500 error.
 		$this->mockResponses( 500, 'Internal server error.' );
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 500 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 500 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Internal server error.');
@@ -196,7 +212,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Force WordPress HTTP classes and functions to return a 502 error.
 		$this->mockResponses( 502, 'Bad gateway.' );
-		$result = $this->api->account(); // The API function we use doesn't matter, as mockResponse forces a 502 error.
+		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 502 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'ConvertKit API Error: Bad gateway.');
@@ -231,7 +247,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			false,
 			'TestContext'
 		);
-		$result = $api->account();
+		$result = $api->get_account();
 	}
 
 	/**
@@ -254,7 +270,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform a request.
-		$result = $this->api->account();
+		$result = $this->api->get_account();
 	}
 
 	/**
@@ -390,10 +406,47 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testInvalidAPICredentials()
 	{
 		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
-		$result = $api->account();
+		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
 		$this->assertEquals($result->get_error_message(), 'The access token is invalid');
+	}
+
+	/**
+	 * Test that exchanging a valid API Key and Secret for an Access Token returns the expected data.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testExchangeAPIKeyAndSecretForAccessToken()
+	{
+		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->exchange_api_key_and_secret_for_access_token(
+			$_ENV['CONVERTKIT_API_KEY'],
+			$_ENV['CONVERTKIT_API_SECRET']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('oauth', $result);
+		$this->assertArrayHasKey('access_token', $result['oauth']);
+		$this->assertArrayHasKey('refresh_token', $result['oauth']);
+		$this->assertArrayHasKey('expires_at', $result['oauth']);
+	}
+
+	/**
+	 * Test that exchanging an invalid API Key and Secret for an Access Token returns a WP_Error.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testExchangeInvalidAPIKeyAndSecretForAccessToken()
+	{
+		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->exchange_api_key_and_secret_for_access_token(
+			'invalid-api-key',
+			'invalid-api-secret'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals('Authorization Failed: API Secret not valid', $result->get_error_message());
 	}
 
 	/**
@@ -401,17 +454,189 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @since   1.0.0
 	 */
-	public function testAccount()
+	public function testGetAccount()
 	{
-		$result = $this->api->account();
+		$result = $this->api->get_account();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
+
 		$this->assertArrayHasKey('user', $result);
 		$this->assertArrayHasKey('account', $result);
+
 		$this->assertArrayHasKey('name', $result['account']);
 		$this->assertArrayHasKey('plan_type', $result['account']);
 		$this->assertArrayHasKey('primary_email_address', $result['account']);
 		$this->assertEquals('wordpress@convertkit.com', $result['account']['primary_email_address']);
+	}
+
+	/**
+	 * Test that get_account_colors() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetAccountColors()
+	{
+		$result = $this->api->get_account_colors();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('colors', $result);
+		$this->assertIsArray($result['colors']);
+	}
+
+	/**
+	 * Test that update_account_colors() updates the account's colors.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateAccountColors()
+	{
+		$result = $this->api->update_account_colors(
+			[
+				'#111111',
+			]
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('colors', $result);
+		$this->assertIsArray($result['colors']);
+		$this->assertEquals($result['colors'][0], '#111111');
+	}
+
+	/**
+	 * Test that get_creator_profile() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetCreatorProfile()
+	{
+		$result = $this->api->get_creator_profile();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('name', $result['profile']);
+		$this->assertArrayHasKey('byline', $result['profile']);
+		$this->assertArrayHasKey('bio', $result['profile']);
+		$this->assertArrayHasKey('image_url', $result['profile']);
+		$this->assertArrayHasKey('profile_url', $result['profile']);
+	}
+
+	/**
+	 * Test that get_email_stats() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetEmailStats()
+	{
+		$result = $this->api->get_email_stats();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('sent', $result['stats']);
+		$this->assertArrayHasKey('clicked', $result['stats']);
+		$this->assertArrayHasKey('opened', $result['stats']);
+		$this->assertArrayHasKey('email_stats_mode', $result['stats']);
+		$this->assertArrayHasKey('open_tracking_enabled', $result['stats']);
+		$this->assertArrayHasKey('click_tracking_enabled', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStats()
+	{
+		$result = $this->api->get_growth_stats();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data
+	 * when a start date is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStatsWithStartDate()
+	{
+		// Define start and end dates.
+		$starting = new DateTime('now');
+		$starting->modify('-7 days');
+		$ending = new DateTime('now');
+
+		// Send request.
+		$result = $this->api->get_growth_stats($starting);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Confirm response object contains expected keys.
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+
+		// Assert start and end dates were honored.
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data
+	 * when an end date is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStatsWithEndDate()
+	{
+		// Define start and end dates.
+		$starting = new DateTime('now');
+		$starting->modify('-90 days');
+		$ending = new DateTime('now');
+		$ending->modify('-7 days');
+
+		// Send request.
+		$result = $this->api->get_growth_stats(null, $ending);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Confirm response object contains expected keys.
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+
+		// Assert start and end dates were honored.
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
 	}
 
 	/**
@@ -1275,60 +1500,136 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
 	}
 
+
 	/**
-	 * Test that broadcast_create() and broadcast_delete() works when valid parameters are specified.
+	 * Test that get_broadcasts() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetBroadcastsPagination()
+	{
+		// Return one broadcast.
+		$result = $this->api->get_broadcasts(false, '', '', 1);
+
+		// Assert broadcasts and pagination exist.
+		$this->assertDataExists($result, 'broadcasts');
+		$this->assertPaginationExists($result);
+
+		// Assert a single broadcast was returned.
+		$this->assertCount(1, $result['broadcasts']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_broadcasts(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert broadcasts and pagination exist.
+		$this->assertDataExists($result, 'broadcasts');
+		$this->assertPaginationExists($result);
+
+		// Assert a single broadcast was returned.
+		$this->assertCount(1, $result['broadcasts']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_broadcasts(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert broadcasts and pagination exist.
+		$this->assertDataExists($result, 'broadcasts');
+		$this->assertPaginationExists($result);
+
+		// Assert a single broadcast was returned.
+		$this->assertCount(1, $result['broadcasts']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that create_broadcast(), update_broadcast() and delete_broadcast() works
+	 * when specifying valid published_at and send_at values.
 	 *
 	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
 	 * on the ConvertKit account when running tests, which might impact
 	 * other tests that expect (or do not expect) specific Broadcasts.
 	 *
-	 * @since   1.3.9
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testCreateAndDeleteDraftBroadcast()
+	public function testCreateUpdateAndDeleteDraftBroadcast()
 	{
-		$this->markTestIncomplete();
-
 		// Create a broadcast first.
-		$result = $this->api->broadcast_create(
+		$result = $this->api->create_broadcast(
 			'Test Subject',
 			'Test Content',
 			'Test Broadcast from WordPress Libraries',
 		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store Broadcast ID.
+		$broadcastID = $result['broadcast']['id'];
 
 		// Confirm the Broadcast saved.
-		$this->assertArrayHasKey('id', $result);
-		$this->assertEquals('Test Subject', $result['subject']);
-		$this->assertEquals('Test Content', $result['content']);
-		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
-		$this->assertEquals(null, $result['published_at']);
-		$this->assertEquals(null, $result['send_at']);
+		$this->assertArrayHasKey('broadcast', $result);
+		$this->assertArrayHasKey('id', $result['broadcast']);
+		$this->assertEquals('Test Subject', $result['broadcast']['subject']);
+		$this->assertEquals('Test Content', $result['broadcast']['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['broadcast']['description']);
+		$this->assertEquals(null, $result['broadcast']['published_at']);
+		$this->assertEquals(null, $result['broadcast']['send_at']);
 
-		// Delete the broadcast.
-		$this->api->broadcast_delete($result['id']);
+		// Update the existing broadcast.
+		$result = $this->api->update_broadcast(
+			$broadcastID,
+			'New Test Subject',
+			'New Test Content',
+			'New Test Broadcast from WordPress Libraries'
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Confirm the changes saved.
+		$this->assertArrayHasKey('broadcast', $result);
+		$this->assertArrayHasKey('id', $result['broadcast']);
+		$this->assertEquals('New Test Subject', $result['broadcast']['subject']);
+		$this->assertEquals('New Test Content', $result['broadcast']['content']);
+		$this->assertEquals('New Test Broadcast from WordPress Libraries', $result['broadcast']['description']);
+		$this->assertEquals(null, $result['broadcast']['published_at']);
+		$this->assertEquals(null, $result['broadcast']['send_at']);
+
+		// Delete Broadcast.
+		$result = $this->api->delete_broadcast($broadcastID);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
 	}
 
 	/**
-	 * Test that broadcast_create() and broadcast_delete() works when valid published_at and send_at
-	 * parameters are specified.
+	 * Test that create_broadcast() works when specifying valid published_at and send_at values.
 	 *
-	 * We do all tests in a single function, so we don't end up with unnecessary Broadcasts remaining
-	 * on the ConvertKit account when running tests, which might impact
-	 * other tests that expect (or do not expect) specific Broadcasts.
+	 * @since   2.0.0
 	 *
-	 * @since   1.3.9
+	 * @return void
 	 */
-	public function testCreateAndDeletePublicBroadcastWithValidDates()
+	public function testCreatePublicBroadcastWithValidDates()
 	{
-		$this->markTestIncomplete();
-
 		// Create DateTime object.
-		$publishedAt = new \DateTime('now');
+		$publishedAt = new DateTime('now');
 		$publishedAt->modify('+7 days');
-		$sendAt = new \DateTime('now');
+		$sendAt = new DateTime('now');
 		$sendAt->modify('+14 days');
 
-		// Create a broadcast first.
-		$result = $this->api->broadcast_create(
+		// Create broadcast first.
+		$result = $this->api->create_broadcast(
 			'Test Subject',
 			'Test Content',
 			'Test Broadcast from WordPress Libraries',
@@ -1336,55 +1637,123 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			$publishedAt,
 			$sendAt
 		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store Broadcast ID.
+		$broadcastID = $result['broadcast']['id'];
+
+		// Set broadcast_id to ensure broadcast is deleted after test.
+		$this->broadcast_ids[] = $broadcastID;
 
 		// Confirm the Broadcast saved.
-		$this->assertArrayHasKey('id', $result);
-		$this->assertEquals('Test Subject', $result['subject']);
-		$this->assertEquals('Test Content', $result['content']);
-		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['description']);
+		$this->assertArrayHasKey('id', $result['broadcast']);
+		$this->assertEquals('Test Subject', $result['broadcast']['subject']);
+		$this->assertEquals('Test Content', $result['broadcast']['content']);
+		$this->assertEquals('Test Broadcast from WordPress Libraries', $result['broadcast']['description']);
 		$this->assertEquals(
-			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . '.000Z',
-			$result['published_at']
+			$publishedAt->format('Y-m-d') . 'T' . $publishedAt->format('H:i:s') . 'Z',
+			$result['broadcast']['published_at']
 		);
 		$this->assertEquals(
-			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . '.000Z',
-			$result['send_at']
+			$sendAt->format('Y-m-d') . 'T' . $sendAt->format('H:i:s') . 'Z',
+			$result['broadcast']['send_at']
 		);
-
-		// Delete the broadcast.
-		$this->api->broadcast_delete($result['id']);
 	}
 
 	/**
-	 * Test that the `broadcast_delete()` function returns a WP_Error
-	 * when no $broadcast_id parameter is provided.
+	 * Test that get_broadcast() returns the expected data.
 	 *
-	 * @since   1.3.9
+	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testDeleteBroadcastWithNoBroadcastID()
+	public function testGetBroadcast()
 	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->broadcast_delete('');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('broadcast_delete(): the broadcast_id parameter is empty.', $result->get_error_message());
+		$result = $this->api->get_broadcast($_ENV['CONVERTKIT_API_BROADCAST_ID']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('id', $result['broadcast']);
+		$this->assertEquals($result['broadcast']['id'], $_ENV['CONVERTKIT_API_BROADCAST_ID']);
 	}
 
 	/**
-	 * Test that the `broadcast_delete()` function returns a WP_Error
-	 * when an invalid $broadcast_id parameter is provided.
+	 * Test that get_broadcast() throws a ClientException when an invalid
+	 * broadcast ID is specified.
 	 *
-	 * @since   1.3.9
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetBroadcastWithInvalidBroadcastID()
+	{
+		$result = $this->api->get_broadcast(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that get_broadcast_stats() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetBroadcastStats()
+	{
+		$result = $this->api->get_broadcast_stats($_ENV['CONVERTKIT_API_BROADCAST_ID']);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('broadcast', $result);
+		$this->assertArrayHasKey('id', $result['broadcast']);
+		$this->assertArrayHasKey('stats', $result['broadcast']);
+		$this->assertEquals($result['broadcast']['stats']['recipients'], 1);
+		$this->assertEquals($result['broadcast']['stats']['open_rate'], 0);
+		$this->assertEquals($result['broadcast']['stats']['click_rate'], 0);
+		$this->assertEquals($result['broadcast']['stats']['unsubscribes'], 0);
+		$this->assertEquals($result['broadcast']['stats']['total_clicks'], 0);
+	}
+
+	/**
+	 * Test that get_broadcast_stats() throws a ClientException when an invalid
+	 * broadcast ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetBroadcastStatsWithInvalidBroadcastID()
+	{
+		$result = $this->api->get_broadcast_stats(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that update_broadcast() throws a ClientException when an invalid
+	 * broadcast ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateBroadcastWithInvalidBroadcastID()
+	{
+		$result = $this->api->update_broadcast(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that delete_broadcast() throws a ClientException when an invalid
+	 * broadcast ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
 	public function testDeleteBroadcastWithInvalidBroadcastID()
 	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->broadcast_delete(12345);
+		$result = $this->api->delete_broadcast(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
 	}
 
 	/**
@@ -2251,5 +2620,39 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				);
 			}
 		);
+	}
+
+	/**
+	 * Helper method to assert the given key exists as an array
+	 * in the API response.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array  $result     API Result.
+	 * @param   string $key        Key.
+	 */
+	private function assertDataExists($result, $key)
+	{
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertArrayHasKey($key, $result);
+		$this->assertIsArray($result[ $key ]);
+	}
+
+	/**
+	 * Helper method to assert pagination object exists in response.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array $result     API Result.
+	 */
+	private function assertPaginationExists($result)
+	{
+		$this->assertArrayHasKey('pagination', $result);
+		$pagination = $result['pagination'];
+		$this->assertArrayHasKey('has_previous_page', $pagination);
+		$this->assertArrayHasKey('has_next_page', $pagination);
+		$this->assertArrayHasKey('start_cursor', $pagination);
+		$this->assertArrayHasKey('end_cursor', $pagination);
+		$this->assertArrayHasKey('per_page', $pagination);
 	}
 }

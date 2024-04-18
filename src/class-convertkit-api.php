@@ -14,6 +14,15 @@
  */
 class ConvertKit_API {
 
+	use ConvertKit_API_Traits;
+
+	/**
+	 * The SDK version.
+	 *
+	 * @var string
+	 */
+	public const VERSION = '2.0.0';
+
 	/**
 	 * ConvertKit API Key
 	 *
@@ -22,47 +31,18 @@ class ConvertKit_API {
 	protected $api_key = false;
 
 	/**
-	 * ConvertKit API Secret
+	 * Redirect URI.
 	 *
-	 * @var bool|string
-	 */
-	protected $api_secret = false;
-
-	/**
-	 * ConvertKit OAuth Application Client ID
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string.
-	 */
-	protected $client_id = false;
-
-	/**
-	 * ConvertKit OAuth Redirect URI
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string.
+	 * @var     bool|string
 	 */
 	protected $redirect_uri = false;
 
 	/**
-	 * Access Token
+	 * Refresh token.
 	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string
+	 * @var     bool|string
 	 */
-	protected $access_token = '';
-
-	/**
-	 * Refresh Token
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var bool|string
-	 */
-	protected $refresh_token = '';
+	protected $refresh_token = false;
 
 	/**
 	 * Optional context of the request.
@@ -107,29 +87,6 @@ class ConvertKit_API {
 	protected $plugin_version;
 
 	/**
-	 * OAuth Authorization URL
-	 *
-	 * @since   2.0.0
-	 *
-	 * @var string
-	 */
-	protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
-
-	/**
-	 * Version of ConvertKit API
-	 *
-	 * @var string
-	 */
-	protected $api_version = 'v4';
-
-	/**
-	 * ConvertKit API URL
-	 *
-	 * @var string
-	 */
-	protected $api_url_base = 'https://api.convertkit.com/';
-
-	/**
 	 * ConvertKit API endpoints that use the /oauth/ namespace
 	 * i.e. https://api.convertkit.com/oauth/endpoint
 	 *
@@ -152,10 +109,11 @@ class ConvertKit_API {
 	protected $api_endpoints_wordpress = array(
 		'posts',
 		'products',
-		'profile',
+		'profile/',
 		'recommendations_script',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
+		'accounts/oauth_access_token',
 	);
 
 	/**
@@ -483,834 +441,23 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Gets account information from the API.
+	 * Exchanges the given API Key for an Access Token.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 *
+	 * @param   string $api_key    API Key.
+	 * @param   string $api_secret API Secret.
 	 * @return  WP_Error|array
 	 */
-	public function account() {
+	public function exchange_api_key_and_secret_for_access_token( $api_key, $api_secret ) {
 
-		$this->log( 'API: account()' );
-
-		return $this->get( 'account' );
-
-	}
-
-	/**
-	 * Gets all subscription forms from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_subscription_forms() {
-
-		$this->log( 'API: get_subscription_forms()' );
-
-		// Send request.
-		return $this->get(
-			'subscription_forms',
+		return $this->post(
+			'accounts/oauth_access_token',
 			array(
-				'api_key' => $this->api_key,
+				'api_key'    => $api_key,
+				'api_secret' => $api_secret,
 			)
 		);
-
-	}
-
-	/**
-	 * Gets all forms from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_forms() {
-
-		$this->log( 'API: get_forms()' );
-
-		// Get all forms and landing pages from the API.
-		$forms = $this->get_forms_landing_pages();
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $forms ) ) {
-			$this->log( 'API: get_forms(): Error: ' . $forms->get_error_message() );
-			return $forms;
-		}
-
-		return $forms['forms'];
-
-	}
-
-	/**
-	 * Subscribes an email address to a form.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int    $form_id       Form ID.
-	 * @param   string $email      Email Address.
-	 * @param   string $first_name First Name.
-	 * @param   mixed  $fields     Custom Fields (false|array).
-	 * @param   mixed  $tag_ids    Tags (false|array).
-	 * @return  WP_Error|array
-	 */
-	public function form_subscribe( $form_id, $email, $first_name = '', $fields = false, $tag_ids = false ) {
-
-		// Backward compat. if $email is an array comprising of email and name keys.
-		if ( is_array( $email ) ) { // @phpstan-ignore-line.
-			_deprecated_function( __FUNCTION__, '1.2.1', 'form_subscribe( $form_id, $email, $first_name )' );
-			$first_name = $email['name'];
-			$email      = $email['email'];
-		}
-
-		$this->log( 'API: form_subscribe(): [ form_id: ' . $form_id . ', email: ' . $email . ', first_name: ' . $this->mask_string( $first_name ) . ' ]' );
-
-		// Sanitize some parameters.
-		$form_id    = absint( $form_id );
-		$email      = trim( $email );
-		$first_name = trim( $first_name );
-
-		// Return error if no Form ID or email address is specified.
-		if ( empty( $form_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'form_subscribe_form_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'form_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
-		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-		if ( $tag_ids ) {
-			$params['tags'] = $tag_ids;
-		}
-
-		// Send request.
-		$response = $this->post( 'forms/' . $form_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: form_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the form.
-		 *
-		 * @since   1.2.1
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $form_id    Form ID
-		 * @param   string  $email      Email Address
-		 * @param   string  $first_name First Name
-		 * @param   mixed   $fields     Custom Fields (false|array)
-		 * @param   mixed   $tag_ids    Tags (false|array)
-		 */
-		do_action( 'convertkit_api_form_subscribe_success', $response, $form_id, $email, $first_name, $fields, $tag_ids );
-
-		return $response;
-
-	}
-
-	/**
-	 * Gets all landing pages from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_landing_pages() {
-
-		$this->log( 'API: get_landing_pages()' );
-
-		// Get all forms and landing pages from the API.
-		$forms = $this->get_forms_landing_pages();
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $forms ) ) {
-			$this->log( 'API: get_landing_pages(): Error: ' . $forms->get_error_message() );
-			return $forms;
-		}
-
-		return $forms['landing_pages'];
-
-	}
-
-	/**
-	 * Fetches all sequences from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_sequences() {
-
-		$this->log( 'API: get_sequences()' );
-
-		$sequences = array();
-
-		// Send request.
-		$response = $this->get(
-			'sequences',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_sequences(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no sequences exist and return a blank array.
-		if ( ! is_array( $response['courses'] ) ) {
-			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no sequences exist, log that no sequences exist and return a blank array.
-		if ( ! count( $response['courses'] ) ) {
-			$this->log( 'API: get_sequences(): Error: No sequences exist in ConvertKit.' );
-			return $sequences;
-		}
-
-		foreach ( $response['courses'] as $sequence ) {
-			$sequences[ $sequence['id'] ] = $sequence;
-		}
-
-		return $sequences;
-
-	}
-
-	/**
-	 * Subscribes an email address to a sequence.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int    $sequence_id Sequence ID.
-	 * @param   string $email       Email Address.
-	 * @param   string $first_name  First Name.
-	 * @param   mixed  $fields      Custom Fields (false|array).
-	 * @return  WP_Error|array
-	 */
-	public function sequence_subscribe( $sequence_id, $email, $first_name = '', $fields = false ) {
-
-		$this->log( 'API: sequence_subscribe(): [ sequence_id: ' . $sequence_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$sequence_id = absint( $sequence_id );
-		$email       = trim( $email );
-		$first_name  = trim( $first_name );
-
-		// Return error if no Sequence ID or email address is specified.
-		if ( empty( $sequence_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'sequence_subscribe_sequence_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'sequence_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
-		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-
-		// Send request.
-		$response = $this->post( 'sequences/' . $sequence_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: sequence_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the sequence.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response       API Response
-		 * @param   int     $sequence_id    Sequence ID
-		 * @param   string  $email          Email Address
-		 * @param   mixed   $fields         Custom Fields (false|array)
-		 */
-		do_action( 'convertkit_api_sequence_subscribe_success', $response, $sequence_id, $email, $fields );
-
-		return $response;
-
-	}
-
-	/**
-	 * Fetches all tags from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_tags() {
-
-		$this->log( 'API: get_tags()' );
-
-		$tags = array();
-
-		// Send request.
-		$response = $this->get(
-			'tags',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_tags(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no tags exist and return a blank array.
-		if ( ! is_array( $response['tags'] ) ) {
-			$this->log( 'API: get_tags(): Error: No tags exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no tags exist, log that no tags exist and return a blank array.
-		if ( ! count( $response['tags'] ) ) {
-			$this->log( 'API: get_tags(): Error: No tags exist in ConvertKit.' );
-			return $tags;
-		}
-
-		foreach ( $response['tags'] as $tag ) {
-			$tags[ $tag['id'] ] = $tag;
-		}
-
-		return $tags;
-
-	}
-
-	/**
-	 * Subscribes an email address to a tag.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int    $tag_id     Tag ID.
-	 * @param   string $email      Email Address.
-	 * @param   string $first_name First Name.
-	 * @param   mixed  $fields     Custom Fields (false|array).
-	 * @return  WP_Error|array
-	 */
-	public function tag_subscribe( $tag_id, $email, $first_name = '', $fields = false ) {
-
-		$this->log( 'API: tag_subscribe(): [ tag_id: ' . $tag_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$tag_id     = absint( $tag_id );
-		$email      = trim( $email );
-		$first_name = trim( $first_name );
-
-		// Return error if no Tag ID or email address is specified.
-		if ( empty( $tag_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_subscribe_tag_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_subscribe_email_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_key'    => $this->api_key,
-			'email'      => $email,
-			'first_name' => $first_name,
-		);
-		if ( $fields ) {
-			$params['fields'] = $fields;
-		}
-
-		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/subscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: tag_subscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the tag.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $tag_id     Tag ID
-		 * @param   string  $email      Email Address
-		 * @param   mixed   $fields     Custom Fields (false|array).
-		 */
-		do_action( 'convertkit_api_tag_subscribe_success', $response, $tag_id, $email, $fields );
-
-		return $response;
-
-	}
-
-	/**
-	 * Removes a tag from the subscriber by their email address.
-	 *
-	 * @since   1.4.0
-	 *
-	 * @param   int    $tag_id     Tag ID.
-	 * @param   string $email      Email Address.
-	 * @return  WP_Error|array
-	 */
-	public function tag_unsubscribe( $tag_id, $email ) {
-
-		$this->log( 'API: tag_unsubscribe(): [ tag_id: ' . $tag_id . ', email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$tag_id = absint( $tag_id );
-		$email  = trim( $email );
-
-		// Return error if no Tag ID or email address is specified.
-		if ( empty( $tag_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_tag_id_empty' ) );
-		}
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_email_empty' ) );
-		}
-
-		// Return error if an invalid email is specified.
-		// Passing an invalid email to the API doesn't return an error, so we need to check here.
-		if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'tag_unsubscribe_email_invalid' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_secret' => $this->api_secret,
-			'email'      => $email,
-		);
-
-		// Send request.
-		$response = $this->post( 'tags/' . $tag_id . '/unsubscribe', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: tag_unsubscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully unsubscribed from the tag.
-		 *
-		 * @since   1.4.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   int     $tag_id     Tag ID
-		 * @param   string  $email      Email Address
-		 */
-		do_action( 'convertkit_api_tag_unsubscribe_success', $response, $tag_id, $email );
-
-		return $response;
-
-	}
-
-	/**
-	 * Gets a subscriber by their email address.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $email  Email Address.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber_by_email( $email ) {
-
-		$this->log( 'API: get_subscriber_by_email(): [ email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$email = trim( $email );
-
-		// Return error if email address is specified.
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_by_email_email_empty' ) );
-		}
-
-		// Send request.
-		$response = $this->get(
-			'subscribers',
-			array(
-				'api_secret'    => $this->api_secret,
-				'email_address' => $email,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_by_email(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If no matching subscribers exist, log that no matching subscribers exist and return a blank array.
-		if ( (int) $response['total_subscribers'] === 0 ) {
-			$error = new WP_Error(
-				'convertkit_api_error',
-				sprintf(
-					$this->get_error_message( 'get_subscriber_by_email_none' ),
-					$email
-				)
-			);
-
-			$this->log( 'API: get_subscriber_by_email(): Error: ' . $error->get_error_message() );
-			return $error;
-		}
-
-		// Return subscriber.
-		return $response['subscribers'][0];
-
-	}
-
-	/**
-	 * Gets a subscriber by their ConvertKit subscriber ID.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int $subscriber_id  Subscriber ID.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber_by_id( $subscriber_id ) {
-
-		$this->log( 'API: get_subscriber_by_id(): [ subscriber_id: ' . $subscriber_id . ']' );
-
-		// Sanitize some parameters.
-		$subscriber_id = absint( $subscriber_id );
-
-		// Return error if no Subscriber ID is specified.
-		if ( empty( $subscriber_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_by_id_subscriber_id_empty' ) );
-		}
-
-		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id,
-			array(
-				'api_secret' => $this->api_secret,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_by_id(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		return $response['subscriber'];
-
-	}
-
-	/**
-	 * Gets a list of tags for the given ConvertKit subscriber ID.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int $subscriber_id  Subscriber ID.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber_tags( $subscriber_id ) {
-
-		$this->log( 'API: get_subscriber_tags(): [ subscriber_id: ' . $subscriber_id . ']' );
-
-		// Sanitize some parameters.
-		$subscriber_id = absint( $subscriber_id );
-
-		// Return error if no Subscriber ID is specified.
-		if ( empty( $subscriber_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'get_subscriber_tags_subscriber_id_empty' ) );
-		}
-
-		// Send request.
-		$response = $this->get(
-			'subscribers/' . $subscriber_id . '/tags',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_subscriber_tags(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		return $response['tags'];
-
-	}
-
-	/**
-	 * Returns the subscriber's ID by their email address.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $email_address  Email Address.
-	 * @return  WP_Error|int
-	 */
-	public function get_subscriber_id( $email_address ) {
-
-		// Get subscriber.
-		$subscriber = $this->get_subscriber_by_email( $email_address );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $subscriber ) ) {
-			return $subscriber;
-		}
-
-		// Return ID.
-		return $subscriber['id'];
-
-	}
-
-	/**
-	 * Unsubscribes an email address.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $email      Email Address.
-	 * @return  WP_Error|array
-	 */
-	public function unsubscribe( $email ) {
-
-		$this->log( 'API: unsubscribe(): [ email: ' . $email . ']' );
-
-		// Sanitize some parameters.
-		$email = trim( $email );
-
-		// Return error if no email address is specified.
-		if ( empty( $email ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'unsubscribe_email_empty' ) );
-		}
-
-		// Send request.
-		$response = $this->put(
-			'unsubscribe',
-			array(
-				'api_secret' => $this->api_secret,
-				'email'      => $email,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: unsubscribe(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully unsubscribed.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   string  $email      Email Address
-		 */
-		do_action( 'convertkit_api_form_unsubscribe_success', $response, $email );
-
-		return $response;
-
-	}
-
-	/**
-	 * Creates a broadcast.
-	 *
-	 * @since   1.3.9
-	 *
-	 * @param string    $subject               The broadcast email's subject.
-	 * @param string    $content               The broadcast's email HTML content.
-	 * @param string    $description           An internal description of this broadcast.
-	 * @param boolean   $is_public             Specifies whether or not this is a public post.
-	 * @param \DateTime $published_at          Specifies the time that this post was published (applicable
-	 *                                         only to public posts).
-	 * @param \DateTime $send_at               Time that this broadcast should be sent; leave blank to create
-	 *                                         a draft broadcast. If set to a future time, this is the time that
-	 *                                         the broadcast will be scheduled to send.
-	 * @param string    $email_address         Sending email address; leave blank to use your account's
-	 *                                         default sending email address.
-	 * @param string    $email_layout_template Name of the email template to use; leave blank to use your
-	 *                                         account's default email template.
-	 * @param string    $thumbnail_alt         Specify the ALT attribute of the public thumbnail image
-	 *                                         (applicable only to public posts).
-	 * @param string    $thumbnail_url         Specify the URL of the thumbnail image to accompany the broadcast
-	 *                                         post (applicable only to public posts).
-	 *
-	 * @see https://developers.convertkit.com/#create-a-broadcast
-	 *
-	 * @return WP_Error|array
-	 */
-	public function broadcast_create(
-		string $subject = '',
-		string $content = '',
-		string $description = '',
-		bool $is_public = false,
-		\DateTime $published_at = null,
-		\DateTime $send_at = null,
-		string $email_address = '',
-		string $email_layout_template = '',
-		string $thumbnail_alt = '',
-		string $thumbnail_url = ''
-	) {
-
-		$this->log( 'API: broadcast_create(): [ subject: ' . $subject . ']' );
-
-		// Build request parameters.
-		$params = array(
-			'api_secret'            => $this->api_secret,
-			'content'               => $content,
-			'description'           => $description,
-			'email_address'         => $email_address,
-			'email_layout_template' => $email_layout_template,
-			'public'                => $is_public,
-			'published_at'          => ( ! is_null( $published_at ) ? $published_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'send_at'               => ( ! is_null( $send_at ) ? $send_at->format( 'Y-m-d H:i:s' ) : '' ),
-			'subject'               => $subject,
-			'thumbnail_alt'         => $thumbnail_alt,
-			'thumbnail_url'         => $thumbnail_url,
-		);
-
-		// Iterate through parameters, removing blank entries.
-		foreach ( $params as $key => $value ) {
-			if ( is_string( $value ) && strlen( $value ) === 0 ) {
-				unset( $params[ $key ] );
-			}
-		}
-
-		// If the post isn't public, remove some params that don't apply.
-		if ( ! $is_public ) {
-			unset( $params['published_at'], $params['thumbnail_alt'], $params['thumbnail_url'] );
-		}
-
-		// Send request.
-		$response = $this->post( 'broadcasts', $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: broadcast_create(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the email address was successfully subscribed to the tag.
-		 *
-		 * @since   1.3.9
-		 *
-		 * @param   array   $response   API Response.
-		 * @param   array   $params     Request parameters.
-		 */
-		do_action( 'convertkit_api_broadcast_create_success', $response, $params );
-
-		// Return broadcast.
-		return $response['broadcast'];
-
-	}
-
-	/**
-	 * Deletes a Broadcast.
-	 *
-	 * @since   1.3.9
-	 *
-	 * @param   int $broadcast_id   Broadcast ID.
-	 * @return  WP_Error|null
-	 */
-	public function broadcast_delete( $broadcast_id ) {
-
-		$this->log( 'API: broadcast_delete(): [ broadcast_id: ' . $broadcast_id . ']' );
-
-		// Sanitize some parameters.
-		$broadcast_id = absint( $broadcast_id );
-
-		// Return error if no Broadcast ID is specified.
-		if ( empty( $broadcast_id ) ) {
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'broadcast_delete_broadcast_id_empty' ) );
-		}
-
-		// Build request parameters.
-		$params = array(
-			'api_secret' => $this->api_secret,
-		);
-
-		// Send request.
-		$response = $this->delete( 'broadcasts/' . $broadcast_id, $params );
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: broadcast_delete(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		/**
-		 * Runs actions immediately after the broadcast was deleted.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   null|array   $response       API Response
-		 * @param   int          $broadcast_id   Broadcast ID
-		 */
-		do_action( 'convertkit_api_broadcast_delete_success', $response, $broadcast_id );
-
-		// Response will be null if successful.
-		return $response;
-
-	}
-
-	/**
-	 * Gets all custom fields from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function get_custom_fields() {
-
-		$this->log( 'API: get_custom_fields()' );
-
-		$custom_fields = array();
-
-		// Send request.
-		$response = $this->get(
-			'custom_fields',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, return WP_Error.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_custom_fields(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no tags exist and return a blank array.
-		if ( ! is_array( $response['custom_fields'] ) ) {
-			$this->log( 'API: get_custom_fields(): Error: No custom fields exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no custom fields exist, log that no custom fields exist and return a blank array.
-		if ( ! count( $response['custom_fields'] ) ) {
-			$this->log( 'API: get_custom_fields(): Error: No custom fields exist in ConvertKit.' );
-			return $custom_fields;
-		}
-
-		foreach ( $response['custom_fields'] as $custom_field ) {
-			$custom_fields[ $custom_field['id'] ] = $custom_field;
-		}
-
-		return $custom_fields;
 
 	}
 
@@ -1411,10 +558,8 @@ class ConvertKit_API {
 		$response = $this->get(
 			'posts',
 			array(
-				'api_key'    => $this->api_key,
-				'api_secret' => $this->api_secret,
-				'page'       => $page,
-				'per_page'   => $per_page,
+				'page'     => $page,
+				'per_page' => $per_page,
 			)
 		);
 
@@ -1455,9 +600,6 @@ class ConvertKit_API {
 		// Send request.
 		$response = $this->get(
 			sprintf( 'posts/%s', $post_id ),
-			array(
-				'api_secret' => $this->api_secret,
-			)
 		);
 
 		// If an error occured, return WP_Error.
@@ -1491,42 +633,7 @@ class ConvertKit_API {
 	 */
 	public function get_products() {
 
-		$this->log( 'API: get_products()' );
-
-		$products = array();
-
-		// Send request.
-		$response = $this->get(
-			'products',
-			array(
-				'api_key'    => $this->api_key,
-				'api_secret' => $this->api_secret,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: get_products(): Error: ' . $response->get_error_message() );
-			return $response;
-		}
-
-		// If the response isn't an array as we expect, log that no products exist and return a blank array.
-		if ( ! is_array( $response['products'] ) ) {
-			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
-			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
-		}
-
-		// If no products exist, log that no products exist and return a blank array.
-		if ( ! count( $response['products'] ) ) {
-			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
-			return $products;
-		}
-
-		foreach ( $response['products'] as $product ) {
-			$products[ $product['id'] ] = $product;
-		}
-
-		return $products;
+		return $this->get( 'products' );
 
 	}
 
@@ -1568,8 +675,6 @@ class ConvertKit_API {
 		$response = $this->post(
 			'subscriber_authentication/send_code',
 			array(
-				'api_key'       => $this->api_key,
-				'api_secret'    => $this->api_secret,
 				'email_address' => $email,
 				'redirect_url'  => $redirect_url,
 			)
@@ -1622,8 +727,6 @@ class ConvertKit_API {
 		$response = $this->post(
 			'subscriber_authentication/verify',
 			array(
-				'api_key'         => $this->api_key,
-				'api_secret'      => $this->api_secret,
 				'token'           => $token,
 				'subscriber_code' => $subscriber_code,
 			)
@@ -1670,11 +773,7 @@ class ConvertKit_API {
 
 		// Send request.
 		$response = $this->get(
-			'profile/' . $signed_subscriber_id,
-			array(
-				'api_key'    => $this->api_key,
-				'api_secret' => $this->api_secret,
-			)
+			'profile/' . $signed_subscriber_id
 		);
 
 		// If an error occured, log and return it now.
@@ -1772,138 +871,6 @@ class ConvertKit_API {
 		$body = str_replace( '</head>', '</head>' . $script, $body );
 
 		return $body;
-
-	}
-
-	/**
-	 * Create a Purchase.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   array $purchase   Purchase Data.
-	 * @return  WP_Error|array
-	 */
-	public function purchase_create( $purchase ) {
-
-		$this->log( 'API: purchase_create(): [ purchase: ' . print_r( $purchase, true ) . ']' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
-
-		$response = $this->post(
-			'purchases',
-			array(
-				'api_secret' => $this->api_secret,
-				'purchase'   => $purchase,
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			$this->log( 'API: purchase_create(): Error: ' . $response->get_error_message() );
-		}
-
-		/**
-		 * Runs actions immediately after the purchase data address was successfully created.
-		 *
-		 * @since   1.0.0
-		 *
-		 * @param   array   $response   API Response
-		 * @param   array   $purchase   Purchase Data
-		 */
-		do_action( 'convertkit_api_purchase_create_success', $response, $purchase );
-
-		return $response;
-
-	}
-
-	/**
-	 * Returns the recommendations script URL for this account from the API,
-	 * used to display the Creator Network modal when a form is submitted.
-	 *
-	 * @since   1.3.7
-	 *
-	 * @return  WP_Error|array
-	 */
-	public function recommendations_script() {
-
-		$this->log( 'API: recommendations_script()' );
-
-		return $this->get(
-			'recommendations_script',
-			array(
-				'api_secret' => $this->api_secret,
-			)
-		);
-
-	}
-
-	/**
-	 * Backward compat. function for getting a ConvertKit subscriber by their ID.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int $id     Subscriber ID.
-	 * @return  WP_Error|array
-	 */
-	public function get_subscriber( $id ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'get_subscriber_by_id()' );
-
-		// Pass request to new function.
-		return $this->get_subscriber_by_id( $id );
-
-	}
-
-	/**
-	 * Backward compat. function for subscribing a ConvertKit subscriber to the given Tag.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   int   $tag    Tag ID.
-	 * @param   array $args   Arguments.
-	 * @return  WP_Error|array
-	 */
-	public function add_tag( $tag, $args ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'tag_subscribe( $tag_id, $email_address )' );
-
-		// Pass request to new function.
-		return $this->tag_subscribe( $tag, $args['email'] );
-
-	}
-
-	/**
-	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $url    URL.
-	 * @return  WP_Error|string
-	 */
-	public function get_resource( $url ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'get_form_html( $form_id ) or get_landing_page_html( $url )' );
-
-		// Pass request to new function.
-		return $this->get_landing_page_html( $url );
-
-	}
-
-	/**
-	 * Backward compat. function for fetching Legacy Form or Landing Page markup for the given URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   array $args   Arguments (single email key).
-	 * @return  WP_Error|array
-	 */
-	public function form_unsubscribe( $args ) {
-
-		// Warn the developer that they shouldn't use this function.
-		_deprecated_function( __FUNCTION__, '1.0.0', 'unsubscribe( $email_address )' );
-
-		// Pass request to new function.
-		return $this->unsubscribe( $args['email'] );
 
 	}
 
@@ -2036,174 +1003,6 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Converts any relative URls to absolute, fully qualified HTTP(s) URLs for the given
-	 * DOM Elements.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   DOMNodeList<DOMElement> $elements   Elements.
-	 * @param   string                  $attribute  HTML Attribute.
-	 * @param   string                  $url        Absolute URL to prepend to relative URLs.
-	 */
-	private function convert_relative_to_absolute_urls( $elements, $attribute, $url ) {
-
-		// Anchor hrefs.
-		foreach ( $elements as $element ) {
-			// Skip if the attribute's value is empty.
-			if ( empty( $element->getAttribute( $attribute ) ) ) {
-				continue;
-			}
-
-			// Skip if the attribute's value is a fully qualified URL.
-			if ( filter_var( $element->getAttribute( $attribute ), FILTER_VALIDATE_URL ) ) {
-				continue;
-			}
-
-			// Skip if this is a Google Font CSS URL.
-			if ( strpos( $element->getAttribute( $attribute ), '//fonts.googleapis.com' ) !== false ) {
-				continue;
-			}
-
-			// If here, the attribute's value is a relative URL, missing the http(s) and domain.
-			// Prepend the URL to the attribute's value.
-			$element->setAttribute( $attribute, $url . $element->getAttribute( $attribute ) );
-		}
-
-	}
-
-	/**
-	 * Strips <html>, <head> and <body> opening and closing tags from the given markup,
-	 * as well as the Content-Type meta tag we might have added in get_html().
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $markup     HTML Markup.
-	 * @return  string              HTML Markup
-	 * */
-	private function strip_html_head_body_tags( $markup ) {
-
-		$markup = str_replace( '<html>', '', $markup );
-		$markup = str_replace( '</html>', '', $markup );
-		$markup = str_replace( '<head>', '', $markup );
-		$markup = str_replace( '</head>', '', $markup );
-		$markup = str_replace( '<body>', '', $markup );
-		$markup = str_replace( '</body>', '', $markup );
-		$markup = str_replace( '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', '', $markup );
-
-		return $markup;
-
-	}
-
-	/**
-	 * Gets all forms and landing pages from the API.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @return  WP_Error|array
-	 */
-	private function get_forms_landing_pages() {
-
-		// Send request.
-		$response = $this->get(
-			'forms',
-			array(
-				'api_key' => $this->api_key,
-			)
-		);
-
-		// If an error occured, log and return it now.
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		// Iterate through forms, determining if each form is a form or landing page.
-		$forms         = array();
-		$landing_pages = array();
-		foreach ( $response['forms'] as $form ) {
-			// Skip archived forms.
-			if ( isset( $form['archived'] ) && $form['archived'] ) {
-				continue;
-			}
-
-			switch ( $form['type'] ) {
-				case 'hosted':
-					$landing_pages[ $form['id'] ] = $form;
-					break;
-
-				default:
-					$forms[ $form['id'] ] = $form;
-					break;
-			}
-		}
-
-		return array(
-			'forms'         => $forms,
-			'landing_pages' => $landing_pages,
-		);
-
-	}
-
-	/**
-	 * Performs a GET request.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $endpoint       API Endpoint.
-	 * @param   array  $params         Params.
-	 * @return  WP_Error|array|null
-	 */
-	private function get( $endpoint, $params = array() ) {
-
-		return $this->request( $endpoint, 'get', $params, true );
-
-	}
-
-	/**
-	 * Performs a POST request.
-	 *
-	 * @since  1.0.0
-	 *
-	 * @param   string $endpoint       API Endpoint.
-	 * @param   array  $params         Params.
-	 * @return  WP_Error|array|null
-	 */
-	private function post( $endpoint, $params = array() ) {
-
-		return $this->request( $endpoint, 'post', $params, true );
-
-	}
-
-	/**
-	 * Performs a PUT request.
-	 *
-	 * @since  1.0.0
-	 *
-	 * @param   string $endpoint       API Endpoint.
-	 * @param   array  $params         Params.
-	 * @return  WP_Error|array|null
-	 */
-	private function put( $endpoint, $params = array() ) {
-
-		return $this->request( $endpoint, 'put', $params, true );
-
-	}
-
-	/**
-	 * Performs a DELETE request.
-	 *
-	 * @since  1.3.9
-	 *
-	 * @param   string $endpoint       API Endpoint.
-	 * @param   array  $params         Params.
-	 * @return  WP_Error|null
-	 */
-	private function delete( $endpoint, $params = array() ) {
-
-		return $this->request( $endpoint, 'delete', $params, true );
-
-	}
-
-	/**
 	 * Main function which handles sending requests to the API using WordPress functions.
 	 *
 	 * @since   1.0.0
@@ -2214,16 +1013,17 @@ class ConvertKit_API {
 	 * @param   bool   $retry_if_rate_limit_hit Retry request if rate limit hit.
 	 * @return  WP_Error|array|null
 	 */
-	private function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
+	public function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
 		// Send request.
-		switch ( $method ) {
+		switch ( strtolower( $method ) ) {
 			case 'get':
+				// We deliberate don't use add_query_arg(), as this converts double equal signs (typically
+				// provided by `start_cursor` and `end_cursor`) to a single equal sign, therefore breaking
+				// pagination.  http_build_query() will encode equals signs instead, preserving them
+				// and ensuring paginated requests work correctly.
 				$result = wp_remote_get(
-					$this->add_params_to_url(
-						$this->get_api_url( $endpoint ),
-						$params
-					),
+					$this->get_api_url( $endpoint ) . '?' . http_build_query( $params ),
 					array(
 						'headers'    => $this->get_request_headers(),
 						'timeout'    => $this->get_timeout(),
@@ -2345,6 +1145,13 @@ class ConvertKit_API {
 				$error = implode( "\n", $response['errors'] );
 			} elseif ( array_key_exists( 'error_description', $response ) ) {
 				$error = $response['error_description'];
+			} elseif ( array_key_exists( 'error', $response ) ) {
+				// The 'error' key is present when exchanging an API Key and Secret for an Access Token
+				// and something went wrong e.g. invalid API credentials.
+				$error = $response['error'];
+				if ( array_key_exists( 'message', $response ) ) {
+					$error .= ': ' . $response['message'];
+				}
 			}
 
 			$this->log( 'API: Error: ' . $error );
@@ -2513,23 +1320,8 @@ class ConvertKit_API {
 			}
 		}
 
-		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
+		// For all other endpoints, it's https://api.convertkit.com/v4/$endpoint.
 		return path_join( $this->api_url_base . $this->api_version, $endpoint );
-
-	}
-
-	/**
-	 * Adds the supplied array of parameters as query arguments to the URL.
-	 *
-	 * @since   1.0.0
-	 *
-	 * @param   string $url        URL.
-	 * @param   array  $params     Parameters for request.
-	 * @return  string              URL with API Key or API Secret
-	 */
-	private function add_params_to_url( $url, $params ) {
-
-		return add_query_arg( $params, $url );
 
 	}
 

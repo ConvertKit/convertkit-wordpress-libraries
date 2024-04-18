@@ -11,6 +11,9 @@
 	<!-- Exclude minified Javascript files. -->
 	<exclude-pattern>*.min.js</exclude-pattern>
 
+	<!-- Exclude traits from the PHP SDK. -->
+	<exclude-pattern>class-convertkit-api-traits.php</exclude-pattern>
+
 	<!-- Check that code meets WordPress-Extra standards. -->
 	<rule ref="WordPress-Extra">
 		<!--
