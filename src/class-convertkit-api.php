@@ -109,7 +109,7 @@ class ConvertKit_API {
 	protected $api_endpoints_wordpress = array(
 		'posts',
 		'products',
-		'profile',
+		'profile/',
 		'recommendations_script',
 		'subscriber_authentication/send_code',
 		'subscriber_authentication/verify',
@@ -1316,7 +1316,7 @@ class ConvertKit_API {
 			}
 		}
 
-		// For all other endpoints, it's https://api.convertkit.com/v3/$endpoint.
+		// For all other endpoints, it's https://api.convertkit.com/v4/$endpoint.
 		return path_join( $this->api_url_base . $this->api_version, $endpoint );
 
 	}

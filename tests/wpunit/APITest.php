@@ -440,17 +440,189 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @since   1.0.0
 	 */
-	public function testAccount()
+	public function testGetAccount()
 	{
 		$result = $this->api->get_account();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
+
 		$this->assertArrayHasKey('user', $result);
 		$this->assertArrayHasKey('account', $result);
+
 		$this->assertArrayHasKey('name', $result['account']);
 		$this->assertArrayHasKey('plan_type', $result['account']);
 		$this->assertArrayHasKey('primary_email_address', $result['account']);
 		$this->assertEquals('wordpress@convertkit.com', $result['account']['primary_email_address']);
+	}
+
+	/**
+	 * Test that get_account_colors() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetAccountColors()
+	{
+		$result = $this->api->get_account_colors();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('colors', $result);
+		$this->assertIsArray($result['colors']);
+	}
+
+	/**
+	 * Test that update_account_colors() updates the account's colors.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateAccountColors()
+	{
+		$result = $this->api->update_account_colors(
+			[
+				'#111111',
+			]
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('colors', $result);
+		$this->assertIsArray($result['colors']);
+		$this->assertEquals($result['colors'][0], '#111111');
+	}
+
+	/**
+	 * Test that get_creator_profile() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetCreatorProfile()
+	{
+		$result = $this->api->get_creator_profile();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('name', $result['profile']);
+		$this->assertArrayHasKey('byline', $result['profile']);
+		$this->assertArrayHasKey('bio', $result['profile']);
+		$this->assertArrayHasKey('image_url', $result['profile']);
+		$this->assertArrayHasKey('profile_url', $result['profile']);
+	}
+
+	/**
+	 * Test that get_email_stats() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetEmailStats()
+	{
+		$result = $this->api->get_email_stats();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('sent', $result['stats']);
+		$this->assertArrayHasKey('clicked', $result['stats']);
+		$this->assertArrayHasKey('opened', $result['stats']);
+		$this->assertArrayHasKey('email_stats_mode', $result['stats']);
+		$this->assertArrayHasKey('open_tracking_enabled', $result['stats']);
+		$this->assertArrayHasKey('click_tracking_enabled', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStats()
+	{
+		$result = $this->api->get_growth_stats();
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data
+	 * when a start date is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStatsWithStartDate()
+	{
+		// Define start and end dates.
+		$starting = new DateTime('now');
+		$starting->modify('-7 days');
+		$ending = new DateTime('now');
+
+		// Send request.
+		$result = $this->api->get_growth_stats($starting);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Confirm response object contains expected keys.
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+
+		// Assert start and end dates were honored.
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+	}
+
+	/**
+	 * Test that get_growth_stats() returns the expected data
+	 * when an end date is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetGrowthStatsWithEndDate()
+	{
+		// Define start and end dates.
+		$starting = new DateTime('now');
+		$starting->modify('-90 days');
+		$ending = new DateTime('now');
+		$ending->modify('-7 days');
+
+		// Send request.
+		$result = $this->api->get_growth_stats(null, $ending);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Confirm response object contains expected keys.
+		$this->assertArrayHasKey('cancellations', $result['stats']);
+		$this->assertArrayHasKey('net_new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('new_subscribers', $result['stats']);
+		$this->assertArrayHasKey('subscribers', $result['stats']);
+		$this->assertArrayHasKey('starting', $result['stats']);
+		$this->assertArrayHasKey('ending', $result['stats']);
+
+		// Assert start and end dates were honored.
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
 	}
 
 	/**
