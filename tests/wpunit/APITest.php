@@ -2196,6 +2196,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result       = $this->api->create_subscriber(
 			$emailAddress
 		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
 
 		// Unsubscribe.
 		$this->assertNull($this->api->unsubscribe_by_email($emailAddress));
@@ -2243,6 +2245,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result       = $this->api->create_subscriber(
 			$emailAddress
 		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
 
 		// Unsubscribe.
 		$this->assertNull($this->api->unsubscribe($result['subscriber']['id']));
