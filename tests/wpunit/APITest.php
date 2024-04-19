@@ -845,140 +845,560 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_sequences()` function returns expected data.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSequences()
-	{
-		$this->markTestIncomplete();
+     * Test that get_sequences() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequences()
+    {
+        $result = $this->api->get_sequences();
 
-		$result = $this->api->get_sequences();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Check first sequence in resultset has expected data.
+        $sequence = $result['sequences'][0];
+        $this->assertArrayHasKey('id', $sequence);
+        $this->assertArrayHasKey('name', $sequence);
+        $this->assertArrayHasKey('hold', $sequence);
+        $this->assertArrayHasKey('repeat', $sequence);
+        $this->assertArrayHasKey('created_at', $sequence);
+    }
+
+    /**
+     * Test that get_sequences() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequencesWithTotalCount()
+    {
+        $result = $this->api->get_sequences(true);
+
+        // Assert sequences and pagination exist.
+        $this->assertDataExists($result, 'sequences');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', $result['pagination']);
+        $this->assertGreaterThan(0, $result['pagination']['total_count']);
+    }
+
+    /**
+     * Test that get_sequences() returns the expected data when
+     * pagination parameters and per_page limits are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequencesPagination()
+    {
+		// Return one sequence.
+		$result = $this->api->get_sequences(false, '', '', 1);
+
+		// Assert sequences and pagination exist.
+		$this->assertDataExists($result, 'sequences');
+		$this->assertPaginationExists($result);
+
+		// Assert a single sequence was returned.
+		$this->assertCount(1, $result['sequences']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_sequences(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert sequences and pagination exist.
+		$this->assertDataExists($result, 'sequences');
+		$this->assertPaginationExists($result);
+
+		// Assert a single sequence was returned.
+		$this->assertCount(1, $result['sequences']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertFalse($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_sequences(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert sequences and pagination exist.
+		$this->assertDataExists($result, 'sequences');
+		$this->assertPaginationExists($result);
+
+		// Assert a single sequence was returned.
+		$this->assertCount(1, $result['sequences']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence_by_email() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceByEmail()
+    {
+        // Create subscriber.
+        $emailAddress = $this->generateEmailAddress();
+        $subscriber = $this->api->create_subscriber($emailAddress);
+        $this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('name', reset($result));
-	}
 
-	/**
-	 * Test that the `get_sequences()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSequencesNoData()
-	{
-		$this->markTestIncomplete();
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber['subscriber']['id'];
 
-		$result = $this->api_no_data->get_sequences();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
+        // Add subscriber to sequence.
+        $result = $this->api->add_subscriber_to_sequence_by_email(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $emailAddress
+        );
+        $this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
-	}
+        $this->assertArrayHasKey('subscriber', $result);
+        $this->assertArrayHasKey('id', $result['subscriber']);
+        $this->assertEquals(
+            $result['subscriber']['email_address'],
+            $emailAddress
+        );
+    }
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribe()
-	{
-		$this->markTestIncomplete();
+    /**
+     * Test that add_subscriber_to_sequence_by_email() returns a WP_Error when an invalid
+     * sequence is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceByEmailWithInvalidSequenceID()
+    {
+        $result = $this->api->add_subscriber_to_sequence_by_email(
+            12345,
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+    }
 
-		$result = $this->api->sequence_subscribe(
-			$_ENV['CONVERTKIT_API_SEQUENCE_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-			'First',
-			array(
-				'last_name'    => 'Last',
-				'phone_number' => '123-456-7890',
-			)
-		);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
+    /**
+     * Test that add_subscriber_to_sequence_by_email() returns a WP_Error when an invalid
+     * email address is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceByEmailWithInvalidEmailAddress()
+    {
+        $result = $this->api->add_subscriber_to_sequence_by_email(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            'not-an-email-address'
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() returns the expected data.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequence()
+    {
+        // Create subscriber.
+        $subscriber = $this->api->create_subscriber(
+            $this->generateEmailAddress()
+        );
+
+        $this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
-	}
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns a WP_Error
-	 * when an invalid $sequence_id parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribeWithInvalidSequenceID()
-	{
-		$this->markTestIncomplete();
+        // Set subscriber_id to ensure subscriber is unsubscribed after test.
+        $this->subscriber_ids[] = $subscriber['subscriber']['id'];
 
-		$result = $this->api->sequence_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
+        // Add subscriber to sequence.
+        $result = $this->api->add_subscriber_to_sequence(
+            (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            $subscriber['subscriber']['id']
+        );
+        $this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+        $this->assertArrayHasKey('subscriber', $result);
+        $this->assertArrayHasKey('id', $result['subscriber']);
+        $this->assertEquals($result['subscriber']['id'], $subscriber['subscriber']['id']);
+    }
+
+    /**
+     * Test that add_subscriber_to_sequence() returns a WP_Error when an invalid
+     * sequence ID is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidSequenceID()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            12345,
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Course not found: ', $result->get_error_message());
-	}
+    }
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns a WP_Error
-	 * when an empty $sequence_id parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribeWithEmptySequenceID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->sequence_subscribe('', $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
+    /**
+     * Test that add_subscriber_to_sequence() returns a WP_Error when an invalid
+     * email address is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testAddSubscriberToSequenceWithInvalidSubscriberID()
+    {
+        $result = $this->api->add_subscriber_to_sequence(
+            $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+            12345
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('sequence_subscribe(): the sequence_id parameter is empty.', $result->get_error_message());
-	}
+    }
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribeWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptions()
+    {
+        $result = $this->api->get_sequence_subscriptions($_ENV['CONVERTKIT_API_SEQUENCE_ID']);
 
-		$result = $this->api->sequence_subscribe( $_ENV['CONVERTKIT_API_SEQUENCE_ID'], '', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when the total count is included.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithTotalCount()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            null, // Added after.
+            null, // Added before.
+            true // Include total count.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert total count is included.
+        $this->assertArrayHasKey('total_count', $result['pagination']);
+        $this->assertGreaterThan(0, $result['pagination']['total_count']);
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the subscription status
+     * is cancelled.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithBouncedSubscriberState()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'bounced' // Subscriber state.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertEquals($result['subscribers'][0]['state'], 'bounced');
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the added_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithAddedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+        	$_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            $date // Added after.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['added_at']))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the added_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithAddedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            null, // Added after.
+            $date // Added before.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['added_at']))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the created_after parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithCreatedAfterParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+        	$_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            $date // Created after.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertGreaterThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and the created_before parameter
+     * is used.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithCreatedBeforeParam()
+    {
+        $date = new \DateTime('2024-01-01');
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            $date // Created before.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Check the correct subscribers were returned.
+        $this->assertLessThanOrEqual(
+            $date->format('Y-m-d'),
+            date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+        );
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns the expected data
+     * when a valid Sequence ID is specified and pagination parameters
+     * and per_page limits are specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsPagination()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            null, // Added after.
+            null, // Added before.
+            false, // Include total count.
+            '', // After cursor.
+            '', // Before cursor.
+            1 // Per page.
+        );
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result['subscribers']);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertFalse($result['pagination']['has_previous_page']);
+        $this->assertTrue($result['pagination']['has_next_page']);
+
+        // Use pagination to fetch next page.
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            null, // Added after.
+            null, // Added before.
+            false, // Include total count.
+            $result['pagination']['end_cursor'], // After cursor.
+            '', // Before cursor.
+            1 // Per page.
+        );  
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+
+        // Assert a single subscriber was returned.
+        $this->assertCount(1, $result['subscribers']);
+
+        // Assert has_previous_page and has_next_page are correct.
+        $this->assertTrue($result['pagination']['has_previous_page']);
+        $this->assertTrue($result['pagination']['has_next_page']);
+
+        // Use pagination to fetch previous page.
+        $result = $this->api->get_sequence_subscriptions(
+            $_ENV['CONVERTKIT_API_SEQUENCE_ID'], // Sequence ID.
+            'active', // Subscriber state.
+            null, // Created after.
+            null, // Created before.
+            null, // Added after.
+            null, // Added before.
+            false, // Include total count.
+            '', // After cursor.
+            $result['pagination']['start_cursor'], // Before cursor.
+            1 // Per page.
+        ); 
+
+        // Assert subscribers and pagination exist.
+        $this->assertDataExists($result, 'subscribers');
+        $this->assertPaginationExists($result);
+    }
+
+    /**
+     * Test that get_sequence_subscriptions() returns a WP_Error when an invalid
+     * Sequence ID is specified.
+     *
+     * @since   1.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSequenceID()
+    {
+        $result = $this->api->get_sequence_subscriptions(12345);
+        $this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('sequence_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
+    }
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns a WP_Error
-	 * when the $email parameter only consists of spaces.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribeWithSpacesInEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->sequence_subscribe($_ENV['CONVERTKIT_API_SEQUENCE_ID'], '     ', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
+    /**
+     * Test that get_sequence_subscriptions() returns a WP_Error when an invalid
+     * subscriber state is specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidSubscriberState()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            'not-a-valid-state'
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('sequence_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
+    }
 
-	/**
-	 * Test that the `sequence_subscribe()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testSequenceSubscribeWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->sequence_subscribe($_ENV['CONVERTKIT_API_SEQUENCE_ID'], 'invalid-email-address', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
+    /**
+     * Test that get_sequence_subscriptions() returns a WP_Error when invalid
+     * pagination parameters are specified.
+     *
+     * @since   2.0.0
+     *
+     * @return void
+     */
+    public function testGetSequenceSubscriptionsWithInvalidPagination()
+    {
+        $result = $this->api->get_sequence_subscriptions(
+            (int) $_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+            'not-a-valid-cursor'
+        );
+        $this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
-	}
+    }
 
 	/**
 	 * Test that the `get_tags()` function returns expected data.
@@ -1678,7 +2098,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_broadcast() throws a ClientException when an invalid
+	 * Test that get_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   2.0.0
@@ -1715,7 +2135,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_broadcast_stats() throws a ClientException when an invalid
+	 * Test that get_broadcast_stats() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   2.0.0
@@ -1729,7 +2149,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that update_broadcast() throws a ClientException when an invalid
+	 * Test that update_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   1.0.0
@@ -1743,7 +2163,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that delete_broadcast() throws a ClientException when an invalid
+	 * Test that delete_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   1.0.0
