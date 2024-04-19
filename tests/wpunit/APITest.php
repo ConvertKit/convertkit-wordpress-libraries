@@ -2643,6 +2643,180 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_webhooks() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetWebhooksPagination()
+	{
+		// Create webhooks first.
+		$results = [
+			$this->api->create_webhook(
+				'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+				'subscriber.subscriber_activate',
+			),
+			$this->api->create_webhook(
+				'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+				'subscriber.subscriber_activate',
+			),
+		];
+
+		// Set webhook_ids to ensure webhooks are deleted after test.
+		$this->webhook_ids = [
+			$results[0]['webhook']['id'],
+			$results[1]['webhook']['id'],
+		];
+
+		// Get webhooks.
+		$result = $this->api->get_webhooks(false, '', '', 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_webhooks(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertFalse($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_webhooks(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+	}
+
+	/**
+	 * Test that create_webhook(), get_webhooks() and delete_webhook() works.
+	 *
+	 * We do both, so we don't end up with unnecessary webhooks remaining
+	 * on the ConvertKit account when running tests.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateGetAndDeleteWebhook()
+	{
+		// Create a webhook first.
+		$result = $this->api->create_webhook(
+			'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+			'subscriber.subscriber_activate',
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store ID.
+		$id = $result['webhook']['id'];
+
+		// Get webhooks.
+		$result = $this->api->get_webhooks();
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Get webhooks including total count.
+		$result = $this->api->get_webhooks(true);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+
+		// Delete the webhook.
+		$result = $this->api->delete_webhook($id);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that create_webhook() works with an event parameter.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateWebhookWithEventParameter()
+	{
+		// Create a webhook.
+		$url    = 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds');
+		$result = $this->api->create_webhook(
+			$url,
+			'subscriber.form_subscribe',
+			$_ENV['CONVERTKIT_API_FORM_ID']
+		);
+
+		// Confirm webhook created with correct data.
+		$this->assertArrayHasKey('webhook', $result);
+		$this->assertArrayHasKey('id', $result['webhook']);
+		$this->assertArrayHasKey('target_url', $result['webhook']);
+		$this->assertEquals($result['webhook']['target_url'], $url);
+		$this->assertEquals($result['webhook']['event']['name'], 'form_subscribe');
+		$this->assertEquals($result['webhook']['event']['form_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
+
+		// Delete the webhook.
+		$result = $this->api->delete_webhook($result['webhook']['id']);
+	}
+
+	/**
+	 * Test that create_webhook() throws an InvalidArgumentException when an invalid
+	 * event is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateWebhookWithInvalidEvent()
+	{
+		$this->expectException(InvalidArgumentException::class);
+		$this->api->create_webhook(
+			url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+			event: 'invalid.event'
+		);
+	}
+
+	/**
+	 * Test that delete_webhook() returns a WP_Error when an invalid
+	 * ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testDeleteWebhookWithInvalidID()
+	{
+		$result = $this->api->delete_webhook(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
 	 * Test that the `get_custom_fields()` function returns expected data.
 	 *
 	 * @since   1.0.0
