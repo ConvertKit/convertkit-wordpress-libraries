@@ -3174,46 +3174,258 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `purchase_create()` function returns expected data
-	 * when valid parameters are provided.
+	 * Test that get_purchases() returns the expected data.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testPurchaseCreate()
+	public function testGetPurchases()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_purchases();
 
-		$result = $this->api->purchase_create(
-			array(
-				'transaction_id'   => '99999',
-				'email_address'    => $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-				'first_name'       => 'First',
-				'currency'         => 'USD',
-				'transaction_time' => date( 'Y-m-d H:i:s' ),
-				'subtotal'         => 10,
-				'tax'              => 1,
-				'shipping'         => 1,
-				'discount'         => 0,
-				'total'            => 12,
-				'status'           => 'paid',
-				'products'         => array(
-					array(
-						'pid'        => 1,
-						'lid'        => 1,
-						'name'       => 'Test Product',
-						'sku'        => '12345',
-						'unit_price' => 10,
-						'quantity'   => 1,
-					),
-				),
-				'integration'      => 'WooCommerce',
-			)
-		);
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchasesWithTotalCount()
+	{
+		$result = $this->api->get_purchases(true);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchasesPagination()
+	{
+		$result = $this->api->get_purchases(false, '', '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_purchases(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_purchases(false, '', $result['pagination']['end_cursor'], 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchase()
+	{
+		$result = $this->api->get_purchases(false, '', '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Get ID.
+		$id = $result['purchases'][0]['id'];
+
+		// Get purchase.
+		$result = $this->api->get_purchase($id);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertArrayHasKey('transaction_id', $result);
-		$this->assertEquals($result['transaction_id'], '99999');
+		$this->assertEquals($result['purchase']['id'], $id);
+	}
+
+	/**
+	 * Test that get_purchases() returns a WP_Error when an invalid
+	 * purchase ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchaseWithInvalidID()
+	{
+		$result = $this->api->get_purchase(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchase()
+	{
+		$result = $this->api->create_purchase(
+			// Required fields.
+			$this->generateEmailAddress(),
+			str_shuffle('wfervdrtgsdewrafvwefds'), // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+				[
+					'name'       => 'Telephone Cord (data)',
+					'sku'        => 'mnop-1234',
+					'pid'        => 5555,
+					'lid'        => 7778,
+					'quantity'   => 1,
+					'unit_price' => 10.00,
+				],
+			],
+			// Optional fields.
+			'usd', // currency.
+			'Tim', // first name.
+			'paid', // status.
+			20.00, // subtotal.
+			2.00, // tax.
+			2.00, // shipping.
+			3.00, // discount.
+			21.00, // total.
+			new DateTime('now'), // transaction time.
+		);
+
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('transaction_id', $result['purchase']);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithInvalidEmailAddress()
+	{
+		$result = $this->api->create_purchase(
+			'not-an-email-address',
+			str_shuffle('wfervdrtgsdewrafvwefds'), // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+			]
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when a blank
+	 * transaction ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithBlankTransactionID()
+	{
+		$result = $this->api->create_purchase(
+			$this->generateEmailAddress(),
+			'', // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+			]
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when no products
+	 * are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithNoProducts()
+	{
+		$result = $this->api->create_purchase(
+			$this->generateEmailAddress(),
+			str_shuffle('wfervdrtgsdewrafvwefds'),
+			array()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
 	}
 
 	/**
