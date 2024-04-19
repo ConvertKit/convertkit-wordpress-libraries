@@ -1604,7 +1604,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * Test that get_subscribers() returns a WP_Error when an invalid
 	 * email address is specified.
 	 *
 	 * @since   2.0.0
@@ -1621,7 +1621,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * Test that get_subscribers() returns a WP_Error when an invalid
 	 * subscriber state is specified.
 	 *
 	 * @since   2.0.0
@@ -1637,7 +1637,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * Test that get_subscribers() returns a WP_Error when an invalid
 	 * sort field is specified.
 	 *
 	 * @since   2.0.0
@@ -1659,7 +1659,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * Test that get_subscribers() returns a WP_Error when an invalid
 	 * sort order is specified.
 	 *
 	 * @since   2.0.0
@@ -1682,7 +1682,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_subscribers() throws a ClientException when an invalid
+	 * Test that get_subscribers() returns a WP_Error when an invalid
 	 * pagination parameters are specified.
 	 *
 	 * @since   2.0.0
@@ -1816,7 +1816,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that create_subscriber() throws a ClientException when an invalid
+	 * Test that create_subscriber() returns a WP_Error when an invalid
 	 * email address is specified.
 	 *
 	 * @since   2.0.0
@@ -1833,7 +1833,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that create_subscriber() throws a ClientException when an invalid
+	 * Test that create_subscriber() returns a WP_Error when an invalid
 	 * subscriber state is specified.
 	 *
 	 * @since   2.0.0
@@ -1917,7 +1917,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that create_subscribers() throws a ClientException when no data is specified.
+	 * Test that create_subscribers() returns a WP_Error when no data is specified.
 	 *
 	 * @since   2.0.0
 	 *
@@ -1957,6 +1957,434 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Assert no subscribers were added.
 		$this->assertCount(0, $result['subscribers']);
 		$this->assertCount(2, $result['failures']);
+	}
+
+	/**
+	 * Test that get_subscriber_id() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberID()
+	{
+		$subscriber_id = $this->api->get_subscriber_id($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+		$this->assertIsInt($subscriber_id);
+		$this->assertEquals($subscriber_id, (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+	}
+
+	/**
+	 * Test that get_subscriber_id() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberIDWithInvalidEmailAddress()
+	{
+		$result = $this->api->get_subscriber_id('not-an-email-address');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that get_subscriber_id() return false when no subscriber found
+	 * matching the given email address.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberIDWithNotSubscribedEmailAddress()
+	{
+		$result = $this->api->get_subscriber_id('not-a-subscriber@test.com');
+		$this->assertFalse($result);
+	}
+
+	/**
+	 * Test that get_subscriber() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriber()
+	{
+		$result = $this->api->get_subscriber( (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+		$this->assertEquals($result['subscriber']['email_address'], $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+	}
+
+	/**
+	 * Test that get_subscriber() returns a WP_Error when an invalid
+	 * subscriber ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberWithInvalidSubscriberID()
+	{
+		$result = $this->api->get_subscriber(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that update_subscriber() works when no changes are made.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateSubscriberWithNoChanges()
+	{
+		$result = $this->api->update_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+
+		// Assert subscriber exists with correct data.
+		$this->assertEquals($result['subscriber']['id'], $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+		$this->assertEquals($result['subscriber']['email_address'], $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
+	}
+
+	/**
+	 * Test that update_subscriber() works when updating the subscriber's first name.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateSubscriberFirstName()
+	{
+		// Add a subscriber.
+		$firstName    = 'FirstName';
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber created with no first name.
+		$this->assertNull($result['subscriber']['first_name']);
+
+		// Get subscriber ID.
+		$subscriberID = $result['subscriber']['id'];
+
+		// Update subscriber's first name.
+		$result = $this->api->update_subscriber(
+			$subscriberID,
+			$firstName
+		);
+
+		// Assert changes were made.
+		$this->assertEquals($result['subscriber']['id'], $subscriberID);
+		$this->assertEquals($result['subscriber']['first_name'], $firstName);
+	}
+
+	/**
+	 * Test that update_subscriber() works when updating the subscriber's email address.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateSubscriberEmailAddress()
+	{
+		// Add a subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber created.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+
+		// Get subscriber ID.
+		$subscriberID = $result['subscriber']['id'];
+
+		// Update subscriber's email address.
+		$newEmail = $this->generateEmailAddress();
+		$result   = $this->api->update_subscriber(
+			$subscriberID,
+			'', // First name.
+			$newEmail
+		);
+
+		// Assert changes were made.
+		$this->assertEquals($result['subscriber']['id'], $subscriberID);
+		$this->assertEquals($result['subscriber']['email_address'], $newEmail);
+	}
+
+	/**
+	 * Test that update_subscriber() works when updating the subscriber's custom fields.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateSubscriberCustomFields()
+	{
+		// Add a subscriber.
+		$lastName     = 'LastName';
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Assert subscriber created.
+		$this->assertEquals($result['subscriber']['email_address'], $emailAddress);
+
+		// Get subscriber ID.
+		$subscriberID = $result['subscriber']['id'];
+
+		// Update subscriber's custom fields.
+		$result = $this->api->update_subscriber(
+			$subscriberID,
+			'', // First name.
+			'', // Email address.
+			[
+				'last_name' => $lastName,
+			]
+		);
+
+		// Assert changes were made.
+		$this->assertEquals($result['subscriber']['id'], $subscriberID);
+		$this->assertEquals($result['subscriber']['fields']['last_name'], $lastName);
+	}
+
+	/**
+	 * Test that update_subscriber() returns a WP_Error when an invalid
+	 * subscriber ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateSubscriberWithInvalidSubscriberID()
+	{
+		$result = $this->api->update_subscriber(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that unsubscribe_by_email() works with a valid subscriber email address.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUnsubscribeByEmail()
+	{
+		// Add a subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Unsubscribe.
+		$this->assertNull($this->api->unsubscribe_by_email($emailAddress));
+	}
+
+	/**
+	 * Test that unsubscribe_by_email() returns a WP_Error when an email
+	 * address is specified that is not subscribed.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUnsubscribeByEmailWithNotSubscribedEmailAddress()
+	{
+		$result = $this->api->unsubscribe_by_email('not-subscribed@convertkit.com');
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that unsubscribe_by_email() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testUnsubscribeByEmailWithInvalidEmailAddress()
+	{
+		$result = $this->api->unsubscribe_by_email('invalid-email');
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that unsubscribe() works with a valid subscriber ID.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUnsubscribe()
+	{
+		// Add a subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber(
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Unsubscribe.
+		$this->assertNull($this->api->unsubscribe($result['subscriber']['id']));
+	}
+
+	/**
+	 * Test that unsubscribe() returns a WP_Error when an invalid
+	 * subscriber ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUnsubscribeWithInvalidSubscriberID()
+	{
+		$result = $this->api->unsubscribe(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that get_subscriber_tags() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberTags()
+	{
+		$result = $this->api->get_subscriber_tags( (int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_subscriber_tags() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberTagsWithTotalCount()
+	{
+		$result = $this->api->get_subscriber_tags(
+			(int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+			true
+		);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_subscriber_tags() returns a WP_Error when an invalid
+	 * subscriber ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberTagsWithInvalidSubscriberID()
+	{
+		$result = $this->api->get_subscriber_tags(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that get_subscriber_tags() returns the expected data
+	 * when a valid Subscriber ID is specified and pagination parameters
+	 * and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSubscriberTagsPagination()
+	{
+		$result = $this->api->get_subscriber_tags(
+			(int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+			false, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert a single tag was returned.
+		$this->assertCount(1, $result['tags']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_subscriber_tags(
+			(int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+			false, // Include total count.
+			$result['pagination']['end_cursor'], // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert a single tag was returned.
+		$this->assertCount(1, $result['tags']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_subscriber_tags(
+			(int) $_ENV['CONVERTKIT_API_SUBSCRIBER_ID'],
+			false, // Include total count.
+			'', // After cursor.
+			$result['pagination']['start_cursor'], // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert a single tag was returned.
+		$this->assertCount(1, $result['tags']);
 	}
 
 	/**
@@ -2136,7 +2564,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_broadcast() throws a ClientException when an invalid
+	 * Test that get_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   2.0.0
@@ -2173,7 +2601,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that get_broadcast_stats() throws a ClientException when an invalid
+	 * Test that get_broadcast_stats() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   2.0.0
@@ -2187,7 +2615,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that update_broadcast() throws a ClientException when an invalid
+	 * Test that update_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   1.0.0
@@ -2201,7 +2629,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that delete_broadcast() throws a ClientException when an invalid
+	 * Test that delete_broadcast() returns a WP_Error when an invalid
 	 * broadcast ID is specified.
 	 *
 	 * @since   1.0.0
