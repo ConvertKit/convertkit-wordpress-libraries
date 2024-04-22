@@ -462,6 +462,63 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Get the ConvertKit subscriber ID associated with email address if it exists.
+	 * Return false if subscriber not found.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+	 *
+	 * @return WP_Error|false|integer
+	 */
+	public function get_subscriber_id( string $email_address ) {
+
+		$subscribers = $this->get(
+			'subscribers',
+			array( 'email_address' => $email_address )
+		);
+
+		if ( is_wp_error( $subscribers ) ) {
+			return $subscribers;
+		}
+
+		if ( ! count( $subscribers['subscribers'] ) ) {
+			return false;
+		}
+
+		// Return the subscriber's ID.
+		return $subscribers['subscribers'][0]['id'];
+
+	}
+
+	/**
+	 * Unsubscribe an email address.
+	 *
+	 * @param string $email_address Email Address.
+	 *
+	 * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+	 *
+	 * @return WP_Error|false|object
+	 */
+	public function unsubscribe_by_email( string $email_address ) {
+
+		// Get subscriber ID.
+		$subscriber_id = $this->get_subscriber_id( $email_address );
+
+		if ( is_wp_error( $subscriber_id ) ) {
+			return $subscriber_id;
+		}
+
+		return $this->post(
+			sprintf(
+				'subscribers/%s/unsubscribe',
+				(int) $subscriber_id
+			)
+		);
+
+	}
+
+	/**
 	 * Gets all posts from the API.
 	 *
 	 * @since   1.0.0
