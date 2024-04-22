@@ -59,6 +59,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	protected $broadcast_ids = [];
 
 	/**
+	 * Webhook IDs to delete on teardown of a test.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array<int, int>
+	 */
+	protected $webhook_ids = [];
+
+	/**
 	 * Performs actions before each test.
 	 *
 	 * @since   1.0.0
@@ -103,6 +112,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Unsubscribe any Subscribers.
 		foreach ($this->subscriber_ids as $id) {
 			$this->api->unsubscribe($id);
+		}
+
+		// Delete any Webhooks.
+		foreach ($this->webhook_ids as $id) {
+			$this->api->delete_webhook($id);
 		}
 
 		// Delete any Broadcasts.
