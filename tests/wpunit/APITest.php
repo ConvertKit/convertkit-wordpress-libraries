@@ -664,208 +664,605 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_subscription_forms()` function returns expected data.
+	 * Test that get_forms() returns the expected data.
 	 *
 	 * @since   1.0.0
-	 */
-	public function testGetSubscriptionForms()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscription_forms();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('form_id', reset($result));
-	}
-
-	/**
-	 * Test that the `get_subscription_forms()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
 	 *
-	 * @since   1.0.0
-	 */
-	public function testGetSubscriptionFormsNoData()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api_no_data->get_subscription_forms();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
-	}
-
-	/**
-	 * Test that the `get_forms()` function returns expected data.
-	 *
-	 * @since   1.0.0
+	 * @return void
 	 */
 	public function testGetForms()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_forms();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('name', reset($result));
-		$this->assertArrayHasKey('format', reset($result));
-		$this->assertArrayHasKey('embed_js', reset($result));
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Iterate through each form, confirming no landing pages were included.
+		foreach ($result['forms'] as $form) {
+			// Assert shape of object is valid.
+			$this->assertArrayHasKey('id', $form);
+			$this->assertArrayHasKey('name', $form);
+			$this->assertArrayHasKey('created_at', $form);
+			$this->assertArrayHasKey('type', $form);
+			$this->assertArrayHasKey('format', $form);
+			$this->assertArrayHasKey('embed_js', $form);
+			$this->assertArrayHasKey('embed_url', $form);
+			$this->assertArrayHasKey('archived', $form);
+
+			// Assert form is not a landing page i.e embed.
+			$this->assertEquals($form['type'], 'embed');
+
+			// Assert form is not archived.
+			$this->assertFalse($form['archived']);
+		}
 	}
 
 	/**
-	 * Test that the `get_forms()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
+	 * Test that get_forms() returns the expected data when
+	 * the status is set to archived.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testGetFormsNoData()
+	public function testGetFormsWithArchivedStatus()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_forms('archived');
 
-		$result = $this->api_no_data->get_forms();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Iterate through each form, confirming no landing pages were included.
+		foreach ($result['forms'] as $form) {
+			// Assert shape of object is valid.
+			$this->assertArrayHasKey('id', $form);
+			$this->assertArrayHasKey('name', $form);
+			$this->assertArrayHasKey('created_at', $form);
+			$this->assertArrayHasKey('type', $form);
+			$this->assertArrayHasKey('format', $form);
+			$this->assertArrayHasKey('embed_js', $form);
+			$this->assertArrayHasKey('embed_url', $form);
+			$this->assertArrayHasKey('archived', $form);
+
+			// Assert form is not a landing page i.e embed.
+			$this->assertEquals($form['type'], 'embed');
+
+			// Assert form is not archived.
+			$this->assertTrue($form['archived']);
+		}
 	}
 
 	/**
-	 * Test that the `form_subscribe()` function returns expected data
-	 * when valid parameters are provided.
+	 * Test that get_forms() returns the expected data
+	 * when the total count is included.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testFormSubscribe()
+	public function testGetFormsWithTotalCount()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_forms('active', true);
 
-		$result = $this->api->form_subscribe(
-			$_ENV['CONVERTKIT_API_FORM_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-			'First',
-			array(
-				'last_name'    => 'Last',
-				'phone_number' => '123-456-7890',
-			)
-		);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
 	}
 
 	/**
-	 * Test that the `form_subscribe()` function returns a WP_Error
-	 * when an empty $form_id parameter is provided.
+	 * Test that get_forms() returns the expected data when pagination parameters
+	 * and per_page limits are specified.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testFormSubscribeWithEmptyFormID()
+	public function testGetFormsPagination()
 	{
-		$this->markTestIncomplete();
+		// Return one form.
+		$result = $this->api->get_forms('active', false, '', '', 1);
 
-		$result = $this->api->form_subscribe( '', $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('form_subscribe(): the form_id parameter is empty.', $result->get_error_message());
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single form was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_forms('active', false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single form was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_forms('active', false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single form was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
 	}
 
 	/**
-	 * Test that the `form_subscribe()` function returns a WP_Error
-	 * when an invalid $form_id parameter is provided.
+	 * Test that get_landing_pages() returns the expected data.
 	 *
 	 * @since   1.0.0
-	 */
-	public function testFormSubscribeWithInvalidFormID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->form_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `form_subscribe()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
 	 *
-	 * @since   1.0.0
-	 */
-	public function testFormSubscribeWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], '', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('form_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `form_subscribe()` function returns a WP_Error
-	 * when the $email parameter only consists of spaces.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testFormSubscribeWithSpacesInEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->form_subscribe( $_ENV['CONVERTKIT_API_FORM_ID'], '     ', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('form_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `form_subscribe()` function returns a WP_Error
-	 * when an invalid email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testFormSubscribeWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->form_subscribe( $_ENV['CONVERTKIT_API_FORM_ID'], 'invalid-email-address', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `get_landing_pages()` function returns expected data.
-	 *
-	 * @since   1.0.0
+	 * @return void
 	 */
 	public function testGetLandingPages()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_landing_pages();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('name', reset($result));
-		$this->assertArrayHasKey('format', reset($result));
-		$this->assertArrayHasKey('embed_js', reset($result));
-		$this->assertArrayHasKey('embed_url', reset($result));
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Iterate through each landing page, confirming no forms were included.
+		foreach ($result['forms'] as $form) {
+			// Assert shape of object is valid.
+			$this->assertArrayHasKey('id', $form);
+			$this->assertArrayHasKey('name', $form);
+			$this->assertArrayHasKey('created_at', $form);
+			$this->assertArrayHasKey('type', $form);
+			$this->assertArrayHasKey('format', $form);
+			$this->assertArrayHasKey('embed_js', $form);
+			$this->assertArrayHasKey('embed_url', $form);
+			$this->assertArrayHasKey('archived', $form);
+
+			// Assert form is a landing page i.e. hosted.
+			$this->assertEquals($form['type'], 'hosted');
+
+			// Assert form is not archived.
+			$this->assertFalse($form['archived']);
+		}
 	}
 
 	/**
-	 * Test that the `get_landing_pages()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
+	 * Test that get_landing_pages() returns the expected data when
+	 * the status is set to archived.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLandingPagesWithArchivedStatus()
+	{
+		$result = $this->api->get_forms('archived');
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert no landing pages are returned, as the account doesn't have any archived landing pages.
+		$this->assertCount(0, $result['forms']);
+	}
+
+	/**
+	 * Test that get_landing_pages() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLandingPagesWithTotalCount()
+	{
+		$result = $this->api->get_landing_pages('active', true);
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_landing_pages() returns the expected data when pagination parameters
+	 * and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLandingPagesPagination()
+	{
+		// Return one landing page.
+		$result = $this->api->get_landing_pages('active', false, '', '', 1);
+
+		// Assert landing pages and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single landing page was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_landing_pages('active', false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert landing pages and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single landing page was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_landing_pages('active', false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert landing pages and pagination exist.
+		$this->assertDataExists($result, 'forms');
+		$this->assertPaginationExists($result);
+
+		// Assert a single landing page was returned.
+		$this->assertCount(1, $result['forms']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testGetLandingPagesNoData()
+	public function testGetFormSubscriptions()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_form_subscriptions( (int) $_ENV['CONVERTKIT_API_FORM_ID']);
 
-		$result = $this->api_no_data->get_landing_pages();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithTotalCount()
+	{
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			null, // Added before.
+			true // Include total count.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and the subscription status
+	 * is cancelled.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithBouncedSubscriberState()
+	{
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'bounced' // Subscriber state.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertEquals($result['subscribers'][0]['state'], 'bounced');
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and the added_after parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithAddedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			$date // Added after.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertGreaterThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['added_at']))
+		);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and the added_before parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithAddedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			$date, // Added before.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertLessThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['added_at']))
+		);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and the created_after parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithCreatedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			$date // Created after.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertGreaterThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and the created_before parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithCreatedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			$date // Created before.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertLessThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() returns the expected data
+	 * when a valid Form ID is specified and pagination parameters
+	 * and per_page limits are specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsPagination()
+	{
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			null, // Added before.
+			false, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			1, // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			null, // Added before.
+			false, // Include total count.
+			$result['pagination']['end_cursor'], // After cursor.
+			'', // Before cursor.
+			1, // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			null, // Added before.
+			false, // Include total count.
+			'', // After cursor.
+			$result['pagination']['start_cursor'], // Before cursor.
+			1, // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() throws a ClientException when an invalid
+	 * Form ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithInvalidFormID()
+	{
+		$result = $this->api->get_form_subscriptions(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() throws a ClientException when an invalid
+	 * subscriber state is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithInvalidSubscriberState()
+	{
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'],
+			'not-a-valid-state'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that get_form_subscriptions() throws a ClientException when invalid
+	 * pagination parameters are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetFormSubscriptionsWithInvalidPagination()
+	{
+		$result = $this->api->get_form_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'], // Form ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Added after.
+			null, // Added before.
+			false, // Include total count.
+			'not-a-valid-cursor' // After cursor.
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
 	}
 
 	/**
