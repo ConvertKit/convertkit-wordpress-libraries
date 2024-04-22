@@ -32,6 +32,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
+	 * Custom Field IDs to delete on teardown of a test.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array<int, int>
+	 */
+	protected $custom_field_ids = [];
+
+	/**
 	 * Subscriber IDs to unsubscribe on teardown of a test.
 	 *
 	 * @since   2.0.0
@@ -86,6 +95,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function tearDown(): void
 	{
+		// Delete any Custom Fields.
+		foreach ($this->custom_field_ids as $id) {
+			$this->api->delete_custom_field($id);
+		}
+
 		// Unsubscribe any Subscribers.
 		foreach ($this->subscriber_ids as $id) {
 			$this->api->unsubscribe($id);
@@ -95,10 +109,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		foreach ($this->broadcast_ids as $id) {
 			$this->api->delete_broadcast($id);
 		}
-
-		// Destroy the classes we tested.
-		unset($this->api);
-		unset($this->api_no_data);
 
 		parent::tearDown();
 	}
@@ -2643,35 +2653,262 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_custom_fields()` function returns expected data.
+	 * Test that get_custom_fields() returns the expected data.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
 	public function testGetCustomFields()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_custom_fields();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('name', reset($result));
+
+		// Assert custom fields and pagination exist.
+		$this->assertDataExists($result, 'custom_fields');
+		$this->assertPaginationExists($result);
 	}
 
 	/**
-	 * Test that the `get_custom_fields()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
+	 * Test that get_custom_fields() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetCustomFieldsWithTotalCount()
+	{
+		$result = $this->api->get_custom_fields(true);
+
+		// Assert custom fields and pagination exist.
+		$this->assertDataExists($result, 'custom_fields');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_custom_fields() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetCustomFieldsPagination()
+	{
+		// Return one custom field.
+		$result = $this->api->get_custom_fields(false, '', '', 1);
+
+		// Assert custom fields and pagination exist.
+		$this->assertDataExists($result, 'custom_fields');
+		$this->assertPaginationExists($result);
+
+		// Assert a single custom field was returned.
+		$this->assertCount(1, $result['custom_fields']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_custom_fields(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert custom fields and pagination exist.
+		$this->assertDataExists($result, 'custom_fields');
+		$this->assertPaginationExists($result);
+
+		// Assert a single custom field was returned.
+		$this->assertCount(1, $result['custom_fields']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_custom_fields(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert custom fields and pagination exist.
+		$this->assertDataExists($result, 'custom_fields');
+		$this->assertPaginationExists($result);
+
+		// Assert a single custom field was returned.
+		$this->assertCount(1, $result['custom_fields']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that create_custom_field() works.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testGetCustomFieldsNoData()
+	public function testCreateCustomField()
 	{
-		$this->markTestIncomplete();
+		$label  = 'Custom Field ' . wp_rand();
+		$result = $this->api->create_custom_field($label);
 
-		$result = $this->api_no_data->get_custom_fields();
+		// Test array was returned.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
+
+		// Set custom_field_ids to ensure custom fields are deleted after test.
+		$this->custom_field_ids[] = $result['custom_field']['id'];
+
+		$this->assertArrayHasKey('custom_field', $result);
+		$this->assertArrayHasKey('id', $result['custom_field']);
+		$this->assertArrayHasKey('name', $result['custom_field']);
+		$this->assertArrayHasKey('key', $result['custom_field']);
+		$this->assertArrayHasKey('label', $result['custom_field']);
+		$this->assertEquals($result['custom_field']['label'], $label);
+	}
+
+	/**
+	 * Test that create_custom_field() throws a ClientException when a blank
+	 * label is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateCustomFieldWithBlankLabel()
+	{
+		$result = $this->api->create_custom_field('');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_custom_fields() works.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateCustomFields()
+	{
+		$labels = [
+			'Custom Field ' . wp_rand(),
+			'Custom Field ' . wp_rand(),
+		];
+		$result = $this->api->create_custom_fields($labels);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set custom_field_ids to ensure custom fields are deleted after test.
+		foreach ($result['custom_fields'] as $index => $customField) {
+			$this->custom_field_ids[] = $customField['id'];
+		}
+
+		// Assert no failures.
+		$this->assertCount(0, $result['failures']);
+
+		// Confirm result is an array comprising of each custom field that was created.
+		$this->assertIsArray($result['custom_fields']);
+	}
+
+	/**
+	 * Test that update_custom_field() works.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateCustomField()
+	{
+		// Create custom field.
+		$label  = 'Custom Field ' . wp_rand();
+		$result = $this->api->create_custom_field($label);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store ID.
+		$id = $result['custom_field']['id'];
+
+		// Set custom_field_ids to ensure custom fields are deleted after test.
+		$this->custom_field_ids[] = $result['custom_field']['id'];
+
+		// Change label.
+		$newLabel = 'Custom Field ' . wp_rand();
+		$this->api->update_custom_field($id, $newLabel);
+
+		// Confirm label changed.
+		$customFields = $this->api->get_custom_fields();
+		foreach ($customFields['custom_fields'] as $customField) {
+			if ($customField['id'] === $id) {
+				$this->assertEquals($customField['label'], $newLabel);
+			}
+		}
+	}
+
+	/**
+	 * Test that update_custom_field() throws a ClientException when an
+	 * invalid custom field ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testUpdateCustomFieldWithInvalidID()
+	{
+		$result = $this->api->update_custom_field(12345, 'Something');
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that delete_custom_field() works.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testDeleteCustomField()
+	{
+		// Create custom field.
+		$label  = 'Custom Field ' . wp_rand();
+		$result = $this->api->create_custom_field($label);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store ID.
+		$id = $result['custom_field']['id'];
+
+		// Delete custom field as tests passed.
+		$this->api->delete_custom_field($id);
+
+		// Confirm custom field no longer exists.
+		$customFields = $this->api->get_custom_fields();
+		foreach ($customFields['custom_fields'] as $customField) {
+			$this->assertNotEquals($customField['id'], $id);
+		}
+	}
+
+	/**
+	 * Test that delete_custom_field() throws a ClientException when an
+	 * invalid custom field ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testDeleteCustomFieldWithInvalidID()
+	{
+		$result = $this->api->delete_custom_field(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
 	}
 
 	/**
