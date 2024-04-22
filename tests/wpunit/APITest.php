@@ -977,12 +977,12 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Create subscriber.
 		$emailAddress = $this->generateEmailAddress();
-		$subscriber   = $this->api->create_subscriber($emailAddress);
+		$result       = $this->api->create_subscriber($emailAddress);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 
 		// Set subscriber_id to ensure subscriber is unsubscribed after test.
-		$this->subscriber_ids[] = $subscriber['subscriber']['id'];
+		$this->subscriber_ids[] = $result['subscriber']['id'];
 
 		// Add subscriber to sequence.
 		$result = $this->api->add_subscriber_to_sequence_by_email(
@@ -1049,8 +1049,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			$this->generateEmailAddress()
 		);
 
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
+		$this->assertNotInstanceOf(WP_Error::class, $subscriber);
+		$this->assertIsArray($subscriber);
 
 		// Set subscriber_id to ensure subscriber is unsubscribed after test.
 		$this->subscriber_ids[] = $subscriber['subscriber']['id'];
