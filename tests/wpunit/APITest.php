@@ -3454,6 +3454,95 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_segments() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegments()
+	{
+		$result = $this->api->get_segments();
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_segments() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegmentsWithTotalCount()
+	{
+		$result = $this->api->get_segments(true);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_segments() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegmentsPagination()
+	{
+		$result = $this->api->get_segments(false, '', '', 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_segments(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_segments(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
 	 * Test that the `recommendations_script()` function returns expected data
 	 * for a ConvertKit account that has the Creator Network enabled.
 	 *
