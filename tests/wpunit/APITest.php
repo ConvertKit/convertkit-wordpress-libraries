@@ -59,6 +59,15 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	protected $broadcast_ids = [];
 
 	/**
+	 * Webhook IDs to delete on teardown of a test.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @var     array<int, int>
+	 */
+	protected $webhook_ids = [];
+
+	/**
 	 * Performs actions before each test.
 	 *
 	 * @since   1.0.0
@@ -103,6 +112,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Unsubscribe any Subscribers.
 		foreach ($this->subscriber_ids as $id) {
 			$this->api->unsubscribe($id);
+		}
+
+		// Delete any Webhooks.
+		foreach ($this->webhook_ids as $id) {
+			$this->api->delete_webhook($id);
 		}
 
 		// Delete any Broadcasts.
@@ -2940,6 +2954,180 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_webhooks() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetWebhooksPagination()
+	{
+		// Create webhooks first.
+		$results = [
+			$this->api->create_webhook(
+				'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+				'subscriber.subscriber_activate',
+			),
+			$this->api->create_webhook(
+				'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+				'subscriber.subscriber_activate',
+			),
+		];
+
+		// Set webhook_ids to ensure webhooks are deleted after test.
+		$this->webhook_ids = [
+			$results[0]['webhook']['id'],
+			$results[1]['webhook']['id'],
+		];
+
+		// Get webhooks.
+		$result = $this->api->get_webhooks(false, '', '', 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_webhooks(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertFalse($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_webhooks(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert a single webhook was returned.
+		$this->assertCount(1, $result['webhooks']);
+	}
+
+	/**
+	 * Test that create_webhook(), get_webhooks() and delete_webhook() works.
+	 *
+	 * We do both, so we don't end up with unnecessary webhooks remaining
+	 * on the ConvertKit account when running tests.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateGetAndDeleteWebhook()
+	{
+		// Create a webhook first.
+		$result = $this->api->create_webhook(
+			'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+			'subscriber.subscriber_activate',
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Store ID.
+		$id = $result['webhook']['id'];
+
+		// Get webhooks.
+		$result = $this->api->get_webhooks();
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Get webhooks including total count.
+		$result = $this->api->get_webhooks(true);
+
+		// Assert webhooks and pagination exist.
+		$this->assertDataExists($result, 'webhooks');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+
+		// Delete the webhook.
+		$result = $this->api->delete_webhook($id);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+	}
+
+	/**
+	 * Test that create_webhook() works with an event parameter.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateWebhookWithEventParameter()
+	{
+		// Create a webhook.
+		$url    = 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds');
+		$result = $this->api->create_webhook(
+			$url,
+			'subscriber.form_subscribe',
+			$_ENV['CONVERTKIT_API_FORM_ID']
+		);
+
+		// Confirm webhook created with correct data.
+		$this->assertArrayHasKey('webhook', $result);
+		$this->assertArrayHasKey('id', $result['webhook']);
+		$this->assertArrayHasKey('target_url', $result['webhook']);
+		$this->assertEquals($result['webhook']['target_url'], $url);
+		$this->assertEquals($result['webhook']['event']['name'], 'form_subscribe');
+		$this->assertEquals($result['webhook']['event']['form_id'], $_ENV['CONVERTKIT_API_FORM_ID']);
+
+		// Delete the webhook.
+		$result = $this->api->delete_webhook($result['webhook']['id']);
+	}
+
+	/**
+	 * Test that create_webhook() throws an InvalidArgumentException when an invalid
+	 * event is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateWebhookWithInvalidEvent()
+	{
+		$this->expectException(InvalidArgumentException::class);
+		$this->api->create_webhook(
+			'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+			'invalid.event'
+		);
+	}
+
+	/**
+	 * Test that delete_webhook() returns a WP_Error when an invalid
+	 * ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testDeleteWebhookWithInvalidID()
+	{
+		$result = $this->api->delete_webhook(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
 	 * Test that get_custom_fields() returns the expected data.
 	 *
 	 * @since   1.0.0
@@ -3698,46 +3886,347 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `purchase_create()` function returns expected data
-	 * when valid parameters are provided.
+	 * Test that get_purchases() returns the expected data.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testPurchaseCreate()
+	public function testGetPurchases()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_purchases();
 
-		$result = $this->api->purchase_create(
-			array(
-				'transaction_id'   => '99999',
-				'email_address'    => $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-				'first_name'       => 'First',
-				'currency'         => 'USD',
-				'transaction_time' => date( 'Y-m-d H:i:s' ),
-				'subtotal'         => 10,
-				'tax'              => 1,
-				'shipping'         => 1,
-				'discount'         => 0,
-				'total'            => 12,
-				'status'           => 'paid',
-				'products'         => array(
-					array(
-						'pid'        => 1,
-						'lid'        => 1,
-						'name'       => 'Test Product',
-						'sku'        => '12345',
-						'unit_price' => 10,
-						'quantity'   => 1,
-					),
-				),
-				'integration'      => 'WooCommerce',
-			)
-		);
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchasesWithTotalCount()
+	{
+		$result = $this->api->get_purchases(true);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchasesPagination()
+	{
+		$result = $this->api->get_purchases(false, '', '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_purchases(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_purchases(false, '', $result['pagination']['end_cursor'], 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that get_purchases() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchase()
+	{
+		$result = $this->api->get_purchases(false, '', '', 1);
+
+		// Assert purchases and pagination exist.
+		$this->assertDataExists($result, 'purchases');
+		$this->assertPaginationExists($result);
+
+		// Assert a single purchase was returned.
+		$this->assertCount(1, $result['purchases']);
+
+		// Get ID.
+		$id = $result['purchases'][0]['id'];
+
+		// Get purchase.
+		$result = $this->api->get_purchase($id);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertArrayHasKey('transaction_id', $result);
-		$this->assertEquals($result['transaction_id'], '99999');
+		$this->assertEquals($result['purchase']['id'], $id);
+	}
+
+	/**
+	 * Test that get_purchases() returns a WP_Error when an invalid
+	 * purchase ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetPurchaseWithInvalidID()
+	{
+		$result = $this->api->get_purchase(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchase()
+	{
+		$result = $this->api->create_purchase(
+			// Required fields.
+			$this->generateEmailAddress(),
+			str_shuffle('wfervdrtgsdewrafvwefds'), // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+				[
+					'name'       => 'Telephone Cord (data)',
+					'sku'        => 'mnop-1234',
+					'pid'        => 5555,
+					'lid'        => 7778,
+					'quantity'   => 1,
+					'unit_price' => 10.00,
+				],
+			],
+			// Optional fields.
+			'usd', // currency.
+			'Tim', // first name.
+			'paid', // status.
+			20.00, // subtotal.
+			2.00, // tax.
+			2.00, // shipping.
+			3.00, // discount.
+			21.00, // total.
+			new DateTime('now'), // transaction time.
+		);
+
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('transaction_id', $result['purchase']);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithInvalidEmailAddress()
+	{
+		$result = $this->api->create_purchase(
+			'not-an-email-address',
+			str_shuffle('wfervdrtgsdewrafvwefds'), // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+			]
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when a blank
+	 * transaction ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithBlankTransactionID()
+	{
+		$result = $this->api->create_purchase(
+			$this->generateEmailAddress(),
+			'', // transaction ID.
+			[ // products.
+				[
+					'name'       => 'Floppy Disk (512k)',
+					'sku'        => '7890-ijkl',
+					'pid'        => 9999,
+					'lid'        => 7777,
+					'quantity'   => 2,
+					'unit_price' => 5.00,
+				],
+			]
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that create_purchase() returns a WP_Error when no products
+	 * are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreatePurchaseWithNoProducts()
+	{
+		$result = $this->api->create_purchase(
+			$this->generateEmailAddress(),
+			str_shuffle('wfervdrtgsdewrafvwefds'),
+			array()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that get_segments() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegments()
+	{
+		$result = $this->api->get_segments();
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_segments() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegmentsWithTotalCount()
+	{
+		$result = $this->api->get_segments(true);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_segments() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetSegmentsPagination()
+	{
+		$result = $this->api->get_segments(false, '', '', 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_segments(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_segments(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert segments and pagination exist.
+		$this->assertDataExists($result, 'segments');
+		$this->assertPaginationExists($result);
+
+		// Assert a single segment was returned.
+		$this->assertCount(1, $result['segments']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
 	}
 
 	/**
