@@ -1273,7 +1273,8 @@ class ConvertKit_API {
 				$error_message .= "\n" . $error;
 			}
 
-			return $error_message;
+			// Remove errant newlines and return.
+			return trim( $error_message );
 		}
 
 		// Some might provide an `error_description`.
