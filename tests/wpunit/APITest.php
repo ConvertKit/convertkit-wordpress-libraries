@@ -2796,8 +2796,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$this->expectException(InvalidArgumentException::class);
 		$this->api->create_webhook(
-			url: 'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
-			event: 'invalid.event'
+			'https://webhook.site/' . str_shuffle('wfervdrtgsdewrafvwefds'),
+			'invalid.event'
 		);
 	}
 
