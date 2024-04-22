@@ -2397,7 +2397,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertCount(1, $result['tags']);
 	}
 
-/**
+	/**
 	 * Test that get_email_templates() returns the expected data.
 	 *
 	 * @since   2.0.0
