@@ -512,16 +512,33 @@ class ConvertKit_Resource {
 	 */
 	private function get_all_resources( $resource_type, $per_page = 100 ) {
 
+		// Build array of arguments depending on the resource type.
+		switch ( $resource_type ) {
+			case 'forms':
+			case 'landing_pages':
+				$args = array(
+					'active',
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+
+			default:
+				$args = array(
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+		}
+
 		// Fetch resources.
 		$response = call_user_func_array(
 			array( $this->api, 'get_' . $resource_type ),
-			array(
-				'active',
-				false,
-				'',
-				'',
-				$per_page,
-			)
+			$args
 		);
 
 		// Bail if an error occured.
@@ -539,19 +556,36 @@ class ConvertKit_Resource {
 
 		// Further resources need to be fetched.
 		while ( $response['pagination']['has_next_page'] ) {
+			// Build array of arguments depending on the resource type.
+			switch ( $resource_type ) {
+				case 'forms':
+				case 'landing_pages':
+					$args = array(
+						'active',
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+
+				default:
+					$args = array(
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+			}
+
 			// Fetch next page of resources.
 			$response = call_user_func_array(
 				array(
 					$this->api,
 					'get_' . $resource_type,
 				),
-				array(
-					'active',
-					false,
-					$response['pagination']['end_cursor'],
-					'',
-					$per_page,
-				)
+				$args
 			);
 
 			// Bail if an error occured.
