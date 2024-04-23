@@ -254,12 +254,12 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Tests that the refresh() function returns resources in an array, and that they are
+	 * Tests that the refresh() function for Forms returns resources in an array, and that they are
 	 * in alphabetical ascending order by default.
 	 *
 	 * @since   2.0.0
 	 */
-	public function testRefresh()
+	public function testRefreshForms()
 	{
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_forms';
@@ -292,6 +292,171 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_FORM_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function for Landing Pages returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshLandingPages()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_landing_pages';
+		$this->resource->type          = 'landing_pages';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LANDING_PAGE_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('Character Encoding', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('Landing Page', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LANDING_PAGE_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function for Tags returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshTags()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_tags';
+		$this->resource->type          = 'tags';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_TAG_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('gravityforms-tag-1', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('wpforms', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_TAG_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function for Custom Fields returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshCustomFields()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_custom_fields';
+		$this->resource->type          = 'custom_fields';
+		$this->resource->order_by      = 'label';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_CUSTOM_FIELD_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('Billing Address', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('Test', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_CUSTOM_FIELD_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function for Sequences returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshSequences()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_sequences';
+		$this->resource->type          = 'sequences';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('Another Sequence', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('WordPress Sequence', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $resources);
 	}
 
 	/**
