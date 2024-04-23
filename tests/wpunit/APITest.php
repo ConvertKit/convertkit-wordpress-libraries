@@ -1768,14 +1768,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Tag subscriber by email.
 		$result = $this->api->tag_subscriber(
 			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
-			$subscriber->subscriber->id,
+			$subscriber['subscriber']['id'],
 		);
 		$this->assertArrayHasKey('subscriber', $result);
 		$this->assertArrayHasKey('id', $result['subscriber']);
 		$this->assertArrayHasKey('tagged_at', $result['subscriber']);
 
 		// Confirm the subscriber is tagged.
-		$result = $this->api->get_subscriber_tags($result->subscriber->id);
+		$result = $this->api->get_subscriber_tags($result['subscriber']['id']);
 
 		// Assert tags and pagination exist.
 		$this->assertDataExists($result, 'tags');
@@ -1879,7 +1879,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Remove tag from subscriber.
 		$result = $this->api->remove_tag_from_subscriber(
 			12345,
-			$subscriber->subscriber->id
+			$subscriber['subscriber']['id']
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
