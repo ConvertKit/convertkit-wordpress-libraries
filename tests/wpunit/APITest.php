@@ -743,7 +743,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			// Assert form is not a landing page i.e embed.
 			$this->assertEquals($form['type'], 'embed');
 
-			// Assert form is not archived.
+			// Assert form is archived.
 			$this->assertTrue($form['archived']);
 		}
 	}
