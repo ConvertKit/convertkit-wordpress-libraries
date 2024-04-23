@@ -56,30 +56,6 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Performs actions after each test.
-	 *
-	 * @since   2.0.0
-	 */
-	public function tearDown(): void
-	{
-		parent::tearDown();
-	}
-
-	/**
-	 * Test that get_broadcasts() returns a blank array when no data
-	 * exists on the ConvertKit account.
-	 *
-	 * @since   2.0.0
-	 *
-	 * @return void
-	 */
-	public function testGetBroadcasts()
-	{
-		$result = $this->api->get_broadcasts();
-		$this->assertNoData($result, 'custom_fields');
-	}
-
-	/**
 	 * Test that get_custom_fields() returns a blank array when no data
 	 * exists on the ConvertKit account.
 	 *
@@ -132,7 +108,10 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetEmailTemplates()
 	{
 		$result = $this->api->get_email_templates();
-		$this->assertNoData($result, 'email_templates');
+
+		// The default text only template always exists in ConvertKit
+		// and cannot be deleted, so check one template is returned.
+		$this->assertNoData($result, 'email_templates', 1);
 	}
 
 	/**
@@ -146,7 +125,10 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetForms()
 	{
 		$result = $this->api->get_forms();
-		$this->assertNoData($result, 'forms');
+
+		// The Creator Profile Form always exists in ConvertKit
+		// and cannot be deleted, so check one template is returned.
+		$this->assertNoData($result, 'forms', 1);
 	}
 
 	/**
@@ -242,6 +224,7 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetAllPostsNoData()
 	{
 		$result = $this->api->get_all_posts();
+		var_dump($result);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertCount(0, $result);
@@ -256,24 +239,37 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetProducts()
 	{
 		$result = $this->api->get_products();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
+		$this->assertNoData($result, 'products');
+	}
+
+	/**
+	 * Test that get_broadcasts() returns a blank array when no data
+	 * exists on the ConvertKit account.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetBroadcasts()
+	{
+		$result = $this->api->get_broadcasts();
+		$this->assertNoData($result, 'broadcasts');
 	}
 
 	/**
 	 * Assert that the given API result is not a WP_Error and contains
 	 * no results in the array.
-	 * 
-	 * @since 	2.0.0
-	 * 
-	 * @param 	array 	$result 	API Result.
-	 * @param 	string 	$key 		Results Key.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array  $result     API Result.
+	 * @param   string $key        Results Key.
+	 * @param   int    $count      Expected Count.
 	 */
-	private function assertNoData($result, $key)
+	private function assertNoData($result, $key, $count = 0)
 	{
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(0, $result[$key]);
+		$this->assertCount($count, $result[ $key ]);
 	}
 }
