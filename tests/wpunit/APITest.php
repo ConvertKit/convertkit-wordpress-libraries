@@ -1836,250 +1836,535 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that the `get_tags()` function returns expected data.
+	 * Test that get_tags() returns the expected data.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
 	public function testGetTags()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_tags();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', reset($result));
-		$this->assertArrayHasKey('name', reset($result));
+
+		// Assert sequences and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Check first tag in resultset has expected data.
+		$tag = $result['tags'][0];
+		$this->assertArrayHasKey('id', $tag);
+		$this->assertArrayHasKey('name', $tag);
+		$this->assertArrayHasKey('created_at', $tag);
 	}
 
 	/**
-	 * Test that the `get_tags()` function returns a blank array when no data
-	 * exists on the ConvertKit account.
+	 * Test that get_tags() returns the expected data
+	 * when the total count is included.
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testGetTagsNoData()
+	public function testGetTagsWithTotalCount()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->get_tags(true);
 
-		$result = $this->api_no_data->get_tags();
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(0, $result);
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
 	}
 
 	/**
-	 * Test that the `tag_subscribe()` function returns expected data
-	 * when valid parameters are provided.
+	 * Test that get_tags() returns the expected data
+	 * when pagination parameters and per_page limits are specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagsPagination()
+	{
+		$result = $this->api->get_tags(false, '', '', 1);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert a single tag was returned.
+		$this->assertCount(1, $result['tags']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_tags(false, $result['pagination']['end_cursor'], '', 1);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['tags']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_tags(false, '', $result['pagination']['start_cursor'], 1);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that create_tag() returns the expected data.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagSubscribe()
+	public function testCreateTag()
 	{
-		$this->markTestIncomplete();
+		$tagName = 'Tag Test ' . wp_rand();
 
-		$result = $this->api->tag_subscribe(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-			'First',
-			array(
-				'last_name'    => 'Last',
-				'phone_number' => '123-456-7890',
+		// Add mock handler for this API request, as the API doesn't provide
+		// a method to delete tags to cleanup the test.
+		$this->mockResponses(
+			201,
+			'Created',
+			wp_json_encode(
+				array(
+					'tag' => array(
+						'id'         => 12345,
+						'name'       => $tagName,
+						'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+					),
+				)
 			)
 		);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
+
+		// Send request.
+		$result = $this->api->create_tag($tagName);
+
+		// Assert response contains correct data.
+		$this->assertArrayHasKey('id', $result['tag']);
+		$this->assertArrayHasKey('name', $result['tag']);
+		$this->assertArrayHasKey('created_at', $result['tag']);
+		$this->assertEquals($result['tag']['name'], $tagName);
 	}
 
 	/**
-	 * Test that the `tag_subscribe()` function returns a WP_Error
-	 * when an invalid $tag_id parameter is provided.
+	 * Test that create_tag() returns a WP_Error when creating
+	 * a blank tag.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagSubscribeWithInvalidTagID()
+	public function testCreateTagBlank()
 	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->tag_subscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
+		$result = $this->api->create_tag('');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Tag not found: ', $result->get_error_message());
 	}
 
 	/**
-	 * Test that the `tag_subscribe()` function returns a WP_Error
-	 * when an empty $tag_id parameter is provided.
+	 * Test that create_tag() returns a WP_Error when creating
+	 * a tag that already exists.
 	 *
 	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagSubscribeWithEmptyTagID()
+	public function testCreateTagThatExists()
 	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->tag_subscribe('', $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'], 'First');
+		$result = $this->api->create_tag($_ENV['CONVERTKIT_API_TAG_NAME']);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_subscribe(): the tag_id parameter is empty.', $result->get_error_message());
 	}
 
 	/**
-	 * Test that the `tag_subscribe()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
+	 * Test that create_tags() returns the expected data.
 	 *
-	 * @since   1.0.0
-	 */
-	public function testTagSubscribeWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->tag_subscribe($_ENV['CONVERTKIT_API_TAG_ID'], '', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `tag_subscribe()` function returns a WP_Error
-	 * when the $email parameter only consists of spaces.
+	 * @since   2.0.0
 	 *
-	 * @since   1.0.0
+	 * @return void
 	 */
-	public function testTagSubscribeWithSpacesInEmail()
+	public function testCreateTags()
 	{
-		$this->markTestIncomplete();
+		$tagNames = [
+			'Tag Test ' . wp_rand(),
+			'Tag Test ' . wp_rand(),
+		];
 
-		$result = $this->api->tag_subscribe($_ENV['CONVERTKIT_API_TAG_ID'], '     ', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `tag_subscribe()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testTagSubscribeWithInvalidEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->tag_subscribe($_ENV['CONVERTKIT_API_TAG_ID'], 'invalid-email-address', 'First');
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Error updating subscriber: Email address is invalid', $result->get_error_message());
-	}
-
-
-	/**
-	 * Test that the `tag_unsubscribe()` function returns expected data
-	 * when valid parameters are provided.
-	 *
-	 * @since   1.4.0
-	 */
-	public function testTagUnsubscribe()
-	{
-		$this->markTestIncomplete();
-
-		// Subscribe the email address to the tag.
-		$result = $this->api->tag_subscribe(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		// Add mock handler for this API request, as the API doesn't provide
+		// a method to delete tags to cleanup the test.
+		$this->mockResponses(
+			201,
+			'Created',
+			wp_json_encode(
+				array(
+					'tags'     => array(
+						array(
+							'id'         => 12345,
+							'name'       => $tagNames[0],
+							'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+						),
+						array(
+							'id'         => 23456,
+							'name'       => $tagNames[1],
+							'created_at' => date('Y-m-d') . 'T' . date('H:i:s') . 'Z',
+						),
+					),
+					'failures' => array(),
+				)
+			)
 		);
 
-		// Unsubscribe the email address from the tag.
-		$result = $this->api->tag_unsubscribe(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		$result = $this->api->create_tags($tagNames);
+
+		// Assert no failures.
+		$this->assertCount(0, $result['failures']);
+	}
+
+	/**
+	 * Test that create_tags() returns failures when attempting
+	 * to create blank tags.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testCreateTagsBlank()
+	{
+		$result = $this->api->create_tags(
+			[
+				'',
+				'',
+			]
 		);
 
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertArrayHasKey('name', $result);
-		$this->assertArrayHasKey('created_at', $result);
-		$this->assertEquals($result['name'], $_ENV['CONVERTKIT_API_TAG_NAME']);
+		// Assert failures.
+		$this->assertCount(2, $result['failures']);
 	}
 
 	/**
-	 * Test that the `tag_unsubscribe()` function returns a WP_Error
-	 * when an invalid $tag_id parameter is provided.
+	 * Test that create_tags() returns a WP_Error when creating
+	 * tags that already exists.
 	 *
-	 * @since   1.4.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagUnsubscribeWithInvalidTagID()
+	public function testCreateTagsThatExist()
 	{
-		$this->markTestIncomplete();
+		$result = $this->api->create_tags(
+			[
+				$_ENV['CONVERTKIT_API_TAG_NAME'],
+				$_ENV['CONVERTKIT_API_TAG_NAME_2'],
+			]
+		);
 
-		$result = $this->api->tag_unsubscribe(12345, $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Not Found: The entity you were trying to find doesn\'t exist', $result->get_error_message());
+		// Assert failures.
+		$this->assertCount(2, $result['failures']);
 	}
 
 	/**
-	 * Test that the `tag_unsubscribe()` function returns a WP_Error
-	 * when an empty $tag_id parameter is provided.
+	 * Test that tag_subscriber_by_email() returns the expected data.
 	 *
-	 * @since   1.4.0
+	 * @since   1.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagUnsubscribeWithEmptyTagID()
+	public function testTagSubscriberByEmail()
 	{
-		$this->markTestIncomplete();
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->create_subscriber($emailAddress);
 
-		$result = $this->api->tag_unsubscribe('', $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_unsubscribe(): the tag_id parameter is empty.', $result->get_error_message());
+		// Tag subscriber by email.
+		$subscriber = $this->api->tag_subscriber_by_email(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$emailAddress,
+		);
+		$this->assertArrayHasKey('subscriber', $subscriber);
+		$this->assertArrayHasKey('id', $subscriber['subscriber']);
+		$this->assertArrayHasKey('tagged_at', $subscriber['subscriber']);
+
+		// Confirm the subscriber is tagged.
+		$result = $this->api->get_subscriber_tags($subscriber['subscriber']['id']);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert correct tag was assigned.
+		$this->assertEquals($result['tags'][0]['id'], $_ENV['CONVERTKIT_API_TAG_ID']);
 	}
 
 	/**
-	 * Test that the `tag_unsubscribe()` function returns a WP_Error
-	 * when an empty $email parameter is provided.
+	 * Test that tag_subscriber_by_email() returns a WP_Error when an invalid
+	 * tag is specified.
 	 *
-	 * @since   1.4.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagUnsubscribeWithEmptyEmail()
+	public function testTagSubscriberByEmailWithInvalidTagID()
 	{
-		$this->markTestIncomplete();
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->create_subscriber($emailAddress);
 
-		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], '');
+		$result = $this->api->tag_subscriber_by_email(
+			12345,
+			$emailAddress
+		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_unsubscribe(): the email parameter is empty.', $result->get_error_message());
 	}
 
 	/**
-	 * Test that the `tag_unsubscribe()` function returns a WP_Error
-	 * when the $email parameter only consists of spaces.
+	 * Test that tag_subscriber_by_email() returns a WP_Error when an invalid
+	 * email address is specified.
 	 *
-	 * @since   1.4.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagUnsubscribeWithSpacesInEmail()
+	public function testTagSubscriberByEmailWithInvalidEmailAddress()
 	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], '     ');
+		$result = $this->api->tag_subscriber_by_email(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			'not-an-email-address'
+		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_unsubscribe(): the email parameter is empty.', $result->get_error_message());
 	}
 
 	/**
-	 * Test that the `tag_unsubscribe()` function returns a WP_Error
-	 * when an invalid $email parameter is provided.
+	 * Test that tag_subscriber() returns the expected data.
 	 *
-	 * @since   1.4.0
+	 * @since   2.0.0
+	 *
+	 * @return void
 	 */
-	public function testTagUnsubscribeWithInvalidEmail()
+	public function testTagSubscriber()
 	{
-		$this->markTestIncomplete();
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$subscriber   = $this->api->create_subscriber($emailAddress);
 
-		$result = $this->api->tag_unsubscribe($_ENV['CONVERTKIT_API_TAG_ID'], 'invalid-email-address');
+		// Tag subscriber by email.
+		$result = $this->api->tag_subscriber(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$subscriber['subscriber']['id'],
+		);
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('id', $result['subscriber']);
+		$this->assertArrayHasKey('tagged_at', $result['subscriber']);
+
+		// Confirm the subscriber is tagged.
+		$result = $this->api->get_subscriber_tags($result['subscriber']['id']);
+
+		// Assert tags and pagination exist.
+		$this->assertDataExists($result, 'tags');
+		$this->assertPaginationExists($result);
+
+		// Assert correct tag was assigned.
+		$this->assertEquals($result['tags'][0]['id'], $_ENV['CONVERTKIT_API_TAG_ID']);
+	}
+
+	/**
+	 * Test that tag_subscriber() returns a WP_Error when an invalid
+	 * sequence ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testTagSubscriberWithInvalidTagID()
+	{
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$subscriber   = $this->api->create_subscriber($emailAddress);
+
+		$result = $this->api->tag_subscriber(
+			12345,
+			$subscriber['subscriber']['id']
+		);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_unsubscribe(): the email parameter is not a valid email address.', $result->get_error_message());
+	}
+
+	/**
+	 * Test that tag_subscriber() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testTagSubscriberWithInvalidSubscriberID()
+	{
+		$result = $this->api->tag_subscriber(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			12345
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() works.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriber()
+	{
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->create_subscriber($emailAddress);
+
+		// Tag subscriber by email.
+		$subscriber = $this->api->tag_subscriber_by_email(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$emailAddress,
+		);
+
+		// Remove tag from subscriber.
+		$result = $this->api->remove_tag_from_subscriber(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$subscriber['subscriber']['id']
+		);
+
+		// Confirm that the subscriber no longer has the tag.
+		$result = $this->api->get_subscriber_tags($subscriber['subscriber']['id']);
+		$this->assertIsArray($result['tags']);
+		$this->assertCount(0, $result['tags']);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() returns a WP_Error when an invalid
+	 * tag ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriberWithInvalidTagID()
+	{
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->create_subscriber($emailAddress);
+
+		// Tag subscriber by email.
+		$subscriber = $this->api->tag_subscriber_by_email(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$emailAddress,
+		);
+
+		// Remove tag from subscriber.
+		$result = $this->api->remove_tag_from_subscriber(
+			12345,
+			$subscriber['subscriber']['id']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() returns a WP_Error when an invalid
+	 * subscriber ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriberWithInvalidSubscriberID()
+	{
+		$result = $this->api->remove_tag_from_subscriber(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			12345
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() works.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriberByEmail()
+	{
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$this->api->create_subscriber($emailAddress);
+
+		// Tag subscriber by email.
+		$subscriber = $this->api->tag_subscriber_by_email(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$emailAddress,
+		);
+
+		// Remove tag from subscriber.
+		$result = $this->api->remove_tag_from_subscriber(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'],
+			$subscriber['subscriber']['id']
+		);
+
+		// Confirm that the subscriber no longer has the tag.
+		$result = $this->api->get_subscriber_tags($subscriber['subscriber']['id']);
+		$this->assertIsArray($result['tags']);
+		$this->assertCount(0, $result['tags']);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() returns a WP_Error when an invalid
+	 * tag ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriberByEmailWithInvalidTagID()
+	{
+		$result = $this->api->remove_tag_from_subscriber_by_email(
+			12345,
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that remove_tag_from_subscriber() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testRemoveTagFromSubscriberByEmailWithInvalidEmailAddress()
+	{
+		$result = $this->api->remove_tag_from_subscriber_by_email(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			'not-an-email-address'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
 	}
 
 	/**
@@ -3865,7 +4150,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that create_custom_field() throws a ClientException when a blank
+	 * Test that create_custom_field() returns a WP_Error when a blank
 	 * label is specified.
 	 *
 	 * @since   2.0.0
@@ -3947,7 +4232,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that update_custom_field() throws a ClientException when an
+	 * Test that update_custom_field() returns a WP_Error when an
 	 * invalid custom field ID is specified.
 	 *
 	 * @since   2.0.0
@@ -3992,7 +4277,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that delete_custom_field() throws a ClientException when an
+	 * Test that delete_custom_field() returns a WP_Error when an
 	 * invalid custom field ID is specified.
 	 *
 	 * @since   2.0.0
