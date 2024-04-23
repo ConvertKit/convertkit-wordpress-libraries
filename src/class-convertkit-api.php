@@ -1196,20 +1196,8 @@ class ConvertKit_API {
 
 		// Return the API error message as a WP_Error if the HTTP response code is a 4xx code.
 		if ( $http_response_code >= 400 ) {
-			// Define the error description.
-			$error = '';
-			if ( array_key_exists( 'errors', $response ) ) {
-				$error = implode( "\n", $response['errors'] );
-			} elseif ( array_key_exists( 'error_description', $response ) ) {
-				$error = $response['error_description'];
-			} elseif ( array_key_exists( 'error', $response ) ) {
-				// The 'error' key is present when exchanging an API Key and Secret for an Access Token
-				// and something went wrong e.g. invalid API credentials.
-				$error = $response['error'];
-				if ( array_key_exists( 'message', $response ) ) {
-					$error .= ': ' . $response['message'];
-				}
-			}
+			// Define the error message.
+			$error = $this->get_error_message_string( $response );
 
 			$this->log( 'API: Error: ' . $error );
 
@@ -1256,6 +1244,59 @@ class ConvertKit_API {
 		}
 
 		return $response;
+
+	}
+
+	/**
+	 * Inspects the given API response for errors, returning them as a string.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array $response   API Response.
+	 * @return  string              Error Message(s).
+	 */
+	private function get_error_message_string( $response ) {
+
+		// Most API responses contain the `errors` key.
+		if ( array_key_exists( 'errors', $response ) ) {
+			$error_message = '';
+
+			// For sequences, each item in the `errors` key is an array.
+			// For other API endpoints, each item in the `errors` key is a string.
+			foreach ( $response['errors'] as $error ) {
+				if ( is_array( $error ) ) {
+					$error_message .= implode( "\n", $error );
+					continue;
+				}
+
+				// Error is a string.
+				$error_message .= "\n" . $error;
+			}
+
+			// Remove errant newlines and return.
+			return trim( $error_message );
+		}
+
+		// Some might provide an `error_description`.
+		if ( array_key_exists( 'error_description', $response ) ) {
+			return $response['error_description'];
+		}
+
+		// The `error` key is present when exchanging an API Key and Secret for an Access Token
+		// and something went wrong e.g. invalid API credentials.
+		if ( array_key_exists( 'error', $response ) ) {
+			$error_message = $response['error'];
+
+			// There might be additional information we can return.
+			if ( array_key_exists( 'message', $response ) ) {
+				$error_message .= ': ' . $response['message'];
+			}
+
+			return $error_message;
+		}
+
+		// If here, no error was detected.
+		return '';
 
 	}
 
