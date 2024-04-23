@@ -2368,6 +2368,293 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptions()
+	{
+		$result = $this->api->get_tag_subscriptions( (int) $_ENV['CONVERTKIT_API_TAG_ID']);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithTotalCount()
+	{
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Tagged after.
+			null, // Tagged before.
+			true // Include total count.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and the subscription status
+	 * is bounced.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithBouncedSubscriberState()
+	{
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'bounced' // Subscriber state.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertEquals($result['subscribers'][0]['state'], 'bounced');
+	}
+
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and the added_after parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithTaggedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			$date // Tagged after.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertGreaterThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['tagged_at']))
+		);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and the tagged_before parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithTaggedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Tagged after.
+			$date // Tagged before.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertLessThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['tagged_at']))
+		);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and the created_after parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithCreatedAfterParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			$date // Created after.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertGreaterThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and the created_before parameter
+	 * is used.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithCreatedBeforeParam()
+	{
+		$date   = new \DateTime('2024-01-01');
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			$date // Created before.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Check the correct subscribers were returned.
+		$this->assertLessThanOrEqual(
+			$date->format('Y-m-d'),
+			date('Y-m-d', strtotime($result['subscribers'][0]['created_at']))
+		);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns the expected data
+	 * when a valid Tag ID is specified and pagination parameters
+	 * and per_page limits are specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsPagination()
+	{
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Tagged after.
+			null, // Tagged before.
+			false, // Include total count.
+			'', // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertFalse($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch next page.
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Tagged after.
+			null, // Tagged before.
+			false, // Include total count.
+			$result['pagination']['end_cursor'], // After cursor.
+			'', // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+
+		// Assert a single subscriber was returned.
+		$this->assertCount(1, $result['subscribers']);
+
+		// Assert has_previous_page and has_next_page are correct.
+		$this->assertTrue($result['pagination']['has_previous_page']);
+		$this->assertTrue($result['pagination']['has_next_page']);
+
+		// Use pagination to fetch previous page.
+		$result = $this->api->get_tag_subscriptions(
+			(int) $_ENV['CONVERTKIT_API_TAG_ID'], // Tag ID.
+			'active', // Subscriber state.
+			null, // Created after.
+			null, // Created before.
+			null, // Tagged after.
+			null, // Tagged before.
+			false, // Include total count.
+			'', // After cursor.
+			$result['pagination']['start_cursor'], // Before cursor.
+			1 // Per page.
+		);
+
+		// Assert subscribers and pagination exist.
+		$this->assertDataExists($result, 'subscribers');
+		$this->assertPaginationExists($result);
+	}
+
+	/**
+	 * Test that get_tag_subscriptions() returns a WP_Error when
+	 * an invalid Tag ID is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetTagSubscriptionsWithInvalidTagID()
+	{
+		$result = $this->api->get_tag_subscriptions(12345);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
 	 * Test that get_subscribers() returns the expected data.
 	 *
 	 * @since   2.0.0
