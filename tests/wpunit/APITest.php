@@ -1535,7 +1535,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testCreateTag()
 	{
-		$tagName = 'Tag Test ' . rand_mt_rand();
+		$tagName = 'Tag Test ' . wp_rand();
 
 		// Add mock handler for this API request, as the API doesn't provide
 		// a method to delete tags to cleanup the test.
@@ -1560,7 +1560,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey('id', $result['tag']);
 		$this->assertArrayHasKey('name', $result['tag']);
 		$this->assertArrayHasKey('created_at', $result['tag']);
-		$this->assertEquals($tag['name'], $tagName);
+		$this->assertEquals($result['tag']['name'], $tagName);
 	}
 
 	/**
@@ -1603,8 +1603,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testCreateTags()
 	{
 		$tagNames = [
-			'Tag Test ' . rand_mt_rand(),
-			'Tag Test ' . rand_mt_rand(),
+			'Tag Test ' . wp_rand(),
+			'Tag Test ' . wp_rand(),
 		];
 
 		// Add mock handler for this API request, as the API doesn't provide
