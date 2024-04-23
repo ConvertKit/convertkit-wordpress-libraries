@@ -224,7 +224,6 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetAllPostsNoData()
 	{
 		$result = $this->api->get_all_posts();
-		var_dump($result);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertCount(0, $result);
