@@ -1980,7 +1980,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetTagSubscriptions()
 	{
-		$result = $this->api->get_tag_subscriptions((int) $_ENV['CONVERTKIT_API_TAG_ID']);
+		$result = $this->api->get_tag_subscriptions( (int) $_ENV['CONVERTKIT_API_TAG_ID']);
 
 		// Assert subscribers and pagination exist.
 		$this->assertDataExists($result, 'subscribers');
