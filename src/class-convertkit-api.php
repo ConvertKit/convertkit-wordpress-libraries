@@ -462,6 +462,55 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Form.
+	 * 
+	 * @since  1.0.0
+	 * 
+	 * @param 	int 	$form_id 	Form ID.
+	 * @param 	string  $email      Email Address.
+	 * @param   string  $first_name First Name.
+	 * @return  WP_Error|array
+	 */
+	public function form_subscribe( $form_id, $email, $first_name = '' ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to form.
+		return $this->add_subscriber_to_form( $form_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Tag.
+	 * 
+	 * @since  1.0.0
+	 * 
+	 * @param 	int 	$tag_id 	Tag ID.
+	 * @param 	string  $email      Email Address.
+	 * @return  WP_Error|array
+	 */
+	public function tag_subscribe( $tag_id, $email ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to form.
+		return $this->tag_subscriber( $tag_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
 	 * Get the ConvertKit subscriber ID associated with email address if it exists.
 	 * Return false if subscriber not found.
 	 *
