@@ -508,7 +508,7 @@ class ConvertKit_API {
 			return $subscriber;
 		}
 
-		// Add subscriber to form.
+		// Add subscriber to tag.
 		return $this->tag_subscriber( $tag_id, $subscriber['subscriber']['id'] );
 
 	}
