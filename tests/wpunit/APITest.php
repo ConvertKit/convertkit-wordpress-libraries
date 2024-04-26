@@ -5391,8 +5391,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testRecommendationsScriptWhenCreatorNetworkDisabled()
 	{
-		$api    = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA']);
-		$result = $api->recommendations_script();
+		$result = $this->api_no_data->recommendations_script();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertArrayHasKey('enabled', $result);
@@ -5409,7 +5408,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyFormHTML()
 	{
-		$result = $this->api->get_form_html($_ENV['CONVERTKIT_API_LEGACY_FORM_ID']);
+		$result = $this->api->get_form_html($_ENV['CONVERTKIT_API_LEGACY_FORM_ID'], $_ENV['CONVERTKIT_API_KEY']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://api.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '/subscribe" data-remote="true">', $result);
 
@@ -5428,7 +5427,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyFormHTMLWithInvalidFormID()
 	{
-		$result = $this->api->get_form_html('11111');
+		$result = $this->api->get_form_html('11111', $_ENV['CONVERTKIT_API_KEY']);
 		$this->assertInstanceOf(WP_Error::class, $result);
 	}
 
