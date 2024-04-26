@@ -690,7 +690,35 @@ class ConvertKit_API {
 	 */
 	public function get_products() {
 
-		return $this->get( 'products' );
+		$this->log( 'API: get_products()' );
+
+		$products = array();
+
+		$response = $this->get( 'products' );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_products(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response isn't an array as we expect, log that no products exist and return a blank array.
+		if ( ! is_array( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		}
+
+		// If no products exist, log that no products exist and return a blank array.
+		if ( ! count( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return $products;
+		}
+
+		foreach ( $response['products'] as $product ) {
+			$products[ $product['id'] ] = $product;
+		}
+
+		return $products;
 
 	}
 
