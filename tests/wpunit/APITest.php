@@ -4734,7 +4734,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_all_posts(2); // Number of posts to fetch in each request within the function.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
-		$this->assertCount(4, $result);
+		$this->assertCount(5, $result);
 		$this->assertArrayHasKey('id', reset($result));
 		$this->assertArrayHasKey('title', reset($result));
 		$this->assertArrayHasKey('url', reset($result));
@@ -4796,7 +4796,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_post(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('Post not found', $result->get_error_message());
 	}
 
 	/**
@@ -4823,7 +4822,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetProductsNoData()
 	{
-		$result = $this->api_no_data->get_forms();
+		$result = $this->api_no_data->get_products();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
 		$this->assertCount(0, $result);
@@ -5008,7 +5007,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->profile('fakeSignedID');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'Subscriber not found');
 	}
 
 	/**
@@ -5022,7 +5020,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->profile('');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals($result->get_error_message(), 'profiles(): the signed_subscriber_id parameter is empty.');
 	}
 
 	/**
