@@ -4580,7 +4580,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 	/**
 	 * Test that the `form_subscribe()` function returns the expected data.
-	 * 
+	 *
 	 * @since   2.0.0
 	 *
 	 * @return void
@@ -4589,7 +4589,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Make request.
 		$emailAddress = $this->generateEmailAddress();
-		$result = $this->api->form_subscribe(
+		$result       = $this->api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
 			$emailAddress,
 			'First',
@@ -4606,9 +4606,174 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey('subscriber', $result);
 		$this->assertArrayHasKey('email_address', $result['subscriber']);
 		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
+	}
 
-		// Assert subscriber assigned to form.
-		
+	/**
+	 * Test that the `form_subscribe()` function returns a WP_Error
+	 * when an invalid Form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testFormSubscribeWithInvalidFormID()
+	{
+		$result = $this->api->form_subscribe(
+			12345,
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `form_subscribe()` function returns a WP_Error
+	 * when an invalid email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testFormSubscribeWithInvalidEmailAddress()
+	{
+		$result = $this->api->form_subscribe(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			'not-a-valid-email'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `tag_subscribe()` function returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testTagSubscribe()
+	{
+		// Make request.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->tag_subscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			$emailAddress,
+			'First',
+			[
+				'last_name' => 'Last',
+			]
+		);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Assert subscriber created.
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('email_address', $result['subscriber']);
+		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
+	}
+
+	/**
+	 * Test that the `tag_subscribe()` function returns a WP_Error
+	 * when an invalid Tag ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testTagSubscribeWithInvalidTagID()
+	{
+		$result = $this->api->tag_subscribe(
+			12345,
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `form_subscribe()` function returns a WP_Error
+	 * when an invalid email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testTagSubscribeWithInvalidEmailAddress()
+	{
+		$result = $this->api->tag_subscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			'not-a-valid-email'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `sequence_subscribe()` function returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testSequenceSubscribe()
+	{
+		// Make request.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->sequence_subscribe(
+			$_ENV['CONVERTKIT_API_SEQUENCE_ID'],
+			$emailAddress,
+			'First',
+			[
+				'last_name' => 'Last',
+			]
+		);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Assert subscriber created.
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('email_address', $result['subscriber']);
+		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
+	}
+
+	/**
+	 * Test that the `sequence_subscribe()` function returns a WP_Error
+	 * when an invalid Tag ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testSequenceSubscribeWithInvalidTagID()
+	{
+		$result = $this->api->sequence_subscribe(
+			12345,
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `sequence_subscribe()` function returns a WP_Error
+	 * when an invalid email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testSequenceSubscribeWithInvalidEmailAddress()
+	{
+		$result = $this->api->sequence_subscribe(
+			$_ENV['CONVERTKIT_API_TAG_ID'],
+			'not-a-valid-email'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
 	}
 
 	/**
