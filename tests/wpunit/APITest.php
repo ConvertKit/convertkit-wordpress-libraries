@@ -4579,6 +4579,39 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that the `form_subscribe()` function returns the expected data.
+	 * 
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testFormSubscribe()
+	{
+		// Make request.
+		$emailAddress = $this->generateEmailAddress();
+		$result = $this->api->form_subscribe(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			$emailAddress,
+			'First',
+			[
+				'last_name' => 'Last',
+			]
+		);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Assert subscriber created.
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('email_address', $result['subscriber']);
+		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
+
+		// Assert subscriber assigned to form.
+		
+	}
+
+	/**
 	 * Test that the `get_posts()` function returns expected data.
 	 *
 	 * @since   1.0.0
