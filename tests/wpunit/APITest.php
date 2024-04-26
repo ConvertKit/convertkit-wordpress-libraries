@@ -4585,8 +4585,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPosts()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_posts();
 
 		// Test array was returned.
@@ -4615,8 +4613,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostsNoData()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api_no_data->get_posts();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4631,8 +4627,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostsWithValidParameters()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_posts(1, 2);
 
 		// Test array was returned.
@@ -4664,8 +4658,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostsWithInvalidPageParameter()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_posts(0);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -4680,8 +4672,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostsWithNegativePerPageParameter()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_posts(1, 0);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -4696,8 +4686,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostsWithOutOfBoundsPerPageParameter()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_posts(1, 100);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -4711,8 +4699,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAllPosts()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_all_posts();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4731,8 +4717,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAllPostsNoData()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api_no_data->get_all_posts();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4747,8 +4731,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAllPostsWithValidParameters()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_all_posts(2); // Number of posts to fetch in each request within the function.
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4768,8 +4750,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAllPostsWithInvalidPostsPerRequestParameter()
 	{
-		$this->markTestIncomplete();
-
 		// Test with a number less than 1.
 		$result = $this->api->get_all_posts(0);
 		$this->assertInstanceOf(WP_Error::class, $result);
@@ -4790,8 +4770,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostByID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_post($_ENV['CONVERTKIT_API_POST_ID']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4815,8 +4793,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetPostByInvalidID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_post(12345);
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -4830,8 +4806,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetProducts()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_products();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4849,8 +4823,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetProductsNoData()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api_no_data->get_forms();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -4865,8 +4837,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationSendCodeWithSubscribedEmail()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_send_code(
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
 			$_ENV['TEST_SITE_WP_URL']
@@ -4882,8 +4852,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_send_code(
 			'email-not-subscribed@convertkit.com',
 			$_ENV['TEST_SITE_WP_URL']
@@ -4901,8 +4869,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationSendCodeWithNoEmail()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_send_code(
 			'',
 			$_ENV['TEST_SITE_WP_URL']
@@ -4920,8 +4886,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationSendCodeWithInvalidEmail()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_send_code(
 			'not-an-email-address',
 			$_ENV['TEST_SITE_WP_URL']
@@ -4939,8 +4903,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationSendCodeWithInvalidRedirectURL()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_send_code(
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
 			'not-a-valid-url'
@@ -4958,8 +4920,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationVerifyWithValidTokenAndInvalidSubscriberCode()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_verify(
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_TOKEN'],
 			'subscriberCode'
@@ -4977,8 +4937,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationVerifyWithNoToken()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_verify(
 			'',
 			'subscriberCode'
@@ -4996,8 +4954,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationVerifyWithNoSubscriberCode()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_verify(
 			'token',
 			''
@@ -5015,8 +4971,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testSubscriberAuthenticationVerifyWithInvalidTokenAndSubscriberCode()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->subscriber_authentication_verify(
 			'invalidToken',
 			'invalidSubscriberCode'
@@ -5035,8 +4989,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testProfilesWithValidSignedSubscriberID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->profile( $_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID'] );
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -5053,8 +5005,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testProfilesWithInvalidSignedSubscriberID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->profile('fakeSignedID');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -5069,8 +5019,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testProfilesWithNoSignedSubscriberID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->profile('');
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -5429,8 +5377,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testRecommendationsScript()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->recommendations_script();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertIsArray($result);
@@ -5448,8 +5394,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testRecommendationsScriptWhenCreatorNetworkDisabled()
 	{
-		$this->markTestIncomplete();
-
 		$api    = new ConvertKit_API($_ENV['CONVERTKIT_API_KEY_NO_DATA'], $_ENV['CONVERTKIT_API_SECRET_NO_DATA']);
 		$result = $api->recommendations_script();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
@@ -5468,8 +5412,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyFormHTML()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_form_html($_ENV['CONVERTKIT_API_LEGACY_FORM_ID']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://api.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '/subscribe" data-remote="true">', $result);
@@ -5489,8 +5431,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyFormHTMLWithInvalidFormID()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_form_html('11111');
 		$this->assertInstanceOf(WP_Error::class, $result);
 	}
@@ -5503,8 +5443,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLandingPageHTML()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
@@ -5518,8 +5456,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLandingPageWithCharacterEncodingHTML()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '" data-uid="cc5eb21744" class="formkit-form"', $result);
@@ -5536,8 +5472,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyLandingPageHTML()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
@@ -5551,134 +5485,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLandingPageHTMLWithInvalidLandingPageURL()
 	{
-		$this->markTestIncomplete();
-
 		$result = $this->api->get_landing_page_html('http://fake-url');
 		$this->assertInstanceOf(WP_Error::class, $result);
-	}
-
-	/**
-	 * Test that the `get_subscriber()` function is backward compatible.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatGetSubscriber()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->get_subscriber($_ENV['CONVERTKIT_API_SUBSCRIBER_ID']);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-	}
-
-	/**
-	 * Test that the `add_tag()` function is backward compatible.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatAddTag()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->add_tag(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			[
-				'email' => $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-			]
-		);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscription', $result);
-	}
-
-	/**
-	 * Test that the `add_tag()` function is backward compatible and returns a WP_Error
-	 * when an empty $tag_id parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatAddTagWithEmptyTagID()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->add_tag(
-			'',
-			[
-				'email' => $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
-			]
-		);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_subscribe(): the tag_id parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `add_tag()` function is backward compatible and returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatAddTagWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->add_tag(
-			$_ENV['CONVERTKIT_API_TAG_ID'],
-			[
-				'email' => '',
-			]
-		);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('tag_subscribe(): the email parameter is empty.', $result->get_error_message());
-	}
-
-	/**
-	 * Test that the `unsubscribe()` function is backward compatible.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatFormUnsubscribe()
-	{
-		$this->markTestIncomplete();
-
-		// We don't use $_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'] for this test, as that email is relied upon as being a confirmed subscriber
-		// for other tests.
-
-		// Subscribe an email address.
-		$emailAddress = 'wordpress-' . date( 'Y-m-d-H-i-s' ) . '-php-' . PHP_VERSION_ID . '@convertkit.com';
-		$this->api->form_subscribe($_ENV['CONVERTKIT_API_FORM_ID'], $emailAddress);
-
-		// Unsubscribe the email address.
-		$result = $this->api->form_unsubscribe(
-			[
-				'email' => $emailAddress,
-			]
-		);
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertArrayHasKey('subscriber', $result);
-		$this->assertArrayHasKey('email_address', $result['subscriber']);
-		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
-	}
-
-	/**
-	 * Test that the `unsubscribe()` function is backward compatible and returns a WP_Error
-	 * when an empty $email parameter is provided.
-	 *
-	 * @since   1.0.0
-	 */
-	public function testBackwardCompatFormUnsubscribeWithEmptyEmail()
-	{
-		$this->markTestIncomplete();
-
-		$result = $this->api->form_unsubscribe(
-			[
-				'email' => '',
-			]
-		);
-		$this->assertInstanceOf(WP_Error::class, $result);
-		$this->assertEquals($result->get_error_code(), $this->errorCode);
-		$this->assertEquals('unsubscribe(): the email parameter is empty.', $result->get_error_message());
 	}
 
 	/**
