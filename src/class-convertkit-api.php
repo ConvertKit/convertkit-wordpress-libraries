@@ -498,7 +498,7 @@ class ConvertKit_API {
 	public function tag_subscribe( $tag_id, $email ) {
 
 		// Create subscriber.
-		$subscriber = $this->create_subscriber( $email, $first_name );
+		$subscriber = $this->create_subscriber( $email );
 
 		// Bail if an error occured.
 		if ( is_wp_error( $subscriber ) ) {
