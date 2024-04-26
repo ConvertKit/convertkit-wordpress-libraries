@@ -24,13 +24,6 @@ class ConvertKit_API {
 	public const VERSION = '2.0.0';
 
 	/**
-	 * ConvertKit API Key
-	 *
-	 * @var bool|string
-	 */
-	protected $api_key = false;
-
-	/**
 	 * Redirect URI.
 	 *
 	 * @var     bool|string
@@ -885,21 +878,38 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Returns the recommendations script URL for this account from the API,
+	 * used to display the Creator Network modal when a form is submitted.
+	 *
+	 * @since   1.3.7
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function recommendations_script() {
+
+		$this->log( 'API: recommendations_script()' );
+
+		return $this->get( 'recommendations_script' );
+
+	}
+
+	/**
 	 * Get HTML from ConvertKit for the given Legacy Form ID.
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
-	 * @param   int $id     Form ID.
-	 * @return  WP_Error|string     HTML
+	 * @param   int    $id         Form ID.
+	 * @param   string $api_key    API Key.
+	 * @return  WP_Error|string             HTML
 	 */
-	public function get_form_html( $id ) {
+	public function get_form_html( $id, $api_key = '' ) {
 
 		$this->log( 'API: get_form_html(): [ id: ' . $id . ']' );
 
 		// Define Legacy Form URL.
 		$url = add_query_arg(
 			array(
-				'k' => $this->api_key,
+				'k' => $api_key,
 				'v' => 2,
 			),
 			'https://api.convertkit.com/forms/' . $id . '/embed'
