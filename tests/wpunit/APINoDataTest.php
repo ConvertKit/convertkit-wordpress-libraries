@@ -253,8 +253,8 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_broadcasts();
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertIsArray($result);
-		$this->assertCount(1, $result);
+		$this->assertIsArray($result['broadcasts']);
+		$this->assertCount(1, $result['broadcasts']);
 	}
 
 	/**
