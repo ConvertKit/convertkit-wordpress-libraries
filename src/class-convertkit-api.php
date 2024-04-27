@@ -1063,10 +1063,10 @@ class ConvertKit_API {
 
 		// Log request.
         $this->log( sprintf(
-        	'API: %s %s [%s]',
+        	'API: %s %s: %s',
         	$method,
         	$endpoint,
-        	wp_json_encode( $params )
+        	wp_json_encode( $this->mask_params( $params ) )
         ) );
 
 		// Send request.
@@ -1442,6 +1442,41 @@ class ConvertKit_API {
 
 		// Return error message.
 		return $this->error_messages[ $key ];
+
+	}
+
+	/**
+	 * Helper method to mask values for specific keys in an array.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $str    String to mask.
+	 * @return  string         Masked string
+	 */
+	private function mask_params( $params ) {
+
+		$keys = array(
+			'first_name',
+			'token',
+			'subscriber_code',
+			'signed_subscriber_id',
+		);
+
+		foreach ( $params as $key => $value ) {
+			// Skip if not a string
+			if ( ! is_string( $value ) ) {
+				continue;
+			}
+
+			// Skip if the key isn't one we need to mask the value of.
+			if ( ! in_array( $key, $keys ) ) {
+				continue;
+			}
+
+			$params[ $key ] = $this->mask_string( $value );
+		}
+
+		return $params;
 
 	}
 
