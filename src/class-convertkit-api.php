@@ -528,8 +528,6 @@ class ConvertKit_API {
 	 */
 	public function get_all_posts( $posts_per_request = 50 ) {
 
-		$this->log( 'API: get_all_posts()' );
-
 		// Sanitize some parameters.
 		$posts_per_request = absint( $posts_per_request );
 
@@ -592,8 +590,6 @@ class ConvertKit_API {
 	 */
 	public function get_posts( $page = 1, $per_page = 10 ) {
 
-		$this->log( 'API: get_posts()' );
-
 		// Sanitize some parameters.
 		$page     = absint( $page );
 		$per_page = absint( $per_page );
@@ -652,8 +648,6 @@ class ConvertKit_API {
 	 */
 	public function get_post( $post_id ) {
 
-		$this->log( 'API: get_post(): [ post_id: ' . $post_id . ']' );
-
 		// Send request.
 		$response = $this->get(
 			sprintf( 'posts/%s', $post_id ),
@@ -708,8 +702,6 @@ class ConvertKit_API {
 	 * @return  WP_Error|string
 	 */
 	public function subscriber_authentication_send_code( $email, $redirect_url ) {
-
-		$this->log( 'API: subscriber_authentication_send_code(): [ email: ' . $email . ', redirect_url: ' . $redirect_url . ']' );
 
 		// Sanitize some parameters.
 		$email        = trim( $email );
@@ -766,7 +758,6 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
-		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $this->mask_string( $token ) . ', subscriber_code: ' . $this->mask_string( $subscriber_code ) . ']' );
 
 		// Sanitize some parameters.
 		$token           = trim( $token );
@@ -817,8 +808,6 @@ class ConvertKit_API {
 	 * @return  WP_Error|array
 	 */
 	public function profile( $signed_subscriber_id ) {
-
-		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $this->mask_string( $signed_subscriber_id ) . ' ]' );
 
 		// Trim some parameters.
 		$signed_subscriber_id = trim( $signed_subscriber_id );
@@ -1071,6 +1060,14 @@ class ConvertKit_API {
 	 * @return  WP_Error|array|null
 	 */
 	public function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
+
+		// Log request.
+        $this->log( sprintf(
+        	'API: %s %s [%s]',
+        	$method,
+        	$endpoint,
+        	wp_json_encode( $params )
+        ) );
 
 		// Send request.
 		switch ( strtolower( $method ) ) {
