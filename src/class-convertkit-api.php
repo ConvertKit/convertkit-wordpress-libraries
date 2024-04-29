@@ -455,6 +455,84 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Form.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $form_id        Form ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function form_subscribe( $form_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to form.
+		return $this->add_subscriber_to_form( $form_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Tag.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $tag_id         Tag ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function tag_subscribe( $tag_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to tag.
+		return $this->tag_subscriber( $tag_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Sequence.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $sequence_id    Sequence ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function sequence_subscribe( $sequence_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to sequence.
+		return $this->add_subscriber_to_sequence( $sequence_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
 	 * Get the ConvertKit subscriber ID associated with email address if it exists.
 	 * Return false if subscriber not found.
 	 *
