@@ -857,7 +857,6 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
-
 		// Sanitize some parameters.
 		$token           = trim( $token );
 		$subscriber_code = trim( $subscriber_code );
@@ -1178,12 +1177,19 @@ class ConvertKit_API {
 	public function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
 		// Log request.
-        $this->log( sprintf(
-        	'API: %s %s: %s',
-        	$method,
-        	$endpoint,
-        	wp_json_encode( $this->mask_params( $params ) )
-        ) );
+		$log = sprintf(
+			'API: %s %s',
+			$method,
+			$this->mask_endpoint( $endpoint )
+		);
+		if ( count( $params ) ) {
+			$log = sprintf(
+				'%s: %s',
+				$log,
+				wp_json_encode( $this->mask_params( $params ) )
+			);
+		}
+		$this->log( $log );
 
 		// Send request.
 		switch ( strtolower( $method ) ) {
@@ -1299,6 +1305,8 @@ class ConvertKit_API {
 					$error = $this->get_error_message( 'request_http_not_supported' );
 					break;
 			}
+
+			$this->log( 'API: Error: ' . $error );
 
 			return new WP_Error(
 				'convertkit_api_error',
@@ -1562,30 +1570,62 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Helper method to mask the given endpoint URL where it contains
+	 * sensitive data, such as a signed subscriber ID.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $endpoint    String to mask.
+	 * @return  string              Masked string
+	 */
+	private function mask_endpoint( $endpoint ) {
+
+		// Endpoints to mask string.
+		$keys = array(
+			'profile/',
+		);
+
+		foreach ( $keys as $key => $value ) {
+			// Skip if the endpoint isn't one we need to mask.
+			if ( strpos( $endpoint, $value ) === false ) {
+				continue;
+			}
+
+			// Mask after the key e.g. profile/******abcd.
+			return $value . $this->mask_string( str_replace( $value, '', $endpoint ) );
+
+		}
+
+		// Just return the endpoint, as it doesn't need masking.
+		return $endpoint;
+
+	}
+
+	/**
 	 * Helper method to mask values for specific keys in an array.
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $str    String to mask.
-	 * @return  string         Masked string
+	 * @param   array $params Array of parameters to mask.
+	 * @return  array          Array of parameters with masked values where applicable
 	 */
 	private function mask_params( $params ) {
 
+		// Keys to mask values for.
 		$keys = array(
 			'first_name',
 			'token',
 			'subscriber_code',
-			'signed_subscriber_id',
 		);
 
 		foreach ( $params as $key => $value ) {
-			// Skip if not a string
+			// Skip if not a string.
 			if ( ! is_string( $value ) ) {
 				continue;
 			}
 
 			// Skip if the key isn't one we need to mask the value of.
-			if ( ! in_array( $key, $keys ) ) {
+			if ( ! in_array( $key, $keys, true ) ) {
 				continue;
 			}
 

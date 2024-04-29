@@ -151,7 +151,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform actions that will write sensitive data to the log file.
-		/*
 		$api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
 			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL'],
@@ -160,7 +159,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 				'last_name' => 'Last',
 			)
 		);
-		*/
 		$api->profile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);
 
 		// Confirm the historical log.txt file has been deleted.
@@ -174,8 +172,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Confirm the contents of the log file have masked the email address, name and signed subscriber ID.
 		$this->tester->openFile(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
-		//$this->tester->seeInThisFile('API: form_subscribe(): [ form_id: ' . $_ENV['CONVERTKIT_API_FORM_ID'] . ', email: o****@n********.c**, first_name: ******Name ]');
-		$this->tester->seeInThisFile('API: profile(): [ signed_subscriber_id: ********************');
+		$this->tester->seeInThisFile('API: POST subscribers: {"email_address":"o****@n********.c**","first_name":"******Name","state":"active","fields":{"last_name":"Last"}}');
+		$this->tester->seeInThisFile('API: GET profile/*****************************************');
 		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
 		$this->tester->dontSeeInThisFile('First Name');
 		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);
