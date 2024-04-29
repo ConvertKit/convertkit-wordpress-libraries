@@ -1280,6 +1280,143 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that add_subscriber_to_form_by_email() returns the expected data.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToFormByEmail()
+	{
+		// Create subscriber.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->create_subscriber($emailAddress);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $result['subscriber']['id'];
+
+		// Add subscriber to form.
+		$result = $this->api->add_subscriber_to_form_by_email(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			$emailAddress
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('id', $result['subscriber']);
+		$this->assertEquals(
+			$result['subscriber']['email_address'],
+			$emailAddress
+		);
+	}
+
+	/**
+	 * Test that add_subscriber_to_form_by_email() returns a WP_Error when an invalid
+	 * form is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToFormByEmailWithInvalidformID()
+	{
+		$result = $this->api->add_subscriber_to_form_by_email(
+			12345,
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_form_by_email() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   1.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToFormByEmailWithInvalidEmailAddress()
+	{
+		$result = $this->api->add_subscriber_to_form_by_email(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			'not-an-email-address'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_form() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToForm()
+	{
+		// Create subscriber.
+		$subscriber = $this->api->create_subscriber(
+			$this->generateEmailAddress()
+		);
+
+		$this->assertNotInstanceOf(WP_Error::class, $subscriber);
+		$this->assertIsArray($subscriber);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $subscriber['subscriber']['id'];
+
+		// Add subscriber to form.
+		$result = $this->api->add_subscriber_to_form(
+			(int) $_ENV['CONVERTKIT_API_FORM_ID'],
+			$subscriber['subscriber']['id']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('id', $result['subscriber']);
+		$this->assertEquals($result['subscriber']['id'], $subscriber['subscriber']['id']);
+	}
+
+	/**
+	 * Test that add_subscriber_to_form() returns a WP_Error when an invalid
+	 * form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToFormWithInvalidFormID()
+	{
+		$result = $this->api->add_subscriber_to_form(
+			12345,
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_form() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToformWithInvalidSubscriberID()
+	{
+		$result = $this->api->add_subscriber_to_form(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			12345
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
 	 * Test that get_sequences() returns the expected data.
 	 *
 	 * @since   1.0.0
