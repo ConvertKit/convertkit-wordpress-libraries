@@ -24,13 +24,6 @@ class ConvertKit_API {
 	public const VERSION = '2.0.0';
 
 	/**
-	 * ConvertKit API Key
-	 *
-	 * @var bool|string
-	 */
-	protected $api_key = false;
-
-	/**
 	 * Redirect URI.
 	 *
 	 * @var     bool|string
@@ -462,6 +455,84 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Form.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $form_id        Form ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function form_subscribe( $form_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to form.
+		return $this->add_subscriber_to_form( $form_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Tag.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $tag_id         Tag ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function tag_subscribe( $tag_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to tag.
+		return $this->tag_subscriber( $tag_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Sequence.
+	 *
+	 * @since  1.0.0
+	 *
+	 * @param   int    $sequence_id    Sequence ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function sequence_subscribe( $sequence_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to sequence.
+		return $this->add_subscriber_to_sequence( $sequence_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
 	 * Get the ConvertKit subscriber ID associated with email address if it exists.
 	 * Return false if subscriber not found.
 	 *
@@ -684,7 +755,35 @@ class ConvertKit_API {
 	 */
 	public function get_products() {
 
-		return $this->get( 'products' );
+		$this->log( 'API: get_products()' );
+
+		$products = array();
+
+		$response = $this->get( 'products' );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_products(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response isn't an array as we expect, log that no products exist and return a blank array.
+		if ( ! is_array( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		}
+
+		// If no products exist, log that no products exist and return a blank array.
+		if ( ! count( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return $products;
+		}
+
+		foreach ( $response['products'] as $product ) {
+			$products[ $product['id'] ] = $product;
+		}
+
+		return $products;
 
 	}
 
@@ -846,21 +945,38 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Returns the recommendations script URL for this account from the API,
+	 * used to display the Creator Network modal when a form is submitted.
+	 *
+	 * @since   1.3.7
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function recommendations_script() {
+
+		$this->log( 'API: recommendations_script()' );
+
+		return $this->get( 'recommendations_script' );
+
+	}
+
+	/**
 	 * Get HTML from ConvertKit for the given Legacy Form ID.
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
-	 * @param   int $id     Form ID.
-	 * @return  WP_Error|string     HTML
+	 * @param   int    $id         Form ID.
+	 * @param   string $api_key    API Key.
+	 * @return  WP_Error|string             HTML
 	 */
-	public function get_form_html( $id ) {
+	public function get_form_html( $id, $api_key = '' ) {
 
 		$this->log( 'API: get_form_html(): [ id: ' . $id . ']' );
 
 		// Define Legacy Form URL.
 		$url = add_query_arg(
 			array(
-				'k' => $this->api_key,
+				'k' => $api_key,
 				'v' => 2,
 			),
 			'https://api.convertkit.com/forms/' . $id . '/embed'
