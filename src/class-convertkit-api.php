@@ -24,13 +24,6 @@ class ConvertKit_API {
 	public const VERSION = '2.0.0';
 
 	/**
-	 * ConvertKit API Key
-	 *
-	 * @var bool|string
-	 */
-	protected $api_key = false;
-
-	/**
 	 * Redirect URI.
 	 *
 	 * @var     bool|string
@@ -690,7 +683,35 @@ class ConvertKit_API {
 	 */
 	public function get_products() {
 
-		return $this->get( 'products' );
+		$this->log( 'API: get_products()' );
+
+		$products = array();
+
+		$response = $this->get( 'products' );
+
+		// If an error occured, log and return it now.
+		if ( is_wp_error( $response ) ) {
+			$this->log( 'API: get_products(): Error: ' . $response->get_error_message() );
+			return $response;
+		}
+
+		// If the response isn't an array as we expect, log that no products exist and return a blank array.
+		if ( ! is_array( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return new WP_Error( 'convertkit_api_error', $this->get_error_message( 'response_type_unexpected' ) );
+		}
+
+		// If no products exist, log that no products exist and return a blank array.
+		if ( ! count( $response['products'] ) ) {
+			$this->log( 'API: get_products(): Error: No products exist in ConvertKit.' );
+			return $products;
+		}
+
+		foreach ( $response['products'] as $product ) {
+			$products[ $product['id'] ] = $product;
+		}
+
+		return $products;
 
 	}
 
@@ -857,21 +878,38 @@ class ConvertKit_API {
 	}
 
 	/**
+	 * Returns the recommendations script URL for this account from the API,
+	 * used to display the Creator Network modal when a form is submitted.
+	 *
+	 * @since   1.3.7
+	 *
+	 * @return  WP_Error|array
+	 */
+	public function recommendations_script() {
+
+		$this->log( 'API: recommendations_script()' );
+
+		return $this->get( 'recommendations_script' );
+
+	}
+
+	/**
 	 * Get HTML from ConvertKit for the given Legacy Form ID.
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
-	 * @param   int $id     Form ID.
-	 * @return  WP_Error|string     HTML
+	 * @param   int    $id         Form ID.
+	 * @param   string $api_key    API Key.
+	 * @return  WP_Error|string             HTML
 	 */
-	public function get_form_html( $id ) {
+	public function get_form_html( $id, $api_key = '' ) {
 
 		$this->log( 'API: get_form_html(): [ id: ' . $id . ']' );
 
 		// Define Legacy Form URL.
 		$url = add_query_arg(
 			array(
-				'k' => $this->api_key,
+				'k' => $api_key,
 				'v' => 2,
 			),
 			'https://api.convertkit.com/forms/' . $id . '/embed'
