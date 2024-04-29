@@ -460,6 +460,90 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Tests that the refresh() function for Products returns resources in an array, and that they are
+	 * in alphabetical ascending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshProducts()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_products';
+		$this->resource->type          = 'products';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_PRODUCT_ID'], $result);
+
+		// Assert order of data is in ascending alphabetical order.
+		$this->assertEquals('Example Tip Jar', reset($result)[ $this->resource->order_by ]);
+		$this->assertEquals('PDF Guide', end($result)[ $this->resource->order_by ]);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_PRODUCT_ID'], $resources);
+	}
+
+	/**
+	 * Tests that the refresh() function for Posts returns resources in an array, and that they are
+	 * in published descending order by default.
+	 *
+	 * @since   2.0.0
+	 */
+	public function testRefreshPosts()
+	{
+		// Assign resource type and API.
+		$this->resource->settings_name = 'convertkit_resource_posts';
+		$this->resource->type          = 'posts';
+		$this->resource->order_by      = 'published_at';
+		$this->resource->order         = 'desc';
+		$this->resource->api           = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
+		);
+
+		// Call resource class' refresh() function.
+		$result = $this->resource->refresh();
+
+		// Assert result is an array.
+		$this->assertIsArray($result);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_POST_ID'], $result);
+
+		// Assert order of data is in ascending published_at order.
+		$this->assertEquals('New Broadcast', reset($result)['title']);
+		$this->assertEquals('Test Subject', end($result)['title']);
+
+		// Confirm resources stored in WordPress options.
+		$resources = get_option($this->resource->settings_name);
+
+		// Assert result is an array.
+		$this->assertIsArray($resources);
+
+		// Assert array keys are preserved.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_POST_ID'], $resources);
+	}
+
+	/**
 	 * Tests that the refresh() function returns resources in an array, and that they are
 	 * in alphabetical ascending order by default.
 	 *
