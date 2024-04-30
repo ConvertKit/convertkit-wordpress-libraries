@@ -238,7 +238,9 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 	public function testGetProducts()
 	{
 		$result = $this->api->get_products();
-		$this->assertNoData($result, 'products');
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertCount(0, $result);
 	}
 
 	/**
