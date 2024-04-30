@@ -135,16 +135,20 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testLog()
 	{
-		$this->markTestIncomplete();
-
 		// Define location for log file.
 		define( 'CONVERTKIT_PLUGIN_PATH', $_ENV['WP_ROOT_FOLDER'] . '/wp-content/uploads' );
 
 		// Create a log.txt file.
 		$this->tester->writeToFile(CONVERTKIT_PLUGIN_PATH . '/log.txt', 'historical log file');
 
-		// Initialize API.
-		$api = new ConvertKit_API( $_ENV['CONVERTKIT_API_KEY'], $_ENV['CONVERTKIT_API_SECRET'], true );
+		// Initialize API with logging enabled.
+		$api = new ConvertKit_API(
+			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN'],
+			true
+		);
 
 		// Perform actions that will write sensitive data to the log file.
 		$api->form_subscribe(
@@ -168,8 +172,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Confirm the contents of the log file have masked the email address, name and signed subscriber ID.
 		$this->tester->openFile(CONVERTKIT_PLUGIN_PATH . '/log/log.txt');
-		$this->tester->seeInThisFile('API: form_subscribe(): [ form_id: ' . $_ENV['CONVERTKIT_API_FORM_ID'] . ', email: o****@n********.c**, first_name: ******Name ]');
-		$this->tester->seeInThisFile('API: profile(): [ signed_subscriber_id: ********************');
+		$this->tester->seeInThisFile('API: POST subscribers: {"email_address":"o****@n********.c**","first_name":"******Name","state":"active","fields":{"last_name":"Last"}}');
+		$this->tester->seeInThisFile('API: GET profile/*****************************************');
 		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SUBSCRIBER_EMAIL']);
 		$this->tester->dontSeeInThisFile('First Name');
 		$this->tester->dontSeeInThisFile($_ENV['CONVERTKIT_API_SIGNED_SUBSCRIBER_ID']);

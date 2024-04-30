@@ -599,8 +599,6 @@ class ConvertKit_API {
 	 */
 	public function get_all_posts( $posts_per_request = 50 ) {
 
-		$this->log( 'API: get_all_posts()' );
-
 		// Sanitize some parameters.
 		$posts_per_request = absint( $posts_per_request );
 
@@ -663,8 +661,6 @@ class ConvertKit_API {
 	 */
 	public function get_posts( $page = 1, $per_page = 10 ) {
 
-		$this->log( 'API: get_posts()' );
-
 		// Sanitize some parameters.
 		$page     = absint( $page );
 		$per_page = absint( $per_page );
@@ -722,8 +718,6 @@ class ConvertKit_API {
 	 * @return  WP_Error|array
 	 */
 	public function get_post( $post_id ) {
-
-		$this->log( 'API: get_post(): [ post_id: ' . $post_id . ']' );
 
 		// Send request.
 		$response = $this->get(
@@ -808,8 +802,6 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_send_code( $email, $redirect_url ) {
 
-		$this->log( 'API: subscriber_authentication_send_code(): [ email: ' . $email . ', redirect_url: ' . $redirect_url . ']' );
-
 		// Sanitize some parameters.
 		$email        = trim( $email );
 		$redirect_url = trim( $redirect_url );
@@ -865,8 +857,6 @@ class ConvertKit_API {
 	 */
 	public function subscriber_authentication_verify( $token, $subscriber_code ) {
 
-		$this->log( 'API: subscriber_authentication_verify(): [ token: ' . $this->mask_string( $token ) . ', subscriber_code: ' . $this->mask_string( $subscriber_code ) . ']' );
-
 		// Sanitize some parameters.
 		$token           = trim( $token );
 		$subscriber_code = trim( $subscriber_code );
@@ -916,8 +906,6 @@ class ConvertKit_API {
 	 * @return  WP_Error|array
 	 */
 	public function profile( $signed_subscriber_id ) {
-
-		$this->log( 'API: profile(): [ signed_subscriber_id: ' . $this->mask_string( $signed_subscriber_id ) . ' ]' );
 
 		// Trim some parameters.
 		$signed_subscriber_id = trim( $signed_subscriber_id );
@@ -1188,6 +1176,21 @@ class ConvertKit_API {
 	 */
 	public function request( $endpoint, $method = 'get', $params = array(), $retry_if_rate_limit_hit = true ) {
 
+		// Log request.
+		$log = sprintf(
+			'API: %s %s',
+			$method,
+			$this->mask_endpoint( $endpoint )
+		);
+		if ( count( $params ) ) {
+			$log = sprintf(
+				'%s: %s',
+				$log,
+				wp_json_encode( $this->mask_params( $params ) )
+			);
+		}
+		$this->log( $log );
+
 		// Send request.
 		switch ( strtolower( $method ) ) {
 			case 'get':
@@ -1302,6 +1305,8 @@ class ConvertKit_API {
 					$error = $this->get_error_message( 'request_http_not_supported' );
 					break;
 			}
+
+			$this->log( 'API: Error: ' . $error );
 
 			return new WP_Error(
 				'convertkit_api_error',
@@ -1561,6 +1566,73 @@ class ConvertKit_API {
 
 		// Return error message.
 		return $this->error_messages[ $key ];
+
+	}
+
+	/**
+	 * Helper method to mask the given endpoint URL where it contains
+	 * sensitive data, such as a signed subscriber ID.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $endpoint    String to mask.
+	 * @return  string              Masked string
+	 */
+	private function mask_endpoint( $endpoint ) {
+
+		// Endpoints to mask string.
+		$keys = array(
+			'profile/',
+		);
+
+		foreach ( $keys as $key => $value ) {
+			// Skip if the endpoint isn't one we need to mask.
+			if ( strpos( $endpoint, $value ) === false ) {
+				continue;
+			}
+
+			// Mask after the key e.g. profile/******abcd.
+			return $value . $this->mask_string( str_replace( $value, '', $endpoint ) );
+
+		}
+
+		// Just return the endpoint, as it doesn't need masking.
+		return $endpoint;
+
+	}
+
+	/**
+	 * Helper method to mask values for specific keys in an array.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array $params Array of parameters to mask.
+	 * @return  array          Array of parameters with masked values where applicable
+	 */
+	private function mask_params( $params ) {
+
+		// Keys to mask values for.
+		$keys = array(
+			'first_name',
+			'token',
+			'subscriber_code',
+		);
+
+		foreach ( $params as $key => $value ) {
+			// Skip if not a string.
+			if ( ! is_string( $value ) ) {
+				continue;
+			}
+
+			// Skip if the key isn't one we need to mask the value of.
+			if ( ! in_array( $key, $keys, true ) ) {
+				continue;
+			}
+
+			$params[ $key ] = $this->mask_string( $value );
+		}
+
+		return $params;
 
 	}
 
