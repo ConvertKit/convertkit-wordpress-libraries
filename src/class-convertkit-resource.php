@@ -369,11 +369,6 @@ class ConvertKit_Resource {
 
 			case 'products':
 				$results = $this->api->get_products();
-				if ( is_wp_error( $results ) ) {
-					return $results;
-				}
-
-				$results = $this->map( $results, array(), 'products' );
 				break;
 
 			default:
