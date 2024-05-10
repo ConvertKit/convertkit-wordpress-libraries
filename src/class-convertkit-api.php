@@ -721,7 +721,7 @@ class ConvertKit_API {
 
 		// Send request.
 		$response = $this->get(
-			sprintf( 'posts/%s', $post_id ),
+			sprintf( 'posts/%s', $post_id )
 		);
 
 		// If an error occured, return WP_Error.
