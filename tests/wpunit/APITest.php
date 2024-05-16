@@ -455,14 +455,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that exchanging a valid API Key and Secret for an Access Token returns the expected data.
+	 * Test that fetching an Access Token using a valid API Key and Secret returns the expected data.
 	 *
 	 * @since   2.0.0
 	 */
-	public function testExchangeAPIKeyAndSecretForAccessToken()
+	public function testGetAccessTokenByAPIKeyAndSecret()
 	{
 		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
-		$result = $api->exchange_api_key_and_secret_for_access_token(
+		$result = $api->get_access_token_by_api_key_and_secret(
 			$_ENV['CONVERTKIT_API_KEY'],
 			$_ENV['CONVERTKIT_API_SECRET']
 		);
@@ -475,14 +475,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Test that exchanging an invalid API Key and Secret for an Access Token returns a WP_Error.
+	 * Test that fetching an Access Token using an invalid API Key and Secret returns a WP_Error.
 	 *
 	 * @since   2.0.0
 	 */
-	public function testExchangeInvalidAPIKeyAndSecretForAccessToken()
+	public function testGetAccessTokenByInvalidAPIKeyAndSecret()
 	{
 		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
-		$result = $api->exchange_api_key_and_secret_for_access_token(
+		$result = $api->get_access_token_by_api_key_and_secret(
 			'invalid-api-key',
 			'invalid-api-secret'
 		);
