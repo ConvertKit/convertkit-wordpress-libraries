@@ -402,6 +402,24 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testRefreshToken()
 	{
+		// Add mock handler for this API request, as this results in a new
+		// access and refresh token being provided, which would result in
+		// other tests breaking due to changed tokens.
+		$this->mockResponses(
+			200,
+			'OK',
+			wp_json_encode(
+				array(
+					'access_token'  => $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
+					'refresh_token' => $_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN'],
+					'token_type'    => 'bearer',
+					'created_at'    => strtotime( 'now' ),
+					'expires_in'    => 10000,
+					'scope'         => 'public',
+				)
+			)
+		);
+
 		// Send request.
 		$result = $this->api->refresh_token();
 
