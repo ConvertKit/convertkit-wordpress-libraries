@@ -442,7 +442,7 @@ class ConvertKit_API {
 	 * @param   string $api_secret API Secret.
 	 * @return  WP_Error|array
 	 */
-	public function exchange_api_key_and_secret_for_access_token( $api_key, $api_secret ) {
+	public function get_access_token_by_api_key_and_secret( $api_key, $api_secret ) {
 
 		return $this->post(
 			'accounts/oauth_access_token',
