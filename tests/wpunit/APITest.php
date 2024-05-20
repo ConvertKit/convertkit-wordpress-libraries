@@ -883,7 +883,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetLegacyFormsWithTotalCount()
 	{
-		$result = $this->api->get_forms(true);
+		$result = $this->api->get_legacy_forms(true);
 
 		// Assert forms and pagination exist.
 		$this->assertDataExists($result, 'legacy_landing_pages');
@@ -1060,7 +1060,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @return void
 	 */
-	public function testGetLandingPagesWithTotalCount()
+	public function testGetLegacyLandingPagesWithTotalCount()
 	{
 		$result = $this->api->get_legacy_landing_pages(true);
 

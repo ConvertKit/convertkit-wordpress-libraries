@@ -651,68 +651,68 @@ class ConvertKit_API {
 	}
 
 	/**
-     * Get legacy forms.
-     *
-     * @param boolean $include_total_count To include the total count of records in the response, use true.
-     * @param string  $after_cursor        Return results after the given pagination cursor.
-     * @param string  $before_cursor       Return results before the given pagination cursor.
-     * @param integer $per_page            Number of results to return.
-     *
-     * @since 2.0.0
-     *
-     * @return WP_Error|array
-     */
-    public function get_legacy_forms(
-        bool $include_total_count = false,
-        string $after_cursor = '',
-        string $before_cursor = '',
-        int $per_page = 100
-    ) {
-        return $this->get(
-            'landing_pages',
-            $this->build_total_count_and_pagination_params(
-                [
-                    'type'   => 'embed',
-                ],
-                $include_total_count,
-                $after_cursor,
-                $before_cursor,
-                $per_page
-            )
-        );
-    }
+	 * Get legacy forms.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return WP_Error|array
+	 */
+	public function get_legacy_forms(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			'landing_pages',
+			$this->build_total_count_and_pagination_params(
+				array(
+					'type' => 'embed',
+				),
+				$include_total_count,
+				$after_cursor,
+				$before_cursor,
+				$per_page
+			)
+		);
+	}
 
 	/**
-     * Get legacy landing pages.
-     *
-     * @param boolean $include_total_count To include the total count of records in the response, use true.
-     * @param string  $after_cursor        Return results after the given pagination cursor.
-     * @param string  $before_cursor       Return results before the given pagination cursor.
-     * @param integer $per_page            Number of results to return.
-     *
-     * @since 2.0.0
-     *
-     * @return WP_Error|array
-     */
-    public function get_legacy_landing_pages(
-        bool $include_total_count = false,
-        string $after_cursor = '',
-        string $before_cursor = '',
-        int $per_page = 100
-    ) {
-    	return $this->get(
-            'landing_pages',
-            $this->build_total_count_and_pagination_params(
-                [
-                    'type'   => 'hosted',
-                ],
-                $include_total_count,
-                $after_cursor,
-                $before_cursor,
-                $per_page
-            )
-        );
-    }
+	 * Get legacy landing pages.
+	 *
+	 * @param boolean $include_total_count To include the total count of records in the response, use true.
+	 * @param string  $after_cursor        Return results after the given pagination cursor.
+	 * @param string  $before_cursor       Return results before the given pagination cursor.
+	 * @param integer $per_page            Number of results to return.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return WP_Error|array
+	 */
+	public function get_legacy_landing_pages(
+		bool $include_total_count = false,
+		string $after_cursor = '',
+		string $before_cursor = '',
+		int $per_page = 100
+	) {
+		return $this->get(
+			'landing_pages',
+			$this->build_total_count_and_pagination_params(
+				array(
+					'type' => 'hosted',
+				),
+				$include_total_count,
+				$after_cursor,
+				$before_cursor,
+				$per_page
+			)
+		);
+	}
 
 	/**
 	 * Gets posts from the API.
