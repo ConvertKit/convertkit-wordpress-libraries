@@ -845,6 +845,56 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_legacy_forms() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLegacyForms()
+	{
+		$result = $this->api->get_legacy_forms();
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'legacy_landing_pages');
+		$this->assertPaginationExists($result);
+
+		// Iterate through each form, confirming no landing pages were included.
+		foreach ($result['legacy_landing_pages'] as $form) {
+			// Assert shape of object is valid.
+			$this->assertArrayHasKey('id', $form);
+			$this->assertArrayHasKey('name', $form);
+			$this->assertArrayHasKey('created_at', $form);
+			$this->assertArrayHasKey('type', $form);
+			$this->assertArrayHasKey('url', $form);
+
+			// Assert form is not a landing page i.e it is an embed.
+			$this->assertEquals($form['type'], 'embed');
+		}
+	}
+
+	/**
+	 * Test that get_legacy_forms() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLegacyFormsWithTotalCount()
+	{
+		$result = $this->api->get_forms(true);
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'legacy_landing_pages');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
+	}
+
+	/**
 	 * Test that get_landing_pages() returns the expected data.
 	 *
 	 * @since   1.0.0
@@ -971,6 +1021,56 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Assert has_previous_page and has_next_page are correct.
 		$this->assertFalse($result['pagination']['has_previous_page']);
 		$this->assertTrue($result['pagination']['has_next_page']);
+	}
+
+	/**
+	 * Test that get_legacy_landing_pages() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLegacyLandingPages()
+	{
+		$result = $this->api->get_legacy_landing_pages();
+
+		// Assert landing pages and pagination exist.
+		$this->assertDataExists($result, 'legacy_landing_pages');
+		$this->assertPaginationExists($result);
+
+		// Iterate through each landing page, confirming no forms were included.
+		foreach ($result['legacy_landing_pages'] as $form) {
+			// Assert shape of object is valid.
+			$this->assertArrayHasKey('id', $form);
+			$this->assertArrayHasKey('name', $form);
+			$this->assertArrayHasKey('created_at', $form);
+			$this->assertArrayHasKey('type', $form);
+			$this->assertArrayHasKey('url', $form);
+
+			// Assert landing page is not a form i.e it is hosted.
+			$this->assertEquals($form['type'], 'hosted');
+		}
+	}
+
+	/**
+	 * Test that get_landing_pages() returns the expected data
+	 * when the total count is included.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testGetLandingPagesWithTotalCount()
+	{
+		$result = $this->api->get_legacy_landing_pages(true);
+
+		// Assert forms and pagination exist.
+		$this->assertDataExists($result, 'legacy_landing_pages');
+		$this->assertPaginationExists($result);
+
+		// Assert total count is included.
+		$this->assertArrayHasKey('total_count', $result['pagination']);
+		$this->assertGreaterThan(0, $result['pagination']['total_count']);
 	}
 
 	/**
