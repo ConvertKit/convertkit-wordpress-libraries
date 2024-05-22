@@ -321,8 +321,8 @@ class ConvertKit_API {
 	 * Returns the URL used to begin the OAuth process
 	 *
 	 * @since   2.0.0
-	 * 
-	 * @param 	bool|string 	$state 	Optional state parameter to include in OAuth request.
+	 *
+	 * @param   bool|string $state  Optional state parameter to include in OAuth request.
 	 * @return  string                  OAuth URL
 	 */
 	public function get_oauth_url( $state = false ) {
