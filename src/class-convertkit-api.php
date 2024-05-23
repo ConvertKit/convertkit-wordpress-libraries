@@ -322,23 +322,32 @@ class ConvertKit_API {
 	 *
 	 * @since   2.0.0
 	 *
+	 * @param   bool|string $state  Optional state parameter to include in OAuth request.
 	 * @return  string                  OAuth URL
 	 */
-	public function get_oauth_url() {
+	public function get_oauth_url( $state = false ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
 		$code_challenge = $this->generate_code_challenge( $code_verifier );
 
+		// Build args.
+		$args = array(
+			'client_id'             => $this->client_id,
+			'response_type'         => 'code',
+			'redirect_uri'          => rawurlencode( $this->redirect_uri ),
+			'code_challenge'        => $code_challenge,
+			'code_challenge_method' => 'S256',
+		);
+
+		// If a state parameter needs to be included, add it now.
+		if ( $state ) {
+			$args['state'] = rawurlencode( $state );
+		}
+
 		// Return OAuth URL.
 		return add_query_arg(
-			array(
-				'client_id'             => $this->client_id,
-				'response_type'         => 'code',
-				'redirect_uri'          => rawurlencode( $this->redirect_uri ),
-				'code_challenge'        => $code_challenge,
-				'code_challenge_method' => 'S256',
-			),
+			$args,
 			$this->oauth_authorize_url
 		);
 
