@@ -357,6 +357,25 @@ class ConvertKit_Resource {
 		switch ( $this->type ) {
 			case 'forms':
 			case 'landing_pages':
+				$resources = $this->get_all_resources( $this->type );
+
+				// Bail if an error occured, as we don't want to cache errors.
+				if ( is_wp_error( $resources ) ) {
+					return $resources;
+				}
+
+				// Fetch legacy forms / landing pages.
+				$legacy_resources = $this->get_all_resources( 'legacy_' . $this->type );
+
+				// Bail if an error occured, as we don't want to cache errors.
+				if ( is_wp_error( $legacy_resources ) ) {
+					return $legacy_resources;
+				}
+
+				// Combine.
+				$results = $resources + $legacy_resources;
+				break;
+
 			case 'tags':
 			case 'sequences':
 			case 'custom_fields':
@@ -520,6 +539,16 @@ class ConvertKit_Resource {
 				);
 				break;
 
+			case 'legacy_forms':
+			case 'legacy_landing_pages':
+				$args = array(
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+
 			default:
 				$args = array(
 					false,
@@ -557,6 +586,16 @@ class ConvertKit_Resource {
 				case 'landing_pages':
 					$args = array(
 						'active',
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+
+				case 'legacy_forms':
+				case 'legacy_landing_pages':
+					$args = array(
 						false,
 						$response['pagination']['end_cursor'],
 						'',
@@ -607,9 +646,16 @@ class ConvertKit_Resource {
 	 */
 	private function map( $response, $items = array(), $resource_type = 'forms' ) {
 
-		// If we're building an array of landing pages, use the `form` key.
-		if ( $resource_type === 'landing_pages' ) {
-			$resource_type = 'forms';
+		// If we're building an array of landing pages, use the appropriate key.
+		switch ( $resource_type ) {
+			case 'landing_pages':
+				$resource_type = 'forms';
+				break;
+
+			case 'legacy_forms':
+			case 'legacy_landing_pages':
+				$resource_type = 'legacy_landing_pages';
+				break;
 		}
 
 		foreach ( $response[ $resource_type ] as $item ) {
