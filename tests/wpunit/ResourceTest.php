@@ -292,6 +292,12 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_FORM_ID'], $resources);
+
+		// Assert the legacy form is included in the data i.e. refreshing forms
+		// did call both `get_forms` and `get_legacy_forms` methods.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_FORM_ID'], $resources);
+		$this->assertArrayHasKey('embed_url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]);
+		$this->assertEquals('https://api.convertkit.com/api/v3/forms/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '.html?api_key=' . $_ENV['CONVERTKIT_API_KEY'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]['embed_url']);
 	}
 
 	/**
@@ -323,7 +329,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert order of data is in ascending alphabetical order.
 		$this->assertEquals('Character Encoding', reset($result)[ $this->resource->order_by ]);
-		$this->assertEquals('Landing Page', end($result)[ $this->resource->order_by ]);
+		$this->assertEquals('Legacy Landing Page', end($result)[ $this->resource->order_by ]);
 
 		// Confirm resources stored in WordPress options.
 		$resources = get_option($this->resource->settings_name);
@@ -333,6 +339,12 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LANDING_PAGE_ID'], $resources);
+
+		// Assert the legacy landing page is included in the data i.e. refreshing landing pages
+		// did call both `get_landing_pages` and `get_legacy_landing_pages` methods.
+		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources);
+		$this->assertArrayHasKey('url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]);
+		$this->assertEquals('https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]['url']);
 	}
 
 	/**

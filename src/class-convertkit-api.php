@@ -1133,7 +1133,10 @@ class ConvertKit_API {
 	}
 
 	/**
-	 * Get HTML for the given URL.
+	 * Get HTML for the given URL, which will be either a:
+	 * - Legacy Form
+	 * - Legacy Landing Page
+	 * - Landing Page
 	 *
 	 * This isn't specifically an API function, but for now it's best suited here.
 	 *
@@ -1141,7 +1144,7 @@ class ConvertKit_API {
 	 * @param   bool   $body_only   Return HTML between <body> and </body> tags only.
 	 * @return  WP_Error|string
 	 */
-	private function get_html( $url, $body_only = true ) {
+	public function get_html( $url, $body_only = true ) {
 
 		// Get HTML from URL.
 		$result = wp_remote_get(
