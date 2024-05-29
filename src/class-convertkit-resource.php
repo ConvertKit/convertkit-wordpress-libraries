@@ -659,6 +659,13 @@ class ConvertKit_Resource {
 		}
 
 		foreach ( $response[ $resource_type ] as $item ) {
+			// Exclude Forms that have a null `format` value, as they are Creator Profile / Creator Network
+			// forms that we don't need in WordPress.
+			// Legacy forms don't have a `format` key, and we always want to include them in the resultset.
+			if ( $resource_type === 'forms' && array_key_exists( 'format', $item ) && is_null( $item['format'] ) ) {
+				continue;
+			}
+
 			$items[ $item['id'] ] = $item;
 		}
 
