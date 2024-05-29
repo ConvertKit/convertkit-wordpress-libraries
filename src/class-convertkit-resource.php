@@ -649,16 +649,20 @@ class ConvertKit_Resource {
 		// If we're building an array of landing pages, use the appropriate key.
 		switch ( $resource_type ) {
 			case 'landing_pages':
-				$resource_type = 'forms';
+				$type = 'forms';
 				break;
 
 			case 'legacy_forms':
 			case 'legacy_landing_pages':
-				$resource_type = 'legacy_landing_pages';
+				$type = 'legacy_landing_pages';
+				break;
+
+			default:
+				$type = $resource_type;
 				break;
 		}
 
-		foreach ( $response[ $resource_type ] as $item ) {
+		foreach ( $response[ $type ] as $item ) {
 			// Exclude Forms that have a null `format` value, as they are Creator Profile / Creator Network
 			// forms that we don't need in WordPress.
 			// Legacy forms don't have a `format` key, and we always want to include them in the resultset.
