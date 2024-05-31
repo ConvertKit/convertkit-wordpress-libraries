@@ -78,18 +78,18 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Include class from /src to test.
 		require_once 'src/class-convertkit-api-traits.php';
-		require_once 'src/class-convertkit-api.php';
+		require_once 'src/class-convertkit-api-v4.php';
 		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
-		$this->api = new ConvertKit_API(
+		$this->api = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
 			$_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN']
 		);
 
-		$this->api_no_data = new ConvertKit_API(
+		$this->api_no_data = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN_NO_DATA'],
@@ -142,7 +142,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->tester->writeToFile(CONVERTKIT_PLUGIN_PATH . '/log.txt', 'historical log file');
 
 		// Initialize API with logging enabled.
-		$api = new ConvertKit_API(
+		$api = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -190,7 +190,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function test401Unauthorized()
 	{
-		$api    = new ConvertKit_API(
+		$api    = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			'not-a-real-access-token',
@@ -281,7 +281,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		);
 
 		// Perform a request.
-		$api    = new ConvertKit_API(
+		$api    = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -472,7 +472,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testRefreshTokenWithInvalidToken()
 	{
 		// Setup API.
-		$api = new ConvertKit_API(
+		$api = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -491,7 +491,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testInvalidAPICredentials()
 	{
-		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
 		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
@@ -505,7 +505,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAccessTokenByAPIKeyAndSecret()
 	{
-		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
 		$result = $api->get_access_token_by_api_key_and_secret(
 			$_ENV['CONVERTKIT_API_KEY'],
 			$_ENV['CONVERTKIT_API_SECRET']
@@ -525,7 +525,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testGetAccessTokenByInvalidAPIKeyAndSecret()
 	{
-		$api    = new ConvertKit_API( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
 		$result = $api->get_access_token_by_api_key_and_secret(
 			'invalid-api-key',
 			'invalid-api-secret'

@@ -43,11 +43,11 @@ class APINoDataTest extends \Codeception\TestCase\WPTestCase
 
 		// Include class from /src to test.
 		require_once 'src/class-convertkit-api-traits.php';
-		require_once 'src/class-convertkit-api.php';
+		require_once 'src/class-convertkit-api-v4.php';
 		require_once 'src/class-convertkit-log.php';
 
 		// Initialize the classes we want to test.
-		$this->api = new ConvertKit_API(
+		$this->api = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN_NO_DATA'],

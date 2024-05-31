@@ -12,7 +12,7 @@
  * @package ConvertKit
  * @author ConvertKit
  */
-class ConvertKit_API {
+class ConvertKit_API_V4 {
 
 	use ConvertKit_API_Traits;
 

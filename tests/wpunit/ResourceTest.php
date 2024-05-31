@@ -33,7 +33,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Include class from /src to test.
 		require_once 'src/class-convertkit-api-traits.php';
-		require_once 'src/class-convertkit-api.php';
+		require_once 'src/class-convertkit-api-v4.php';
 		require_once 'src/class-convertkit-resource.php';
 
 		// Initialize the classes we want to test.
@@ -264,7 +264,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_forms';
 		$this->resource->type          = 'forms';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -311,7 +311,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_landing_pages';
 		$this->resource->type          = 'landing_pages';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -358,7 +358,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_tags';
 		$this->resource->type          = 'tags';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -400,7 +400,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->resource->settings_name = 'convertkit_resource_custom_fields';
 		$this->resource->type          = 'custom_fields';
 		$this->resource->order_by      = 'label';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -441,7 +441,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_sequences';
 		$this->resource->type          = 'sequences';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -482,7 +482,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Assign resource type and API.
 		$this->resource->settings_name = 'convertkit_resource_products';
 		$this->resource->type          = 'products';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -525,7 +525,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->resource->type          = 'posts';
 		$this->resource->order_by      = 'published_at';
 		$this->resource->order         = 'desc';
-		$this->resource->api           = new ConvertKit_API(
+		$this->resource->api           = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
@@ -565,7 +565,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 	{
 		// Assign resource type and API.
 		$this->resource->type = 'not-a-valid-resource-type';
-		$this->resource->api  = new ConvertKit_API(
+		$this->resource->api  = new ConvertKit_API_V4(
 			$_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 			$_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 			$_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'],
