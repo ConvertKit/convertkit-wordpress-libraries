@@ -34,10 +34,10 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// Include class from /src to test.
 		require_once 'src/class-convertkit-api-traits.php';
 		require_once 'src/class-convertkit-api-v4.php';
-		require_once 'src/class-convertkit-resource.php';
+		require_once 'src/class-convertkit-resource-v4.php';
 
 		// Initialize the classes we want to test.
-		$this->resource = new ConvertKit_Resource();
+		$this->resource = new ConvertKit_Resource_V4();
 	}
 
 	/**
