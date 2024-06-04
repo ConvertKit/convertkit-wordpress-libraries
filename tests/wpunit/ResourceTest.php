@@ -284,6 +284,16 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->assertEquals('AAA Test', reset($result)[ $this->resource->order_by ]);
 		$this->assertEquals('WooCommerce Product Form', end($result)[ $this->resource->order_by ]);
 
+		// Assert that any Creator Network or Creator Profile form is not included in the resultset.
+		foreach ( $result as $formID => $form) {
+			if ( array_key_exists('format', $form)) {
+				$this->assertNotNull($form['format']);
+			}
+
+			$this->assertNotEquals($form['name'], 'Creator Network');
+			$this->assertNotEquals($form['name'], 'Creator Profile');
+		}
+
 		// Confirm resources stored in WordPress options.
 		$resources = get_option($this->resource->settings_name);
 
