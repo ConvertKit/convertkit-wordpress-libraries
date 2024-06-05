@@ -12,7 +12,7 @@
  *
  * @since   1.0.0
  */
-class ConvertKit_Resource {
+class ConvertKit_Resource_V4 {
 
 	/**
 	 * Holds the key that stores the resources in the option database table.
@@ -31,7 +31,7 @@ class ConvertKit_Resource {
 	/**
 	 * The API class
 	 *
-	 * @var     bool|ConvertKit_API
+	 * @var     bool|ConvertKit_API_V4
 	 */
 	public $api = false;
 
