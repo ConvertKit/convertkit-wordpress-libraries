@@ -3889,6 +3889,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testUnsubscribeByEmail()
 	{
+		// Avoid a rate limit due to previous tests.
+		sleep(2);
+
 		// Add a subscriber.
 		$emailAddress = $this->generateEmailAddress();
 		$result       = $this->api->create_subscriber(
