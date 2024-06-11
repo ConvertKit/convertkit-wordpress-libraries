@@ -490,6 +490,32 @@ class ConvertKit_API_V4 {
 	}
 
 	/**
+	 * Creates the given subscriber, assiging them to the given ConvertKit Legacy Form.
+	 *
+	 * @since  2.0.0
+	 *
+	 * @param   int    $form_id        Form ID.
+	 * @param   string $email          Email Address.
+	 * @param   string $first_name     First Name.
+	 * @param   array  $custom_fields  Custom Fields.
+	 * @return  WP_Error|array
+	 */
+	public function legacy_form_subscribe( $form_id, $email, $first_name = '', $custom_fields = array() ) {
+
+		// Create subscriber.
+		$subscriber = $this->create_subscriber( $email, $first_name, 'active', $custom_fields );
+
+		// Bail if an error occured.
+		if ( is_wp_error( $subscriber ) ) {
+			return $subscriber;
+		}
+
+		// Add subscriber to legacy form.
+		return $this->add_subscriber_to_legacy_form( $form_id, $subscriber['subscriber']['id'] );
+
+	}
+
+	/**
 	 * Creates the given subscriber, assiging them to the given ConvertKit Tag.
 	 *
 	 * @since  1.0.0
