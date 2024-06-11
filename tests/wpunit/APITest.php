@@ -1547,6 +1547,24 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that add_subscriber_to_form() returns a WP_Error when a legacy
+	 * form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToFormWithLegacyFormID()
+	{
+		$result = $this->api->add_subscriber_to_form(
+			$_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
 	 * Test that add_subscriber_to_form() returns a WP_Error when an invalid
 	 * email address is specified.
 	 *
@@ -1558,6 +1576,92 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->add_subscriber_to_form(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
+			12345
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_legacy_form() returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToLegacyForm()
+	{
+		// Create subscriber.
+		$subscriber = $this->api->create_subscriber(
+			$this->generateEmailAddress()
+		);
+
+		$this->assertNotInstanceOf(WP_Error::class, $subscriber);
+		$this->assertIsArray($subscriber);
+
+		// Set subscriber_id to ensure subscriber is unsubscribed after test.
+		$this->subscriber_ids[] = $subscriber['subscriber']['id'];
+
+		// Add subscriber to legacy form.
+		$result = $this->api->add_subscriber_to_legacy_form(
+			(int) $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
+			$subscriber['subscriber']['id']
+		);
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('id', $result['subscriber']);
+		$this->assertEquals($result['subscriber']['id'], $subscriber['subscriber']['id']);
+	}
+
+	/**
+	 * Test that add_subscriber_to_legacy_form() returns a WP_Error when an invalid
+	 * form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToLegacyFormWithInvalidFormID()
+	{
+		$result = $this->api->add_subscriber_to_legacy_form(
+			12345,
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_legacy_form() returns a WP_Error when a non-legacy
+	 * form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToLegacyFormWithNonLegacyFormID()
+	{
+		$result = $this->api->add_subscriber_to_legacy_form(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			$_ENV['CONVERTKIT_API_SUBSCRIBER_ID']
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that add_subscriber_to_legacy_form() returns a WP_Error when an invalid
+	 * email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testAddSubscriberToLegacyFormWithInvalidSubscriberID()
+	{
+		$result = $this->api->add_subscriber_to_legacy_form(
+			$_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
 			12345
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
@@ -4916,6 +5020,24 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 	/**
 	 * Test that the `form_subscribe()` function returns a WP_Error
+	 * when a legacy Form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testFormSubscribeWithLegacyFormID()
+	{
+		$result = $this->api->form_subscribe(
+			$_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `form_subscribe()` function returns a WP_Error
 	 * when an invalid email address is specified.
 	 *
 	 * @since   2.0.0
@@ -4926,6 +5048,90 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->form_subscribe(
 			$_ENV['CONVERTKIT_API_FORM_ID'],
+			'not-a-valid-email'
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `legacy_form_subscribe()` function returns the expected data.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testLegacyFormSubscribe()
+	{
+		// Make request.
+		$emailAddress = $this->generateEmailAddress();
+		$result       = $this->api->legacy_form_subscribe(
+			$_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
+			$emailAddress,
+			'First',
+			[
+				'last_name' => 'Last',
+			]
+		);
+
+		// Test array was returned.
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertIsArray($result);
+
+		// Assert subscriber created.
+		$this->assertArrayHasKey('subscriber', $result);
+		$this->assertArrayHasKey('email_address', $result['subscriber']);
+		$this->assertEquals($emailAddress, $result['subscriber']['email_address']);
+	}
+
+	/**
+	 * Test that the `legacy_form_subscribe()` function returns a WP_Error
+	 * when an invalid Form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testLegacyFormSubscribeWithInvalidFormID()
+	{
+		$result = $this->api->legacy_form_subscribe(
+			12345,
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `legacy_form_subscribe()` function returns a WP_Error
+	 * when a non-legacy Form ID is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testLegacyFormSubscribeWithNonLegacyFormID()
+	{
+		$result = $this->api->legacy_form_subscribe(
+			$_ENV['CONVERTKIT_API_FORM_ID'],
+			$this->generateEmailAddress()
+		);
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+	}
+
+	/**
+	 * Test that the `legacy_form_subscribe()` function returns a WP_Error
+	 * when an invalid email address is specified.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @return void
+	 */
+	public function testLegacyFormSubscribeWithInvalidEmailAddress()
+	{
+		$result = $this->api->legacy_form_subscribe(
+			$_ENV['CONVERTKIT_API_LEGACY_FORM_ID'],
 			'not-a-valid-email'
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
