@@ -392,7 +392,7 @@ class ConvertKit_API_V4 {
 		 * @since   2.0.0
 		 *
 		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param   string  $client_id  OAUth Client ID.
+		 * @param   string  $client_id  OAuth Client ID.
 		 */
 		do_action( 'convertkit_api_get_access_token', $result, $this->client_id );
 
@@ -432,10 +432,12 @@ class ConvertKit_API_V4 {
 		 *
 		 * @since   2.0.0
 		 *
-		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param   string  $client_id  OAUth Client ID.
+		 * @param   array   $result         New Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   string  $client_id      OAuth Client ID.
+		 * @param   string  $access_token   Existing Access Token.
+		 * @param   string  $refresh_token  Existing Refresh Token.
 		 */
-		do_action( 'convertkit_api_refresh_token', $result, $this->client_id );
+		do_action( 'convertkit_api_refresh_token', $result, $this->client_id, $this->access_token, $this->refresh_token );
 
 		// Return.
 		return $result;
