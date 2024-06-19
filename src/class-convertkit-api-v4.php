@@ -265,17 +265,19 @@ class ConvertKit_API_V4 {
 	}
 
 	/**
-	 * Base64URL the given code verifier, as PHP has no built in function for this.
+	 * Base64URL encodes the given string, as PHP has no built in function for this.
+	 * 
+	 * Used for both `code_challenge` and `state` arguments 
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $code_verifier  Code Verifier.
-	 * @return  string                  Code Challenge.
+	 * @param   string $str  String to Base64URL encode.
+	 * @return  string       Base64URL encoded string
 	 */
-	public function generate_code_challenge( $code_verifier ) {
+	public function base64_urlencode( $str ) {
 
 		// Hash using S256.
-		$code_challenge = hash( 'sha256', $code_verifier, true );
+		$code_challenge = hash( 'sha256', $str, true );
 
 		// Encode to Base64 string.
 		$code_challenge = base64_encode( $code_challenge ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
@@ -322,14 +324,22 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   bool|string $state  Optional state parameter to include in OAuth request.
-	 * @return  string                  OAuth URL
+	 * @param   $return_url  Return URL after users grants/denies OAuth application.
+	 * @return  string       OAuth URL
 	 */
-	public function get_oauth_url( $state = false ) {
+	public function get_oauth_url( $return_url ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
-		$code_challenge = $this->generate_code_challenge( $code_verifier );
+		$code_challenge = $this->base64_urlencode( $code_verifier );
+		$state 			= $this->base64_urlencode(
+			wp_json_encode(
+				array(
+					'return_to' => $return_url,
+					'app_id' 	=> $this->client_id,
+				)
+			)
+		);
 
 		// Build args.
 		$args = array(
@@ -338,12 +348,8 @@ class ConvertKit_API_V4 {
 			'redirect_uri'          => rawurlencode( $this->redirect_uri ),
 			'code_challenge'        => $code_challenge,
 			'code_challenge_method' => 'S256',
+			'state'					=> $state,
 		);
-
-		// If a state parameter needs to be included, add it now.
-		if ( $state ) {
-			$args['state'] = rawurlencode( $state );
-		}
 
 		// Return OAuth URL.
 		return add_query_arg(
