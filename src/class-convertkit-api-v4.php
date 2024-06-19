@@ -423,6 +423,10 @@ class ConvertKit_API_V4 {
 			return $result;
 		}
 
+		// Store existing access and refresh tokens.
+		$previous_access_token  = $this->access_token;
+		$previous_refresh_token = $this->refresh_token;
+
 		// Update the access and refresh tokens in this class.
 		$this->access_token  = $result['access_token'];
 		$this->refresh_token = $result['refresh_token'];
@@ -432,12 +436,12 @@ class ConvertKit_API_V4 {
 		 *
 		 * @since   2.0.0
 		 *
-		 * @param   array   $result         New Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param   string  $client_id      OAuth Client ID.
-		 * @param   string  $access_token   Existing Access Token.
-		 * @param   string  $refresh_token  Existing Refresh Token.
+		 * @param   array   $result                  New Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   string  $client_id               OAuth Client ID.
+		 * @param   string  $previous_access_token   Existing Access Token.
+		 * @param   string  $previous_refresh_token  Existing Refresh Token.
 		 */
-		do_action( 'convertkit_api_refresh_token', $result, $this->client_id, $this->access_token, $this->refresh_token );
+		do_action( 'convertkit_api_refresh_token', $result, $this->client_id, $previous_access_token, $previous_refresh_token );
 
 		// Return.
 		return $result;
