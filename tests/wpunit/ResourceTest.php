@@ -308,6 +308,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_FORM_ID'], $resources);
 		$this->assertArrayHasKey('embed_url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]);
 		$this->assertEquals('https://api.convertkit.com/api/v3/forms/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '.html?api_key=' . $_ENV['CONVERTKIT_API_KEY'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]['embed_url']);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -355,6 +362,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources);
 		$this->assertArrayHasKey('url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]);
 		$this->assertEquals('https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]['url']);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -396,6 +410,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_TAG_ID'], $resources);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -438,6 +459,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_CUSTOM_FIELD_ID'], $resources);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -479,6 +507,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_SEQUENCE_ID'], $resources);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -520,6 +555,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_PRODUCT_ID'], $resources);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
@@ -563,6 +605,13 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 
 		// Assert array keys are preserved.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_POST_ID'], $resources);
+
+		// Delete resources.
+		$this->resource->delete();
+
+		// Confirm resources no longer stored in WordPress options.
+		$this->assertFalse(get_option($this->resource->settings_name));
+		$this->assertFalse(get_option($this->resource->settings_name . '_last_queried'));
 	}
 
 	/**
