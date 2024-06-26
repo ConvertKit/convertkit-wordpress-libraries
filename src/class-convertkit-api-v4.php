@@ -339,8 +339,8 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $return_url  Return URL.
-	 * @return  string              OAuth URL
+	 * @param   bool|string $return_url  Return URL.
+	 * @return  string                       OAuth URL
 	 */
 	public function get_oauth_url( $return_url = false ) {
 
