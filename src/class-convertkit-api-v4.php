@@ -319,7 +319,7 @@ class ConvertKit_API_V4 {
 	 * @param   string $str    String to encode.
 	 * @return                  Encoded string.
 	 */
-	private function base64_urlencode( $str ) {
+	public function base64_urlencode( $str ) {
 
 		// Encode to Base64 string.
 		$str = base64_encode( $str ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
@@ -339,10 +339,10 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $state  State.
-	 * @return  string         OAuth URL
+	 * @param   string $return_url  Return URL.
+	 * @return  string              OAuth URL
 	 */
-	public function get_oauth_url( $state = false ) {
+	public function get_oauth_url( $return_url = false ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
@@ -357,11 +357,11 @@ class ConvertKit_API_V4 {
 			'code_challenge_method' => 'S256',
 		);
 
-		if ( $state ) {
+		if ( $return_url ) {
 			$args['state'] = $this->base64_urlencode(
 				wp_json_encode(
 					array(
-						'return_to' => $state,
+						'return_to' => $return_url,
 						'client_id' => $this->client_id,
 					)
 				)
