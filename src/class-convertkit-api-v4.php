@@ -317,7 +317,7 @@ class ConvertKit_API_V4 {
 	 * @since   2.0.0
 	 *
 	 * @param   string $str    String to encode.
-	 * @return                  Encoded string.
+	 * @return  string         Encoded string.
 	 */
 	public function base64_urlencode( $str ) {
 
