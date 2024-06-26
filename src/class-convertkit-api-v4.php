@@ -248,13 +248,7 @@ class ConvertKit_API_V4 {
 		$code_verifier = random_bytes( 64 );
 
 		// Encode to Base64 string.
-		$code_verifier = base64_encode( $code_verifier ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
-
-		// Convert Base64 to Base64URL by replacing “+” with “-” and “/” with “_”.
-		$code_verifier = strtr( $code_verifier, '+/', '-_' );
-
-		// Remove padding character from the end of line.
-		$code_verifier = rtrim( $code_verifier, '=' );
+		$code_verifier = $this->base64_urlencode( $code_verifier );
 
 		// Store in database for later use.
 		update_option( 'ck_code_verifier', $code_verifier );
@@ -265,19 +259,17 @@ class ConvertKit_API_V4 {
 	}
 
 	/**
-	 * Base64URL encodes the given string, as PHP has no built in function for this.
-	 * 
-	 * Used for both `code_challenge` and `state` arguments 
+	 * Base64URL the given code verifier, as PHP has no built in function for this.
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $str  String to Base64URL encode.
-	 * @return  string       Base64URL encoded string
+	 * @param   string $code_verifier  Code Verifier.
+	 * @return  string                  Code Challenge.
 	 */
-	public function base64_urlencode( $str ) {
+	public function generate_code_challenge( $code_verifier ) {
 
 		// Hash using S256.
-		$code_challenge = hash( 'sha256', $str, true );
+		$code_challenge = hash( 'sha256', $code_verifier, true );
 
 		// Encode to Base64 string.
 		$code_challenge = base64_encode( $code_challenge ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
@@ -320,26 +312,41 @@ class ConvertKit_API_V4 {
 	}
 
 	/**
+	 * Base64URL encode the given string.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $str    String to encode.
+	 * @return                  Encoded string.
+	 */
+	private function base64_urlencode( $str ) {
+
+		// Encode to Base64 string.
+		$str = base64_encode( $str ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+
+		// Convert Base64 to Base64URL by replacing “+” with “-” and “/” with “_”.
+		$str = strtr( $str, '+/', '-_' );
+
+		// Remove padding character from the end of line.
+		$str = rtrim( $str, '=' );
+
+		return $str;
+
+	}
+
+	/**
 	 * Returns the URL used to begin the OAuth process
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   $return_url  Return URL after users grants/denies OAuth application.
-	 * @return  string       OAuth URL
+	 * @param   string $state  State.
+	 * @return  string         OAuth URL
 	 */
-	public function get_oauth_url( $return_url ) {
+	public function get_oauth_url( $state = false ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
-		$code_challenge = $this->base64_urlencode( $code_verifier );
-		$state 			= $this->base64_urlencode(
-			wp_json_encode(
-				array(
-					'return_to' => $return_url,
-					'app_id' 	=> $this->client_id,
-				)
-			)
-		);
+		$code_challenge = $this->generate_code_challenge( $code_verifier );
 
 		// Build args.
 		$args = array(
@@ -348,8 +355,18 @@ class ConvertKit_API_V4 {
 			'redirect_uri'          => rawurlencode( $this->redirect_uri ),
 			'code_challenge'        => $code_challenge,
 			'code_challenge_method' => 'S256',
-			'state'					=> $state,
 		);
+
+		if ( $state ) {
+			$args['state'] = $this->base64_urlencode(
+				wp_json_encode(
+					array(
+						'return_to' => $state,
+						'client_id' => $this->client_id,
+					)
+				)
+			);
+		}
 
 		// Return OAuth URL.
 		return add_query_arg(
@@ -398,7 +415,7 @@ class ConvertKit_API_V4 {
 		 * @since   2.0.0
 		 *
 		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param   string  $client_id  OAUth Client ID.
+		 * @param   string  $client_id  OAuth Client ID.
 		 */
 		do_action( 'convertkit_api_get_access_token', $result, $this->client_id );
 
@@ -429,6 +446,10 @@ class ConvertKit_API_V4 {
 			return $result;
 		}
 
+		// Store existing access and refresh tokens.
+		$previous_access_token  = $this->access_token;
+		$previous_refresh_token = $this->refresh_token;
+
 		// Update the access and refresh tokens in this class.
 		$this->access_token  = $result['access_token'];
 		$this->refresh_token = $result['refresh_token'];
@@ -438,10 +459,12 @@ class ConvertKit_API_V4 {
 		 *
 		 * @since   2.0.0
 		 *
-		 * @param   array   $result     Access Token, Refresh Token, Expiry, Bearer and Scope.
-		 * @param   string  $client_id  OAUth Client ID.
+		 * @param   array   $result                  New Access Token, Refresh Token, Expiry, Bearer and Scope.
+		 * @param   string  $client_id               OAuth Client ID.
+		 * @param   string  $previous_access_token   Existing Access Token.
+		 * @param   string  $previous_refresh_token  Existing Refresh Token.
 		 */
-		do_action( 'convertkit_api_refresh_token', $result, $this->client_id );
+		do_action( 'convertkit_api_refresh_token', $result, $this->client_id, $previous_access_token, $previous_refresh_token );
 
 		// Return.
 		return $result;
