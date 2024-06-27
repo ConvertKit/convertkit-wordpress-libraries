@@ -512,6 +512,7 @@ class ConvertKit_Resource_V4 {
 	public function delete() {
 
 		delete_option( $this->settings_name );
+		delete_option( $this->settings_name . '_last_queried' );
 
 	}
 
