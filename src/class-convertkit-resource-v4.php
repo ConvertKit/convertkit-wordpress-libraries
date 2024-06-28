@@ -12,7 +12,7 @@
  *
  * @since   1.0.0
  */
-class ConvertKit_Resource {
+class ConvertKit_Resource_V4 {
 
 	/**
 	 * Holds the key that stores the resources in the option database table.
@@ -31,7 +31,7 @@ class ConvertKit_Resource {
 	/**
 	 * The API class
 	 *
-	 * @var     bool|ConvertKit_API
+	 * @var     bool|ConvertKit_API_V4
 	 */
 	public $api = false;
 
@@ -356,23 +356,30 @@ class ConvertKit_Resource {
 		// Fetch resources.
 		switch ( $this->type ) {
 			case 'forms':
-				$results = $this->api->get_forms();
-				break;
-
 			case 'landing_pages':
-				$results = $this->api->get_landing_pages();
+				$resources = $this->get_all_resources( $this->type );
+
+				// Bail if an error occured, as we don't want to cache errors.
+				if ( is_wp_error( $resources ) ) {
+					return $resources;
+				}
+
+				// Fetch legacy forms / landing pages.
+				$legacy_resources = $this->get_all_resources( 'legacy_' . $this->type );
+
+				// Bail if an error occured, as we don't want to cache errors.
+				if ( is_wp_error( $legacy_resources ) ) {
+					return $legacy_resources;
+				}
+
+				// Combine.
+				$results = $resources + $legacy_resources;
 				break;
 
 			case 'tags':
-				$results = $this->api->get_tags();
-				break;
-
 			case 'sequences':
-				$results = $this->api->get_sequences();
-				break;
-
 			case 'custom_fields':
-				$results = $this->api->get_custom_fields();
+				$results = $this->get_all_resources( $this->type );
 				break;
 
 			case 'posts':
@@ -505,6 +512,169 @@ class ConvertKit_Resource {
 	public function delete() {
 
 		delete_option( $this->settings_name );
+		delete_option( $this->settings_name . '_last_queried' );
+
+	}
+
+	/**
+	 * Fetches all resources (forms, landing pages, tags etc) from the API,
+	 * using cursor pagination until all results are returned.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $resource_type   Resource (forms,landing_pages,tags,sequences,custom_fields).
+	 * @param   int    $per_page        Number of results to return per request.
+	 */
+	private function get_all_resources( $resource_type, $per_page = 100 ) {
+
+		// Build array of arguments depending on the resource type.
+		switch ( $resource_type ) {
+			case 'forms':
+			case 'landing_pages':
+				$args = array(
+					'active',
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+
+			case 'legacy_forms':
+			case 'legacy_landing_pages':
+				$args = array(
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+
+			default:
+				$args = array(
+					false,
+					'',
+					'',
+					$per_page,
+				);
+				break;
+		}
+
+		// Fetch resources.
+		$response = call_user_func_array(
+			array( $this->api, 'get_' . $resource_type ),
+			$args
+		);
+
+		// Bail if an error occured.
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		// Append resources to array.
+		$items = $this->map( $response, array(), $resource_type );
+
+		// If no further resources to fetch, return.
+		if ( ! $response['pagination']['has_next_page'] ) {
+			return $items;
+		}
+
+		// Further resources need to be fetched.
+		while ( $response['pagination']['has_next_page'] ) {
+			// Build array of arguments depending on the resource type.
+			switch ( $resource_type ) {
+				case 'forms':
+				case 'landing_pages':
+					$args = array(
+						'active',
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+
+				case 'legacy_forms':
+				case 'legacy_landing_pages':
+					$args = array(
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+
+				default:
+					$args = array(
+						false,
+						$response['pagination']['end_cursor'],
+						'',
+						$per_page,
+					);
+					break;
+			}
+
+			// Fetch next page of resources.
+			$response = call_user_func_array(
+				array(
+					$this->api,
+					'get_' . $resource_type,
+				),
+				$args
+			);
+
+			// Bail if an error occured.
+			if ( is_wp_error( $response ) ) {
+				return $response;
+			}
+
+			// Append resources to array.
+			$items = $this->map( $response, $items, $resource_type );
+		}
+
+		return $items;
+
+	}
+
+	/**
+	 * Helper method to build an array of resources with keys as IDs.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array  $response        API Response.
+	 * @param   array  $items           Key'd resources.
+	 * @param   string $resource_type   Resource (forms,landing_pages,tags,sequences,custom_fields).
+	 */
+	private function map( $response, $items = array(), $resource_type = 'forms' ) {
+
+		// If we're building an array of landing pages, use the appropriate key.
+		switch ( $resource_type ) {
+			case 'landing_pages':
+				$type = 'forms';
+				break;
+
+			case 'legacy_forms':
+			case 'legacy_landing_pages':
+				$type = 'legacy_landing_pages';
+				break;
+
+			default:
+				$type = $resource_type;
+				break;
+		}
+
+		foreach ( $response[ $type ] as $item ) {
+			// Exclude Forms that have a null `format` value, as they are Creator Profile / Creator Network
+			// forms that we don't need in WordPress.
+			// Legacy forms don't have a `format` key, and we always want to include them in the resultset.
+			if ( $resource_type === 'forms' && array_key_exists( 'format', $item ) && is_null( $item['format'] ) ) {
+				continue;
+			}
+
+			$items[ $item['id'] ] = $item;
+		}
+
+		return $items;
 
 	}
 
