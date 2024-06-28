@@ -248,13 +248,7 @@ class ConvertKit_API_V4 {
 		$code_verifier = random_bytes( 64 );
 
 		// Encode to Base64 string.
-		$code_verifier = base64_encode( $code_verifier ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
-
-		// Convert Base64 to Base64URL by replacing “+” with “-” and “/” with “_”.
-		$code_verifier = strtr( $code_verifier, '+/', '-_' );
-
-		// Remove padding character from the end of line.
-		$code_verifier = rtrim( $code_verifier, '=' );
+		$code_verifier = $this->base64_urlencode( $code_verifier );
 
 		// Store in database for later use.
 		update_option( 'ck_code_verifier', $code_verifier );
@@ -318,14 +312,37 @@ class ConvertKit_API_V4 {
 	}
 
 	/**
+	 * Base64URL encode the given string.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   string $str    String to encode.
+	 * @return  string         Encoded string.
+	 */
+	public function base64_urlencode( $str ) {
+
+		// Encode to Base64 string.
+		$str = base64_encode( $str ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+
+		// Convert Base64 to Base64URL by replacing “+” with “-” and “/” with “_”.
+		$str = strtr( $str, '+/', '-_' );
+
+		// Remove padding character from the end of line.
+		$str = rtrim( $str, '=' );
+
+		return $str;
+
+	}
+
+	/**
 	 * Returns the URL used to begin the OAuth process
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   bool|string $state  Optional state parameter to include in OAuth request.
-	 * @return  string                  OAuth URL
+	 * @param   bool|string $return_url  Return URL.
+	 * @return  string                       OAuth URL
 	 */
-	public function get_oauth_url( $state = false ) {
+	public function get_oauth_url( $return_url = false ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
@@ -340,9 +357,15 @@ class ConvertKit_API_V4 {
 			'code_challenge_method' => 'S256',
 		);
 
-		// If a state parameter needs to be included, add it now.
-		if ( $state ) {
-			$args['state'] = rawurlencode( $state );
+		if ( $return_url ) {
+			$args['state'] = $this->base64_urlencode(
+				wp_json_encode(
+					array(
+						'return_to' => $return_url,
+						'client_id' => $this->client_id,
+					)
+				)
+			);
 		}
 
 		// Return OAuth URL.

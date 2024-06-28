@@ -351,7 +351,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		// Confirm the OAuth URL returned is correct.
 		$this->assertEquals(
-			$this->api->get_oauth_url( 'an-example-state' ),
+			$this->api->get_oauth_url( 'https://example.com' ),
 			'https://app.convertkit.com/oauth/authorize?' . http_build_query(
 				[
 					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
@@ -359,7 +359,14 @@ class APITest extends \Codeception\TestCase\WPTestCase
 					'redirect_uri'          => $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
 					'code_challenge'        => $this->api->generate_code_challenge( $this->api->get_code_verifier() ),
 					'code_challenge_method' => 'S256',
-					'state'                 => 'an-example-state',
+					'state'                 => $this->api->base64_urlencode(
+						wp_json_encode(
+							array(
+								'return_to' => 'https://example.com',
+								'client_id' => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+							)
+						)
+					),
 				]
 			)
 		);
