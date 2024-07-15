@@ -1325,12 +1325,19 @@ class ConvertKit_API_V4 {
 		// Send request.
 		switch ( strtolower( $method ) ) {
 			case 'get':
+				// Build URL.
+				$url = $this->get_api_url( $endpoint );
+
 				// We deliberate don't use add_query_arg(), as this converts double equal signs (typically
 				// provided by `start_cursor` and `end_cursor`) to a single equal sign, therefore breaking
 				// pagination.  http_build_query() will encode equals signs instead, preserving them
 				// and ensuring paginated requests work correctly.
+				if ( count( $params ) ) {
+					$url .= '?' . http_build_query( $params );
+				}
+
 				$result = wp_remote_get(
-					$this->get_api_url( $endpoint ) . '?' . http_build_query( $params ),
+					$url,
 					array(
 						'headers'    => $this->get_request_headers(),
 						'timeout'    => $this->get_timeout(),
