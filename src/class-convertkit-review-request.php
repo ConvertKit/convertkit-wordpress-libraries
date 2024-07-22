@@ -275,7 +275,7 @@ class ConvertKit_Review_Request {
 	 */
 	public function get_support_url() {
 
-		return 'https://convertkit.com/support';
+		return 'https://kit.com/support';
 
 	}
 

@@ -327,7 +327,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Confirm the OAuth URL returned is correct.
 		$this->assertEquals(
 			$this->api->get_oauth_url(),
-			'https://app.convertkit.com/oauth/authorize?' . http_build_query(
+			'https://app.kit.com/oauth/authorize?' . http_build_query(
 				[
 					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 					'response_type'         => 'code',
@@ -352,7 +352,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Confirm the OAuth URL returned is correct.
 		$this->assertEquals(
 			$this->api->get_oauth_url( 'https://example.com' ),
-			'https://app.convertkit.com/oauth/authorize?' . http_build_query(
+			'https://app.kit.com/oauth/authorize?' . http_build_query(
 				[
 					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 					'response_type'         => 'code',
@@ -3701,10 +3701,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$subscribers = [
 			[
-				'email_address' => str_replace('@convertkit.com', '-1@convertkit.com', $this->generateEmailAddress()),
+				'email_address' => str_replace('@kit.com', '-1@kit.com', $this->generateEmailAddress()),
 			],
 			[
-				'email_address' => str_replace('@convertkit.com', '-2@convertkit.com', $this->generateEmailAddress()),
+				'email_address' => str_replace('@kit.com', '-2@kit.com', $this->generateEmailAddress()),
 			],
 		];
 		$result      = $this->api->create_subscribers($subscribers);
@@ -4025,7 +4025,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testUnsubscribeByEmailWithNotSubscribedEmailAddress()
 	{
-		$result = $this->api->unsubscribe_by_email('not-subscribed@convertkit.com');
+		$result = $this->api->unsubscribe_by_email('not-subscribed@kit.com');
 		$this->assertInstanceOf(WP_Error::class, $result);
 	}
 
@@ -5551,7 +5551,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
 	{
 		$result = $this->api->subscriber_authentication_send_code(
-			'email-not-subscribed@convertkit.com',
+			'email-not-subscribed@kit.com',
 			$_ENV['TEST_SITE_WP_URL']
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
@@ -6109,7 +6109,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_form_html($_ENV['CONVERTKIT_API_LEGACY_FORM_ID'], $_ENV['CONVERTKIT_API_KEY']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://api.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '/subscribe" data-remote="true">', $result);
+		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://api.kit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '/subscribe" data-remote="true">', $result);
 
 		// Assert that the API class' manually added UTF-8 Content-Type has been removed prior to output.
 		$this->assertStringNotContainsString('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">', $result);
@@ -6140,7 +6140,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
+		$this->assertStringContainsString('<form method="POST" action="https://app.kit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
 	}
 
 	/**
@@ -6153,7 +6153,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '" data-uid="cc5eb21744" class="formkit-form"', $result);
+		$this->assertStringContainsString('<form method="POST" action="https://app.kit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_CHARACTER_ENCODING_ID'] . '" data-uid="cc5eb21744" class="formkit-form"', $result);
 
 		// Assert that character encoding works, and that special characters are not malformed.
 		$this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $result);
@@ -6169,7 +6169,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
+		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.kit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
 	}
 
 	/**
@@ -6259,11 +6259,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $domain     Domain (default: convertkit.com).
+	 * @param   string $domain     Domain (default: kit.com).
 	 *
 	 * @return  string
 	 */
-	private function generateEmailAddress($domain = 'convertkit.com')
+	private function generateEmailAddress($domain = 'kit.com')
 	{
 		return 'php-sdk-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
 	}

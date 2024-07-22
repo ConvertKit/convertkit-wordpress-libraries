@@ -32,7 +32,7 @@ class API extends \Codeception\Module
 			$client = new \GuzzleHttp\Client();
 			$result = $client->request(
 				$method,
-				'https://api.convertkit.com/v3/' . $endpoint . '?' . http_build_query($params),
+				'https://api.kit.com/v3/' . $endpoint . '?' . http_build_query($params),
 				[
 					'headers' => [
 						'Accept-Encoding' => 'gzip',

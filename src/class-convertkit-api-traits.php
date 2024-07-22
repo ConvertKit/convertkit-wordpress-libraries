@@ -36,14 +36,14 @@ trait ConvertKit_API_Traits
      *
      * @var string
      */
-    protected $oauth_authorize_url = 'https://app.convertkit.com/oauth/authorize';
+    protected $oauth_authorize_url = 'https://app.kit.com/oauth/authorize';
 
     /**
      * OAuth Token URL
      *
      * @var string
      */
-    protected $oauth_token_url = 'https://api.convertkit.com/oauth/token';
+    protected $oauth_token_url = 'https://api.kit.com/oauth/token';
 
     /**
      * Version of ConvertKit API
@@ -57,13 +57,13 @@ trait ConvertKit_API_Traits
      *
      * @var string
      */
-    protected $api_url_base = 'https://api.convertkit.com/';
+    protected $api_url_base = 'https://api.kit.com/';
 
 
     /**
      * Gets the current account
      *
-     * @see https://developers.convertkit.com/v4.html#get-current-account
+     * @see https://developers.kit.com/v4.html#get-current-account
      *
      * @return WP_Error|array
      */
@@ -75,7 +75,7 @@ trait ConvertKit_API_Traits
     /**
      * Gets the account's colors
      *
-     * @see https://developers.convertkit.com/v4.html#list-colors
+     * @see https://developers.kit.com/v4.html#list-colors
      *
      * @return WP_Error|array
      */
@@ -89,7 +89,7 @@ trait ConvertKit_API_Traits
      *
      * @param array<string, string> $colors Hex colors.
      *
-     * @see https://developers.convertkit.com/v4.html#list-colors
+     * @see https://developers.kit.com/v4.html#list-colors
      *
      * @return WP_Error|array
      */
@@ -104,7 +104,7 @@ trait ConvertKit_API_Traits
     /**
      * Gets the Creator Profile
      *
-     * @see https://developers.convertkit.com/v4.html#get-creator-profile
+     * @see https://developers.kit.com/v4.html#get-creator-profile
      *
      * @return WP_Error|array
      */
@@ -116,7 +116,7 @@ trait ConvertKit_API_Traits
     /**
      * Gets email stats
      *
-     * @see https://developers.convertkit.com/v4.html#get-email-stats
+     * @see https://developers.kit.com/v4.html#get-email-stats
      *
      * @return WP_Error|array
      */
@@ -131,7 +131,7 @@ trait ConvertKit_API_Traits
      * @param \DateTime $starting Gets stats for time period beginning on this date. Defaults to 90 days ago.
      * @param \DateTime $ending   Gets stats for time period ending on this date. Defaults to today.
      *
-     * @see https://developers.convertkit.com/v4.html#get-growth-stats
+     * @see https://developers.kit.com/v4.html#get-growth-stats
      *
      * @return WP_Error|array
      */
@@ -157,7 +157,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
+     * @see https://developers.kit.com/v4.html#convertkit-api-forms
      *
      * @return WP_Error|array
      */
@@ -194,7 +194,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#convertkit-api-forms
+     * @see https://developers.kit.com/v4.html#convertkit-api-forms
      *
      * @return WP_Error|array
      */
@@ -226,7 +226,7 @@ trait ConvertKit_API_Traits
      * @param integer $form_id       Form ID.
      * @param string  $email_address Email Address.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form-by-email-address
+     * @see https://developers.kit.com/v4.html#add-subscriber-to-form-by-email-address
      *
      * @return WP_Error|array
      */
@@ -244,7 +244,7 @@ trait ConvertKit_API_Traits
      * @param integer $form_id       Form ID.
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-form
+     * @see https://developers.kit.com/v4.html#add-subscriber-to-form
      *
      * @since 2.0.0
      *
@@ -284,7 +284,7 @@ trait ConvertKit_API_Traits
      * @param string    $before_cursor       Return results before the given pagination cursor.
      * @param integer   $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-form
+     * @see https://developers.kit.com/v4.html#list-subscribers-for-a-form
      *
      * @return WP_Error|array
      */
@@ -340,7 +340,7 @@ trait ConvertKit_API_Traits
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-sequences
+     * @see https://developers.kit.com/v4.html#list-sequences
      *
      * @return WP_Error|array
      */
@@ -368,7 +368,7 @@ trait ConvertKit_API_Traits
      * @param integer $sequence_id   Sequence ID.
      * @param string  $email_address Email Address.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence-by-email-address
+     * @see https://developers.kit.com/v4.html#add-subscriber-to-sequence-by-email-address
      *
      * @return WP_Error|array
      */
@@ -386,7 +386,7 @@ trait ConvertKit_API_Traits
      * @param integer $sequence_id   Sequence ID.
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/v4.html#add-subscriber-to-sequence
+     * @see https://developers.kit.com/v4.html#add-subscriber-to-sequence
      *
      * @since 2.0.0
      *
@@ -411,7 +411,7 @@ trait ConvertKit_API_Traits
      * @param string    $before_cursor       Return results before the given pagination cursor.
      * @param integer   $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-sequence
+     * @see https://developers.kit.com/v4.html#list-subscribers-for-a-sequence
      *
      * @return WP_Error|array
      */
@@ -467,7 +467,7 @@ trait ConvertKit_API_Traits
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-tags
+     * @see https://developers.kit.com/v4.html#list-tags
      *
      * @return WP_Error|array
      */
@@ -496,7 +496,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-tag
+     * @see https://developers.kit.com/v4.html#create-a-tag
      *
      * @return WP_Error|array
      */
@@ -516,7 +516,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.1.0
      *
-     * @see https://developers.convertkit.com/v4.html#bulk-create-tags
+     * @see https://developers.kit.com/v4.html#bulk-create-tags
      *
      * @return WP_Error|array
      */
@@ -549,7 +549,7 @@ trait ConvertKit_API_Traits
      * @param integer $tag_id        Tag ID.
      * @param string  $email_address Email Address.
      *
-     * @see https://developers.convertkit.com/v4.html#tag-a-subscriber-by-email-address
+     * @see https://developers.kit.com/v4.html#tag-a-subscriber-by-email-address
      *
      * @return WP_Error|array
      */
@@ -567,7 +567,7 @@ trait ConvertKit_API_Traits
      * @param integer $tag_id        Tag ID.
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/v4.html#tag-a-subscriber
+     * @see https://developers.kit.com/v4.html#tag-a-subscriber
      *
      * @return WP_Error|array
      */
@@ -584,7 +584,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber
+     * @see https://developers.kit.com/v4.html#remove-tag-from-subscriber
      *
      * @return WP_Error|array
      */
@@ -601,7 +601,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#remove-tag-from-subscriber-by-email-address
+     * @see https://developers.kit.com/v4.html#remove-tag-from-subscriber-by-email-address
      *
      * @return WP_Error|array
      */
@@ -627,7 +627,7 @@ trait ConvertKit_API_Traits
      * @param string    $before_cursor       Return results before the given pagination cursor.
      * @param integer   $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers-for-a-tag
+     * @see https://developers.kit.com/v4.html#list-subscribers-for-a-tag
      *
      * @return WP_Error|array
      */
@@ -685,7 +685,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#convertkit-api-email-templates
+     * @see https://developers.kit.com/v4.html#convertkit-api-email-templates
      *
      * @return WP_Error|array
      */
@@ -726,7 +726,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#list-subscribers
+     * @see https://developers.kit.com/v4.html#list-subscribers
      *
      * @return WP_Error|array
      */
@@ -799,7 +799,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-subscriber
+     * @see https://developers.kit.com/v4.html#create-a-subscriber
      *
      * @return mixed
      */
@@ -837,7 +837,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#bulk-create-subscribers
+     * @see https://developers.kit.com/v4.html#bulk-create-subscribers
      *
      * @return mixed
      */
@@ -865,7 +865,7 @@ trait ConvertKit_API_Traits
      *
      * @throws \InvalidArgumentException If the email address is not a valid email format.
      *
-     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+     * @see https://developers.kit.com/v4.html#get-a-subscriber
      *
      * @return bool|WP_Error|integer
      */
@@ -889,7 +889,7 @@ trait ConvertKit_API_Traits
      *
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+     * @see https://developers.kit.com/v4.html#get-a-subscriber
      *
      * @return bool|WP_Error|array
      */
@@ -906,7 +906,7 @@ trait ConvertKit_API_Traits
      * @param string                $email_address New Email Address.
      * @param array<string, string> $fields        Updated Custom Fields.
      *
-     * @see https://developers.convertkit.com/v4.html#update-a-subscriber
+     * @see https://developers.kit.com/v4.html#update-a-subscriber
      *
      * @return WP_Error|array
      */
@@ -941,7 +941,7 @@ trait ConvertKit_API_Traits
      *
      * @param string $email_address Email Address.
      *
-     * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+     * @see https://developers.kit.com/v4.html#unsubscribe-subscriber
      *
      * @return bool|WP_Error|array
      */
@@ -960,7 +960,7 @@ trait ConvertKit_API_Traits
      *
      * @param integer $subscriber_id Subscriber ID.
      *
-     * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+     * @see https://developers.kit.com/v4.html#unsubscribe-subscriber
      *
      * @return bool|WP_Error|array
      */
@@ -978,7 +978,7 @@ trait ConvertKit_API_Traits
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-tags-for-a-subscriber
+     * @see https://developers.kit.com/v4.html#list-tags-for-a-subscriber
      *
      * @return WP_Error|array
      */
@@ -1009,7 +1009,7 @@ trait ConvertKit_API_Traits
      * @param string  $before_cursor       Return results before the given pagination cursor.
      * @param integer $per_page            Number of results to return.
      *
-     * @see https://developers.convertkit.com/v4.html#list-broadcasts
+     * @see https://developers.kit.com/v4.html#list-broadcasts
      *
      * @return WP_Error|array
      */
@@ -1055,7 +1055,7 @@ trait ConvertKit_API_Traits
      * @param string               $preview_text      Specify the preview text of the email.
      * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-broadcast
+     * @see https://developers.kit.com/v4.html#create-a-broadcast
      *
      * @return bool|WP_Error|array
      */
@@ -1114,7 +1114,7 @@ trait ConvertKit_API_Traits
      *
      * @param integer $id Broadcast ID.
      *
-     * @see https://developers.convertkit.com/v4.html#get-a-broadcast
+     * @see https://developers.kit.com/v4.html#get-a-broadcast
      *
      * @return bool|WP_Error|array
      */
@@ -1129,7 +1129,7 @@ trait ConvertKit_API_Traits
      *
      * @param integer $id Broadcast ID.
      *
-     * @see https://developers.convertkit.com/v4.html#get-stats
+     * @see https://developers.kit.com/v4.html#get-stats
      *
      * @return bool|WP_Error|array
      */
@@ -1162,7 +1162,7 @@ trait ConvertKit_API_Traits
      * @param string               $preview_text      Specify the preview text of the email.
      * @param array<string,string> $subscriber_filter Filter subscriber(s) to send the email to.
      *
-     * @see https://developers.convertkit.com/#create-a-broadcast
+     * @see https://developers.kit.com/#create-a-broadcast
      *
      * @return bool|WP_Error|array
      */
@@ -1224,7 +1224,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#delete-a-broadcast
+     * @see https://developers.kit.com/v4.html#delete-a-broadcast
      *
      * @return bool|WP_Error|array
      */
@@ -1243,7 +1243,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#list-webhooks
+     * @see https://developers.kit.com/v4.html#list-webhooks
      *
      * @return WP_Error|array
      */
@@ -1275,7 +1275,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-webhook
+     * @see https://developers.kit.com/v4.html#create-a-webhook
      *
      * @throws \InvalidArgumentException If the event is not supported.
      *
@@ -1351,7 +1351,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#delete-a-webhook
+     * @see https://developers.kit.com/v4.html#delete-a-webhook
      *
      * @return bool|WP_Error|array
      */
@@ -1370,7 +1370,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#list-custom-fields
+     * @see https://developers.kit.com/v4.html#list-custom-fields
      *
      * @return WP_Error|array
      */
@@ -1400,7 +1400,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-custom-field
+     * @see https://developers.kit.com/v4.html#create-a-custom-field
      *
      * @return bool|WP_Error|array
      */
@@ -1420,7 +1420,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#bulk-create-custom-fields
+     * @see https://developers.kit.com/v4.html#bulk-create-custom-fields
      *
      * @return bool|WP_Error|array
      */
@@ -1455,7 +1455,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#update-a-custom-field
+     * @see https://developers.kit.com/v4.html#update-a-custom-field
      *
      * @return bool|WP_Error|array
      */
@@ -1474,7 +1474,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/#destroy-field
+     * @see https://developers.kit.com/#destroy-field
      *
      * @return bool|WP_Error|array
      */
@@ -1493,7 +1493,7 @@ trait ConvertKit_API_Traits
      *
      * @since 1.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#list-purchases
+     * @see https://developers.kit.com/v4.html#list-purchases
      *
      * @return WP_Error|array
      */
@@ -1521,7 +1521,7 @@ trait ConvertKit_API_Traits
      *
      * @param integer $purchase_id Purchase ID.
      *
-     * @see https://developers.convertkit.com/v4.html#get-a-purchase
+     * @see https://developers.kit.com/v4.html#get-a-purchase
      *
      * @return bool|WP_Error|array
      */
@@ -1546,7 +1546,7 @@ trait ConvertKit_API_Traits
      * @param float                          $total            Total.
      * @param \DateTime                      $transaction_time Transaction date and time.
      *
-     * @see https://developers.convertkit.com/v4.html#create-a-purchase
+     * @see https://developers.kit.com/v4.html#create-a-purchase
      *
      * @return bool|WP_Error|array
      */
@@ -1608,7 +1608,7 @@ trait ConvertKit_API_Traits
      *
      * @since 2.0.0
      *
-     * @see https://developers.convertkit.com/v4.html#convertkit-api-segments
+     * @see https://developers.kit.com/v4.html#convertkit-api-segments
      *
      * @return WP_Error|array
      */
