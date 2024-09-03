@@ -492,13 +492,27 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that supplying no API credentials to the API class returns a WP_Error.
+	 *
+	 * @since   2.0.2
+	 */
+	public function testNoAPICredentials()
+	{
+		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$result = $api->get_account();
+		$this->assertInstanceOf(WP_Error::class, $result);
+		$this->assertEquals($result->get_error_code(), $this->errorCode);
+		$this->assertEquals($result->get_error_message(), 'Authentication Failed');
+	}
+
+	/**
 	 * Test that supplying invalid API credentials to the API class returns a WP_Error.
 	 *
 	 * @since   1.0.0
 	 */
 	public function testInvalidAPICredentials()
 	{
-		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'] );
+		$api    = new ConvertKit_API_V4( $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'], $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'], 'fakeAccessToken', 'fakeRefreshToken' );
 		$result = $api->get_account();
 		$this->assertInstanceOf(WP_Error::class, $result);
 		$this->assertEquals($result->get_error_code(), $this->errorCode);
