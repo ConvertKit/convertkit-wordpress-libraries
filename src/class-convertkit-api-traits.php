@@ -1662,6 +1662,12 @@ trait ConvertKit_API_Traits
                 continue;
             }
 
+            // Remove element if it's rocket-loader.min.js. Including it prevents landing page redirects from working.
+            if (strpos($element->getAttribute($attribute), 'rocket-loader.min.js') !== false) {
+                $element->parentNode->removeChild($element);
+                continue;
+            }
+
             // If here, the attribute's value is a relative URL, missing the http(s) and domain.
             // Prepend the URL to the attribute's value.
             $element->setAttribute($attribute, $url . $element->getAttribute($attribute));
