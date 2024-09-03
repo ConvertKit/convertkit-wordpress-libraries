@@ -44,6 +44,7 @@ jobs:
 
     # Defines the WordPress and PHP Versions matrix to run tests on.
     strategy:
+      fail-fast: false
       matrix:
         wp-versions: [ 'latest' ] #[ 'latest', '6.1.1' ]
         php-versions: [ '7.4', '8.0', '8.1', '8.2', '8.3' ] #[ '7.4', '8.0', '8.1', '8.2' ]
