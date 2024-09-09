@@ -6247,7 +6247,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 * @param   string      $httpMessage    HTTP Message.
 	 * @param   null|string $body           Response body.
 	 */
-	public function mockResponses( $httpCode, $httpMessage, $body = null )
+	private function mockResponses( $httpCode, $httpMessage, $body = null )
 	{
 		add_filter(
 			'pre_http_request',
