@@ -32,16 +32,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
-	 * Holds a flag for marking a test as passed when using
-	 * WordPress actions.
-	 *
-	 * @since   2.0.2
-	 *
-	 * @var     bool
-	 */
-	private $passed = false;
-
-	/**
 	 * Custom Field IDs to delete on teardown of a test.
 	 *
 	 * @since   2.0.0
