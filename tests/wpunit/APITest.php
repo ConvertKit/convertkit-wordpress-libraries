@@ -32,6 +32,16 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	private $errorCode = 'convertkit_api_error';
 
 	/**
+	 * Holds a flag for marking a test as passed when using
+	 * WordPress actions.
+	 *
+	 * @since   2.0.2
+	 *
+	 * @var     bool
+	 */
+	private $passed = false;
+
+	/**
 	 * Custom Field IDs to delete on teardown of a test.
 	 *
 	 * @since   2.0.0
@@ -502,12 +512,17 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testRefreshTokenWhenAccessTokenExpiredErrorOnProductionSite()
 	{
 		// Confirm the refresh token action in the libraries is triggered when calling get_account().
-		add_action( 'convertkit_api_refresh_token', function(  $result, $client_id, $previous_access_token, $previous_refresh_token ) {
+		add_action(
+			'convertkit_api_refresh_token',
+			function(  $result ) {
 
-			$this->assertEquals( $result['access_token'], $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'] );
-			$this->assertEquals( $result['refresh_token'], $_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN'] );
+				$this->assertEquals( $result['access_token'], 'new-' . $_ENV['CONVERTKIT_OAUTH_ACCESS_TOKEN'] );
+				$this->assertEquals( $result['refresh_token'], 'new-' . $_ENV['CONVERTKIT_OAUTH_REFRESH_TOKEN'] );
 
-		}, 10, 5 );
+				// Mark test as passed.
+				$this->passed = true;
+			}
+		);
 
 		// Filter requests to mock the token expiry and refreshing the token.
 		add_filter( 'pre_http_request', array( $this, 'mockAccessTokenExpiredResponse' ), 10, 3 );
@@ -517,7 +532,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_account();
 
 		// If the test gets to this point, the refresh token action in the libraries weren't triggered, so the test fails.
-		$I->fail('`convertkit_api_refresh_token` was not triggered when calling `get_account` with an expired access token.');
+		$this->assertTrue($this->passed);
 	}
 
 	/**
@@ -530,12 +545,22 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testRefreshTokenWhenAccessTokenExpiredErrorOnNonProductionSite()
 	{
+		static $current_env = '';
+
+		$current_env = 'local';
+
+		// Mark WordPress site as a non-production site.
+		// @TODO.
+		//putenv( 'WP_ENVIRONMENT_TYPE=local' );
+
 		// If the refresh token action in the libraries is triggered when calling get_account(), the test failed.
-		add_action( 'convertkit_api_refresh_token', function(  $result, $client_id, $previous_access_token, $previous_refresh_token ) {
+		add_action(
+			'convertkit_api_refresh_token',
+			function() {
 
-			$I->fail('`convertkit_api_refresh_token` was triggered when calling `get_account` with an expired access token on a non-production site.');
-
-		}, 10, 5 );
+				$this->fail('`convertkit_api_refresh_token` was triggered when calling `get_account` with an expired access token on a non-production site.');
+			}
+		);
 
 		// Filter requests to mock the token expiry and refreshing the token.
 		add_filter( 'pre_http_request', array( $this, 'mockAccessTokenExpiredResponse' ), 10, 3 );
