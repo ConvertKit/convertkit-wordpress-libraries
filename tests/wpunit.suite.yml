@@ -6,7 +6,6 @@ actor: WpunitTester
 modules:
     enabled:
         - WPLoader
-        - \Helper\WPUnit\API
         
         # Codeception supplied classes, which provide assertions and filesystem functions
         - \Codeception\Module\Asserts
