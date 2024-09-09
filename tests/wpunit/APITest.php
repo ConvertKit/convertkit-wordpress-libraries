@@ -6235,40 +6235,6 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
-	 * Helper method to assert the given key exists as an array
-	 * in the API response.
-	 *
-	 * @since   2.0.0
-	 *
-	 * @param   array  $result     API Result.
-	 * @param   string $key        Key.
-	 */
-	private function assertDataExists($result, $key)
-	{
-		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertArrayHasKey($key, $result);
-		$this->assertIsArray($result[ $key ]);
-	}
-
-	/**
-	 * Helper method to assert pagination object exists in response.
-	 *
-	 * @since   2.0.0
-	 *
-	 * @param   array $result     API Result.
-	 */
-	private function assertPaginationExists($result)
-	{
-		$this->assertArrayHasKey('pagination', $result);
-		$pagination = $result['pagination'];
-		$this->assertArrayHasKey('has_previous_page', $pagination);
-		$this->assertArrayHasKey('has_next_page', $pagination);
-		$this->assertArrayHasKey('start_cursor', $pagination);
-		$this->assertArrayHasKey('end_cursor', $pagination);
-		$this->assertArrayHasKey('per_page', $pagination);
-	}
-
-	/**
 	 * Forces WordPress' wp_remote_*() functions to return a specific HTTP response code
 	 * and message by short circuiting using the `pre_http_request` filter.
 	 *
@@ -6382,6 +6348,40 @@ class APITest extends \Codeception\TestCase\WPTestCase
 			'cookies'       => array(),
 			'http_response' => null,
 		);
+	}
+
+	/**
+	 * Helper method to assert the given key exists as an array
+	 * in the API response.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array  $result     API Result.
+	 * @param   string $key        Key.
+	 */
+	private function assertDataExists($result, $key)
+	{
+		$this->assertNotInstanceOf(WP_Error::class, $result);
+		$this->assertArrayHasKey($key, $result);
+		$this->assertIsArray($result[ $key ]);
+	}
+
+	/**
+	 * Helper method to assert pagination object exists in response.
+	 *
+	 * @since   2.0.0
+	 *
+	 * @param   array $result     API Result.
+	 */
+	private function assertPaginationExists($result)
+	{
+		$this->assertArrayHasKey('pagination', $result);
+		$pagination = $result['pagination'];
+		$this->assertArrayHasKey('has_previous_page', $pagination);
+		$this->assertArrayHasKey('has_next_page', $pagination);
+		$this->assertArrayHasKey('start_cursor', $pagination);
+		$this->assertArrayHasKey('end_cursor', $pagination);
+		$this->assertArrayHasKey('per_page', $pagination);
 	}
 
 	/**
