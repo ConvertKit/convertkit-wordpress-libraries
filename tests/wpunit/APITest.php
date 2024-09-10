@@ -6155,6 +6155,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form method="POST" action="https://app.convertkit.com/forms/' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '/subscriptions" data-sv-form="' . $_ENV['CONVERTKIT_API_LANDING_PAGE_ID'] . '" data-uid="99f1db6843" class="formkit-form"', $result);
+
+		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
+		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
 	}
 
 	/**
@@ -6171,6 +6174,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Assert that character encoding works, and that special characters are not malformed.
 		$this->assertStringContainsString('Vantar þinn ungling sjálfstraust í stærðfræði?', $result);
+
+		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
+		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
 	}
 
 	/**
@@ -6184,6 +6190,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
 		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
+
+		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
+		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
 	}
 
 	/**
