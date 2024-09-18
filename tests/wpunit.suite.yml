@@ -22,3 +22,4 @@ modules:
             domain: "%TEST_SITE_WP_DOMAIN%"
             adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
             title: "Test"
+            configFile: "%TEST_SITE_CONFIG_FILE%"
