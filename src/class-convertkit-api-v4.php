@@ -1540,10 +1540,15 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   array $response   API Response.
-	 * @return  string              Error Message(s).
+	 * @param   null|array $response   API Response.
+	 * @return  string                  Error Message(s).
 	 */
 	private function get_error_message_string( $response ) {
+
+		// If there is no API response body (such as a 429 error), there'll be no error message to return.
+		if ( ! is_array( $response ) ) {
+			return '';
+		}
 
 		// Most API responses contain the `errors` key.
 		if ( array_key_exists( 'errors', $response ) ) {
