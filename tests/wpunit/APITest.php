@@ -6177,6 +6177,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
+
+		// Check that the <html> tag wasn't replaced, as this isn't a legacy landing page.
+		// It should be preserved as e.g. <html lang="en">.
+		$this->assertStringContainsString('<html lang="en">');
+		$this->assertStringNotContainsString('<html>');
 	}
 
 	/**
@@ -6196,6 +6201,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
+
+		// Check that the <html> tag wasn't replaced, as this isn't a legacy landing page.
+		// It should be preserved as e.g. <html lang="en">.
+		$this->assertStringContainsString('<html lang="en">');
+		$this->assertStringNotContainsString('<html>');
 	}
 
 	/**
@@ -6212,6 +6222,9 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
+
+		// Check that the <html> tag was added, as this isn't included in legacy landing pages.
+		$this->assertStringContainsString('<html>');
 	}
 
 	/**

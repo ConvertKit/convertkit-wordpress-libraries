@@ -1235,7 +1235,7 @@ class ConvertKit_API_V4 {
 
 		// If the HTML is missing the <html> tag, it's likely to be a legacy form.
 		// Wrap it in <html>, <head> and <body> tags now, so we can inject the UTF-8 Content-Type meta tag.
-		if ( strpos( $body, '<html>' ) === false ) {
+		if ( strpos( $body, '<html' ) === false ) {
 			$body = '<html><head></head><body>' . $body . '</body></html>';
 		}
 
