@@ -213,14 +213,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Force WordPress HTTP classes and functions to return a 429 error.
 		$this->mockResponses(
 			429,
-			'Rate limit hit',
-			wp_json_encode(
-				array(
-					'errors' => array(
-						'Rate limit hit.',
-					),
-				)
-			)
+			'Rate limit hit'
 		);
 		$result = $this->api->get_account(); // The API function we use doesn't matter, as mockResponse forces a 429 error.
 		$this->assertInstanceOf(WP_Error::class, $result);
