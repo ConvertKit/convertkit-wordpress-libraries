@@ -1235,7 +1235,7 @@ class ConvertKit_API_V4 {
 
 		// If the HTML is missing the <html> tag, it's likely to be a legacy form.
 		// Wrap it in <html>, <head> and <body> tags now, so we can inject the UTF-8 Content-Type meta tag.
-		if ( strpos( $body, '<html>' ) === false ) {
+		if ( strpos( $body, '<html' ) === false ) {
 			$body = '<html><head></head><body>' . $body . '</body></html>';
 		}
 
@@ -1540,10 +1540,15 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   array $response   API Response.
-	 * @return  string              Error Message(s).
+	 * @param   null|array $response   API Response.
+	 * @return  string                  Error Message(s).
 	 */
 	private function get_error_message_string( $response ) {
+
+		// If there is no API response body (such as a 429 error), there'll be no error message to return.
+		if ( ! is_array( $response ) ) {
+			return '';
+		}
 
 		// Most API responses contain the `errors` key.
 		if ( array_key_exists( 'errors', $response ) ) {
