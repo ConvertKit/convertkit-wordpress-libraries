@@ -6178,6 +6178,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
 
+		// Check that all Cloudflare / rocket-loader.min.js script types have their prepended random string removed
+		// e.g. type="d4d618933d20ff16d2d8ebb4-text/javascript" --> type="text/javascript".
+		$this->assertStringNotContainsString('-text/javascript"', $result);
+
 		// Check that the <html> tag wasn't replaced, as this isn't a legacy landing page.
 		// It should be preserved as e.g. <html lang="en">.
 		$this->assertStringContainsString('<html lang="en">', $result);
@@ -6201,6 +6205,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
+
+		// Check that all Cloudflare / rocket-loader.min.js script types have their prepended random string removed
+		// e.g. type="d4d618933d20ff16d2d8ebb4-text/javascript" --> type="text/javascript".
+		$this->assertStringNotContainsString('-text/javascript"', $result);
 	}
 
 	/**
@@ -6217,6 +6225,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
+
+		// Check that all Cloudflare / rocket-loader.min.js script types have their prepended random string removed
+		// e.g. type="d4d618933d20ff16d2d8ebb4-text/javascript" --> type="text/javascript".
+		$this->assertStringNotContainsString('-text/javascript"', $result);
 
 		// Check that the <html> tag was added, as this isn't included in legacy landing pages.
 		$this->assertStringContainsString('<html>', $result);

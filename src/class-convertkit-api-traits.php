@@ -1675,6 +1675,29 @@ trait ConvertKit_API_Traits
     }
 
     /**
+     * Sets the type attribute for script elements to 'text/javascript',
+     * where Cloudflare prepends a random string to the type attribute.
+     *
+     * @param \DOMNodeList<\DOMElement> $elements Elements.
+     *
+     * @since 2.0.4
+     *
+     * @return void
+     */
+    public function convert_script_type(\DOMNodeList $elements)
+    {
+        foreach ($elements as $element) {
+            // Skip if the attribute is not prepended with a Cloudflare random string
+            if (strpos($element->getAttribute('type'), '-text/javascript') === false) {
+                continue;
+            }
+
+            // Set attribute to 'text/javascript'.
+            $element->setAttribute('type', 'text/javascript');
+        }
+    }
+
+    /**
      * Strips <html>, <head> and <body> opening and closing tags from the given markup,
      * as well as the Content-Type meta tag we might have added in get_html().
      *

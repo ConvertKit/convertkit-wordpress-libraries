@@ -1267,6 +1267,9 @@ class ConvertKit_API_V4 {
 		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'script' ), 'src', $url_scheme_host_only );
 		$this->convert_relative_to_absolute_urls( $html->getElementsByTagName( 'form' ), 'action', $url_scheme_host_only );
 
+		// Replace type="{random-string}-text/javascript" with "text/javascript".
+		//$this->convert_script_type( $html->getElementsByTagName( 'script' ) );
+
 		// If the entire HTML needs to be returned, return it now.
 		if ( ! $body_only ) {
 			return $html->saveHTML();
