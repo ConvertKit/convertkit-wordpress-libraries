@@ -81,7 +81,7 @@ class ConvertKit_API_V4 {
 
 	/**
 	 * ConvertKit API endpoints that use the /oauth/ namespace
-	 * i.e. https://api.convertkit.com/oauth/endpoint
+	 * i.e. https://api.kit.com/oauth/endpoint
 	 *
 	 * @since   2.0.0
 	 *
@@ -93,7 +93,7 @@ class ConvertKit_API_V4 {
 
 	/**
 	 * ConvertKit API endpoints that use the /wordpress/ namespace
-	 * i.e. https://api.convertkit.com/wordpress/endpoint
+	 * i.e. https://api.kit.com/wordpress/endpoint
 	 *
 	 * @since   1.3.0
 	 *
@@ -602,7 +602,7 @@ class ConvertKit_API_V4 {
 	 *
 	 * @param string $email_address Email Address.
 	 *
-	 * @see https://developers.convertkit.com/v4.html#get-a-subscriber
+	 * @see https://developers.kit.com/v4.html#get-a-subscriber
 	 *
 	 * @return WP_Error|false|integer
 	 */
@@ -631,7 +631,7 @@ class ConvertKit_API_V4 {
 	 *
 	 * @param string $email_address Email Address.
 	 *
-	 * @see https://developers.convertkit.com/v4.html#unsubscribe-subscriber
+	 * @see https://developers.kit.com/v4.html#unsubscribe-subscriber
 	 *
 	 * @return WP_Error|false|object
 	 */
@@ -1106,7 +1106,7 @@ class ConvertKit_API_V4 {
 				'k' => $api_key,
 				'v' => 2,
 			),
-			'https://api.convertkit.com/forms/' . $id . '/embed'
+			'https://api.kit.com/forms/' . $id . '/embed'
 		);
 
 		// Get HTML.
@@ -1221,7 +1221,7 @@ class ConvertKit_API_V4 {
 		$body               = wp_remote_retrieve_body( $result );
 
 		// If the body appears to be JSON containing an error, the request for a Legacy Form
-		// through api.convertkit.com failed, so return a WP_Error now.
+		// through api.kit.com failed, so return a WP_Error now.
 		if ( $this->is_json( $body ) ) {
 			$json = json_decode( $body );
 			return new WP_Error(
@@ -1695,7 +1695,7 @@ class ConvertKit_API_V4 {
 	private function get_api_url( $endpoint ) {
 
 		// For some specific API endpoints created primarily for the WordPress Plugin, the API base is
-		// https://api.convertkit.com/wordpress/$endpoint.
+		// https://api.kit.com/wordpress/$endpoint.
 		// We perform a string search instead of in_array(), because the $endpoint might be e.g.
 		// profile/{subscriber_id} or subscriber_authentication/send_code.
 		foreach ( $this->api_endpoints_wordpress as $wordpress_endpoint ) {
@@ -1704,14 +1704,14 @@ class ConvertKit_API_V4 {
 			}
 		}
 
-		// For oAuth API endpoints, the API base is https://api.convertkit.com/oauth/$endpoint.
+		// For oAuth API endpoints, the API base is https://api.kit.com/oauth/$endpoint.
 		foreach ( $this->api_endpoints_oauth as $oauth_endpoint ) {
 			if ( strpos( $endpoint, $oauth_endpoint ) !== false ) {
 				return path_join( $this->api_url_base . 'oauth', $endpoint );
 			}
 		}
 
-		// For all other endpoints, it's https://api.convertkit.com/v4/$endpoint.
+		// For all other endpoints, it's https://api.kit.com/v4/$endpoint.
 		return path_join( $this->api_url_base . $this->api_version, $endpoint );
 
 	}

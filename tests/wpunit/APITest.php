@@ -320,7 +320,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Confirm the OAuth URL returned is correct.
 		$this->assertEquals(
 			$this->api->get_oauth_url(),
-			'https://app.convertkit.com/oauth/authorize?' . http_build_query(
+			'https://app.kit.com/oauth/authorize?' . http_build_query(
 				[
 					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 					'response_type'         => 'code',
@@ -345,7 +345,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		// Confirm the OAuth URL returned is correct.
 		$this->assertEquals(
 			$this->api->get_oauth_url( 'https://example.com' ),
-			'https://app.convertkit.com/oauth/authorize?' . http_build_query(
+			'https://app.kit.com/oauth/authorize?' . http_build_query(
 				[
 					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
 					'response_type'         => 'code',
@@ -3734,10 +3734,10 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$subscribers = [
 			[
-				'email_address' => str_replace('@convertkit.com', '-1@convertkit.com', $this->generateEmailAddress()),
+				'email_address' => str_replace('@kit.com', '-1@kit.com', $this->generateEmailAddress()),
 			],
 			[
-				'email_address' => str_replace('@convertkit.com', '-2@convertkit.com', $this->generateEmailAddress()),
+				'email_address' => str_replace('@kit.com', '-2@kit.com', $this->generateEmailAddress()),
 			],
 		];
 		$result      = $this->api->create_subscribers($subscribers);
@@ -4058,7 +4058,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 */
 	public function testUnsubscribeByEmailWithNotSubscribedEmailAddress()
 	{
-		$result = $this->api->unsubscribe_by_email('not-subscribed@convertkit.com');
+		$result = $this->api->unsubscribe_by_email('not-subscribed@kit.com');
 		$this->assertInstanceOf(WP_Error::class, $result);
 	}
 
@@ -5584,7 +5584,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function testSubscriberAuthenticationSendCodeWithNotSubscribedEmail()
 	{
 		$result = $this->api->subscriber_authentication_send_code(
-			'email-not-subscribed@convertkit.com',
+			'email-not-subscribed@kit.com',
 			$_ENV['TEST_SITE_WP_URL']
 		);
 		$this->assertInstanceOf(WP_Error::class, $result);
@@ -6213,7 +6213,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	{
 		$result = $this->api->get_landing_page_html($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_URL']);
 		$this->assertNotInstanceOf(WP_Error::class, $result);
-		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
+
+		$this->assertStringContainsString('<form id="ck_subscribe_form" class="ck_subscribe_form" action="https://app.kit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] . '/subscribe" data-remote="true">', $result);
 
 		// Check that rocket-loader.min.js has been removed, as including it breaks landing page redirects.
 		$this->assertStringNotContainsString('rocket-loader.min.js', $result);
@@ -6279,7 +6280,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function mockAccessTokenExpiredResponse( $response, $parsed_args, $url )
 	{
 		// Only mock requests made to the /account endpoint.
-		if ( strpos( $url, 'https://api.convertkit.com/v4/account' ) === false ) {
+		if ( strpos( $url, 'https://api.kit.com/v4/account' ) === false ) {
 			return $response;
 		}
 
@@ -6319,7 +6320,7 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	public function mockRefreshTokenResponse( $response, $parsed_args, $url )
 	{
 		// Only mock requests made to the /token endpoint.
-		if ( strpos( $url, 'https://api.convertkit.com/oauth/token' ) === false ) {
+		if ( strpos( $url, 'https://api.kit.com/oauth/token' ) === false ) {
 			return $response;
 		}
 
@@ -6393,11 +6394,11 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   string $domain     Domain (default: convertkit.com).
+	 * @param   string $domain     Domain (default: kit.com).
 	 *
 	 * @return  string
 	 */
-	private function generateEmailAddress($domain = 'convertkit.com')
+	private function generateEmailAddress($domain = 'kit.com')
 	{
 		return 'php-sdk-' . date('Y-m-d-H-i-s') . '-php-' . PHP_VERSION_ID . '@' . $domain;
 	}

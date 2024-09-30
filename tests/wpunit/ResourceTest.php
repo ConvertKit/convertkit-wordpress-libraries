@@ -307,7 +307,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// did call both `get_forms` and `get_legacy_forms` methods.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_FORM_ID'], $resources);
 		$this->assertArrayHasKey('embed_url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]);
-		$this->assertEquals('https://api.convertkit.com/api/v3/forms/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '.html?api_key=' . $_ENV['CONVERTKIT_API_KEY'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]['embed_url']);
+		$this->assertEquals('https://api.kit.com/api/v3/forms/' . $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] . '.html?api_key=' . $_ENV['CONVERTKIT_API_KEY'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_FORM_ID'] ]['embed_url']);
 
 		// Delete resources.
 		$this->resource->delete();
