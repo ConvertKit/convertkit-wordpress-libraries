@@ -727,8 +727,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey('ending', $result['stats']);
 
 		// Assert start and end dates were honored.
-		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
-		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-05:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-05:00');
 	}
 
 	/**
@@ -761,8 +761,8 @@ class APITest extends \Codeception\TestCase\WPTestCase
 		$this->assertArrayHasKey('ending', $result['stats']);
 
 		// Assert start and end dates were honored.
-		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-04:00');
-		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-04:00');
+		$this->assertEquals($result['stats']['starting'], $starting->format('Y-m-d') . 'T00:00:00-05:00');
+		$this->assertEquals($result['stats']['ending'], $ending->format('Y-m-d') . 'T23:59:59-05:00');
 	}
 
 	/**
