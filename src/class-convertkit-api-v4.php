@@ -339,10 +339,11 @@ class ConvertKit_API_V4 {
 	 *
 	 * @since   2.0.0
 	 *
-	 * @param   bool|string $return_url  Return URL.
-	 * @return  string                       OAuth URL
+	 * @param   bool|string $return_url   Return URL.
+	 * @param   bool|string $tenant_name  Tenant Name (if specified, issues tokens specific to that name. Useful for using the same account on multiple sites).
+	 * @return  string                    OAuth URL
 	 */
-	public function get_oauth_url( $return_url = false ) {
+	public function get_oauth_url( $return_url = false, $tenant_name = false ) {
 
 		// Generate and store code verifier and challenge.
 		$code_verifier  = $this->generate_and_store_code_verifier();
@@ -366,6 +367,10 @@ class ConvertKit_API_V4 {
 					)
 				)
 			);
+		}
+
+		if ( $tenant_name ) {
+			$args['tenant_name'] = rawurlencode( $tenant_name );
 		}
 
 		// Return OAuth URL.
