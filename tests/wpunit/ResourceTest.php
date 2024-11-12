@@ -361,7 +361,7 @@ class ResourceTest extends \Codeception\TestCase\WPTestCase
 		// did call both `get_landing_pages` and `get_legacy_landing_pages` methods.
 		$this->assertArrayHasKey($_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources);
 		$this->assertArrayHasKey('url', $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]);
-		$this->assertEquals('https://app.convertkit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]['url']);
+		$this->assertEquals('https://app.kit.com/landing_pages/' . $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'], $resources[ $_ENV['CONVERTKIT_API_LEGACY_LANDING_PAGE_ID'] ]['url']);
 
 		// Delete resources.
 		$this->resource->delete();
