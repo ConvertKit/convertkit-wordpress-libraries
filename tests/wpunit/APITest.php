@@ -366,6 +366,32 @@ class APITest extends \Codeception\TestCase\WPTestCase
 	}
 
 	/**
+	 * Test that get_oauth_url() returns the correct URL to begin the OAuth process
+	 * when a tenant_name parameter is supplied.
+	 *
+	 * @since   2.0.5
+	 *
+	 * @return  void
+	 */
+	public function testGetOAuthURLWithTenantName()
+	{
+		// Confirm the OAuth URL returned is correct.
+		$this->assertEquals(
+			$this->api->get_oauth_url( false, 'https://example.com' ),
+			'https://app.kit.com/oauth/authorize?' . http_build_query(
+				[
+					'client_id'             => $_ENV['CONVERTKIT_OAUTH_CLIENT_ID'],
+					'response_type'         => 'code',
+					'redirect_uri'          => $_ENV['CONVERTKIT_OAUTH_REDIRECT_URI'],
+					'code_challenge'        => $this->api->generate_code_challenge( $this->api->get_code_verifier() ),
+					'code_challenge_method' => 'S256',
+					'tenant_name'           => 'https://example.com',
+				]
+			)
+		);
+	}
+
+	/**
 	 * Test that get_access_token() returns the expected data.
 	 *
 	 * @since   2.0.0
